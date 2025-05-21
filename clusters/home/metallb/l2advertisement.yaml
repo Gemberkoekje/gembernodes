@@ -3,6 +3,4 @@ kind: L2Advertisement
 metadata:
   name: l2advertisement
   namespace: metallb-system
-spec:
-  dependsOn:
-    - name: metallb-crds
+spec: {}
