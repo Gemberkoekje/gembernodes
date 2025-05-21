@@ -3,5 +3,4 @@ kind: Kustomization
 resources:
   - metallb-namespace.yaml
   - metallb-release.yaml
-  - config
   
