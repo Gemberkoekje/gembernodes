@@ -3,8 +3,6 @@ kind: Ingress
 metadata:
   name: grafana
   namespace: monitoring
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: nginx   # <--- Add this line
   rules:
