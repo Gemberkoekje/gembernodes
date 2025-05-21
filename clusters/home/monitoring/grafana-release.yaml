@@ -10,7 +10,7 @@ spec:
       chart: grafana
       sourceRef:
         kind: HelmRepository
-        name: grafana-repo
+        name: grafana
         namespace: monitoring
       version: "6.60.5"  # or latest stable
   interval: 5m
