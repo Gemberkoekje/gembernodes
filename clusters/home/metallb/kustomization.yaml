@@ -1,5 +1,6 @@
 resources:
   - namespace.yaml
+  - metallb-crds.yaml
   - metallb-gitrepo.yaml
   - metallb-kustomization.yaml
   - ipaddresspool.yaml
