@@ -6,4 +6,5 @@ resources:
   - system
   - config
   - metallb-release.yaml
+  - nginx-namespace.yaml
   - nginx-lb-test.yaml
