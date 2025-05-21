@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m
-  path: ./config/manifests
+  path: ./config/manifests/metallb-native.yaml
   prune: true
   sourceRef:
     kind: GitRepository
