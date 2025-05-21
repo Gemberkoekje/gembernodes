@@ -2,5 +2,4 @@ resources:
   - metallb-namespace.yaml
   - metallb-helmrepository.yaml
   - metallb-kustomization.yaml
-  - ipaddresspool.yaml
-  - l2advertisement.yaml
+  - metallb-release.yaml
