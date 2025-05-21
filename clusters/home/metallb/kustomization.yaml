@@ -4,3 +4,4 @@ resources:
   - metallb-kustomization.yaml
   - metallb-config.yaml
   - metallb-release.yaml
+  - nginx-lb-test.yaml
