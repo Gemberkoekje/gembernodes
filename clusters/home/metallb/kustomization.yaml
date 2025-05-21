@@ -1,7 +1,7 @@
 resources:
   - metallb-namespace.yaml
   - metallb-helmrepository.yaml
-  - metallb-kustomization.yaml
-  - metallb-config.yaml
+  - system
+  - config
   - metallb-release.yaml
   - nginx-lb-test.yaml
