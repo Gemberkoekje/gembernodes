@@ -1,0 +1,5 @@
+resources:
+  - namespace.yaml
+  - metallb-crds.yaml
+  - metallb-deployment.yaml
+  - ipaddresspool.yaml
