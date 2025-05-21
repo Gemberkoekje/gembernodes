@@ -1,7 +1,7 @@
 resources:
   - namespace.yaml
-  - metallb-crds.yaml
   - metallb-gitrepo.yaml
+  - metallb-crds.yaml
   - metallb-kustomization.yaml
   - ipaddresspool.yaml
   - l2advertisement.yaml
