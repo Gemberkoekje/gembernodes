@@ -4,6 +4,4 @@ resources:
   - metallb-namespace.yaml
   - metallb-release.yaml
   - config
-  - nginx-namespace.yaml
-  - nginx-lb-test.yaml
   
