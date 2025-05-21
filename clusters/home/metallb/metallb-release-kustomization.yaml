@@ -1,0 +1,15 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: metallb-release
+  namespace: flux-system
+spec:
+  interval: 10m
+  path: ./
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: gembernodes
+    namespace: flux-system
+  dependsOn:
+    - name: metallb-configmap
