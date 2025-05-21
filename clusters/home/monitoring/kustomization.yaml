@@ -6,4 +6,6 @@ resources:
   - prometheus-release.yaml
   - grafana-repo.yaml
   - grafana-release.yaml
+  - grafana-service.yaml
   - monitoring-kustomize.yaml
+  - ingress
