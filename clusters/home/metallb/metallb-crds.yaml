@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m
-  path: ./config/crd/bases
+  path: ./config/crd
   prune: true
   sourceRef:
     kind: GitRepository
