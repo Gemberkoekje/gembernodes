@@ -3,3 +3,4 @@ resources:
   - metallb-crds.yaml
   - metallb-deployment.yaml
   - ipaddresspool.yaml
+  - l2advertisement.yaml
