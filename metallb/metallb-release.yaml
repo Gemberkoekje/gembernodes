@@ -4,18 +4,16 @@ metadata:
   name: metallb
   namespace: metallb-system
 spec:
+  releaseName: metallb
   chart:
     spec:
       chart: metallb
-      version: 0.14.9
       sourceRef:
         kind: HelmRepository
         name: metallb
         namespace: flux-system
-  interval: 15m
-  timeout: 5m
-  releaseName: metallb
-  valuesFrom:
-  - kind: ConfigMap
-    name: metallb-helm-chart-value-overrides
-    valuesKey: values.yaml # This is the default, but best to be explicit for clarity
+      version: "0.14.x"
+  interval: 1h0m0s
+  install:
+    remediation:
+      retries: 3
