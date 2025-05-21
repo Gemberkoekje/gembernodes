@@ -1,4 +1,6 @@
 resources:
   - metallb-namespace.yaml
   - metallb-helmrepository.yaml
+  - metallb-kustomization.yaml
+  - metallb-config.yaml
   - metallb-release.yaml
