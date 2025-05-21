@@ -22,5 +22,5 @@ spec:
       enabled: false
     grafana.ini:
       server:
-        root_url: "http://localhost:3000"  # <- This must match your browser's address
+        root_url: "%(protocol)s://%(domain)s/grafana/"
         serve_from_sub_path: true
