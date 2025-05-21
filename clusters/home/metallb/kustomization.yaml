@@ -1,6 +1,4 @@
 resources:
   - namespace.yaml
-  - metallb-gitrepository.yaml
-  - metallb-kustomization.yaml
   - ipaddresspool.yaml
   - l2advertisement.yaml
