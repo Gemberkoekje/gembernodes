@@ -22,6 +22,7 @@ spec:
           enabled: true
           setNodeId: true
           config: |
+            cluster_name = "vault-integrated-storage"
             storage "raft" {
               path    = "/vault/data"
               node_id = "vault-0"
@@ -37,3 +38,8 @@ spec:
         size: 5Gi
       ui:
         enabled: true
+    primary:
+      persistence:
+        enabled: true
+        size: 8Gi
+        storageClass: "local-path" # Set to your desired StorageClass, or leave empty for default
