@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: postgress
+  namespace: monitoring
+spec:
+  ingressClassName: nginx   # <--- Add this line
+  rules:
+    - http:
+        paths:
+          - path: /postgress
+            pathType: Prefix
+            backend:
+              service:
+                name: postgress
+                port:
+                  number: 5432
