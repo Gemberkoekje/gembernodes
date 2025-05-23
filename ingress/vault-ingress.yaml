@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vault
+  namespace: flux-system
+spec:
+  ingressClassName: nginx   # <--- Add this line
+  rules:
+    - http:
+        paths:
+          - path: /vault
+            pathType: Prefix
+            backend:
+              service:
+                name: vault
+                port:
+                  number: 80

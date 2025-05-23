@@ -20,3 +20,5 @@ spec:
       dataStorage:
         enabled: true
         size: 5Gi
+      ui:
+        enabled: true
