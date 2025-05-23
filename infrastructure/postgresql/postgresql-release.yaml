@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: postgresql
-      version: "15.5.2" # Use the latest stable version or as needed
+      version: "17.5" # Use the latest stable version or as needed
       sourceRef:
         kind: HelmRepository
         name: bitnami
