@@ -5,13 +5,10 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m
-  chart:
-    spec:
-      chart: postgresql
-      chartRef:
-        kind: OCIRepository
-        name: postgresql-chart
-        namespace: flux-system
+  chartRef:
+    kind: OCIRepository
+    name: postgresql-chart
+    namespace: flux-system
   values:
     global:
       postgresql:
