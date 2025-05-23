@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: vault
-      version: "1.19.4" # Use latest stable version or your preferred version
+      version: "0.30.0" # Use latest stable version or your preferred version
       sourceRef:
         kind: HelmRepository
         name: hashicorp
