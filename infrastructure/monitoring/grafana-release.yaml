@@ -20,6 +20,12 @@ spec:
       type: ClusterIP
     ingress:
       enabled: false
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClassName: "local-path"  # Set to your storage class if needed
+      accessModes:
+        - ReadWriteOnce
     grafana.ini:
       server:
         root_url: "%(protocol)s://%(domain)s/grafana/"
