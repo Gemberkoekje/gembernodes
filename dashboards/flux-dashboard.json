@@ -29,7 +29,7 @@
         }
       ],
       "title": "Kustomizations Ready/Not Ready",
-      "type": "pie"
+      "type": "barchart"
     },
     {
       "datasource": "Prometheus",
@@ -49,7 +49,7 @@
         }
       ],
       "title": "HelmReleases Ready/Not Ready",
-      "type": "pie"
+      "type": "barchart"
     },
     {
       "datasource": "Prometheus",
