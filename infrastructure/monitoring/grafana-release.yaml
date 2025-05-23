@@ -12,6 +12,7 @@ spec:
         kind: HelmRepository
         name: grafana
         namespace: monitoring
+      version: "12.0.1"  # or latest stable
   interval: 5m
   values:
     adminPassword: "admin"  # change or use secretRef in production
