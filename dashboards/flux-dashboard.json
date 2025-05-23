@@ -64,7 +64,7 @@
         }
       ],
       "title": "Pods Not Running by Namespace & Phase",
-      "type": "bar"
+      "type": "barchart"
     },
     {
       "datasource": "Prometheus",

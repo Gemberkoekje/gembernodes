@@ -39,3 +39,5 @@ spec:
             access: proxy
             url: http://prometheus-server.monitoring.svc.cluster.local:80
             isDefault: true
+    plugins:
+      - grafana-piechart-panel
