@@ -6,3 +6,4 @@ resources:
   - ingress-nginx-repo.yaml
   - postgresql-repo.yaml
   - metallb-repo.yaml
+  - vault-repo.yaml
