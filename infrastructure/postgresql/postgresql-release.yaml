@@ -8,7 +8,6 @@ spec:
   chartRef:
     kind: OCIRepository
     name: postgresql-chart
-    version: "17.5.0"  # You can pin a version or leave it out
     namespace: flux-system
   values:
     global:
