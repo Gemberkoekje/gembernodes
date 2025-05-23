@@ -4,3 +4,4 @@ resources:
 - metallb
 - nginx
 - monitoring
+- postgresql
