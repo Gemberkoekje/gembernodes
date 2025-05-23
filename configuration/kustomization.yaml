@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - ipaddresspool.yaml
   - postgresql-externalsecret.yaml
+  - secretstore.yaml
