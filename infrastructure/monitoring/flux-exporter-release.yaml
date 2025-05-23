@@ -12,4 +12,5 @@ spec:
         kind: HelmRepository
         name: fluxcd
         namespace: monitoring
+      version: "1.0.1"  # or latest stable
   values: {}
