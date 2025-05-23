@@ -5,3 +5,4 @@ resources:
   - prometheus-release.yaml
   - grafana-release.yaml
   - kube-state-metrics-release.yaml
+  - flux-exporter-release.yaml
