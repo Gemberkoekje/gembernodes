@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: postgresql
-      sourceRef:
+      chartRef:
         kind: OCIRepository
         name: postgresql-chart
         namespace: flux-system
