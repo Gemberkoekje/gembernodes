@@ -4,3 +4,4 @@ resources:
   - monitoring-namespace.yaml
   - prometheus-release.yaml
   - grafana-release.yaml
+  - kube-state-metrics-release.yaml
