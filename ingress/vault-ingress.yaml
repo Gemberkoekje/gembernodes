@@ -3,8 +3,6 @@ kind: Ingress
 metadata:
   name: vault
   namespace: flux-system
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: nginx   # <--- Add this line
   rules:
