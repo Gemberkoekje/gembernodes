@@ -9,8 +9,8 @@ spec:
     spec:
       chart: postgresql
       sourceRef:
-        kind: HelmRepository
-        name: bitnami
+        kind: OCIRepository
+        name: postgresql-chart
         namespace: flux-system
   values:
     global:
