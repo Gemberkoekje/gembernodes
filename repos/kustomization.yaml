@@ -7,3 +7,4 @@ resources:
   - postgresql-repo.yaml
   - metallb-repo.yaml
   - vault-repo.yaml
+  - externalsecret-repo.yaml
