@@ -4,3 +4,4 @@ resources:
   - prometheus-repo.yaml
   - grafana-repo.yaml
   - ingress-nginx-repo.yaml
+  - postgresql-repo.yaml

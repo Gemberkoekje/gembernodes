@@ -1,0 +1,25 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: postgresql
+  namespace: flux-system
+spec:
+  interval: 10m
+  chart:
+    spec:
+      chart: postgresql
+      version: "15.5.2" # Use the latest stable version or as needed
+      sourceRef:
+        kind: HelmRepository
+        name: bitnami
+        namespace: flux-system
+  values:
+    global:
+      postgresql:
+        auth:
+          postgresPassword: "yourStrongPassword" # Change this!
+    primary:
+      persistence:
+        enabled: true
+        size: 8Gi
+        storageClass: "" # Set to your desired StorageClass, or leave empty for default
