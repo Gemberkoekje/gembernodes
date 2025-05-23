@@ -5,3 +5,4 @@ resources:
   - grafana-repo.yaml
   - ingress-nginx-repo.yaml
   - postgresql-repo.yaml
+  - metallb-repo.yaml
