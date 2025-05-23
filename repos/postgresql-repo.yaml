@@ -6,3 +6,5 @@ metadata:
 spec:
   interval: 1m0s
   url: oci://registry-1.docker.io/bitnamicharts/postgresql
+  ref:
+    tag: 16.7.4
