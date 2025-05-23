@@ -13,7 +13,7 @@ spec:
     global:
       postgresql:
         auth:
-          postgresPassword: "yourStrongPassword" # Change this!
+          existingSecret: postgresql-secret
     primary:
       persistence:
         enabled: true

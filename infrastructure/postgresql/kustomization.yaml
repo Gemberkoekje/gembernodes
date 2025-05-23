@@ -1,3 +1,4 @@
 resources:
   - postgresql-release.yaml
   - postgresql-loadbalancer.yaml
+  - postgresql-externalsecret.yaml
