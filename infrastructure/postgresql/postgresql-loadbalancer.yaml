@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   type: LoadBalancer
-  loadBalancerIP: 192.168.1.231   # <-- Add this line
+  loadBalancerIP: 192.168.1.232   # <-- Add this line
   ports:
     - port: 5432
       targetPort: 5432
