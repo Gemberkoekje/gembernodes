@@ -7,9 +7,9 @@ spec:
   type: LoadBalancer
   loadBalancerIP: 192.168.1.231   # <-- Add this line
   ports:
-    - port: 8200
+    - port: 80
       targetPort: 8200
       protocol: TCP
-      name: vault
+      name: vault-ui
   selector:
     app.kubernetes.io/name: vault
