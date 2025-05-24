@@ -15,13 +15,6 @@ spec:
         namespace: flux-system
   values:
     server:
-      service:
-        enabled: true
-        type: Loadbalancer   # Or LoadBalancer/NodePort if you want external access
-        ports:
-          - name: http
-            port: 8200
-            targetPort: 8200
       ha:
         enabled: true
         replicas: 1 # Increase for HA

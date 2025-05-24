@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
 - vault-release.yaml
 - externalsecrets-release.yaml
+- vault-loadbalancer.yaml

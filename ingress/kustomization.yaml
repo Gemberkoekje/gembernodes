@@ -3,4 +3,3 @@ kind: Kustomization
 resources:
   - prometheus-ingress.yaml
   - grafana-ingress.yaml
-  - vault-ingress.yaml
