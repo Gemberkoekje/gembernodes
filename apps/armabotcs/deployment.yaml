@@ -25,5 +25,11 @@ spec:
             requests:
               memory: "256Mi"
               cpu: "250m"
+          env:
+            - name: Discord__Token
+              valueFrom:
+                secretKeyRef:
+                  name: discord-secret
+                  key: discord-token
       imagePullSecrets:
         - name: ghcr-secret
