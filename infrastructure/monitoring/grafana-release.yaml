@@ -5,6 +5,7 @@ metadata:
   name: grafana
   namespace: monitoring
 spec:
+  replicas: 1
   chart:
     spec:
       chart: grafana
