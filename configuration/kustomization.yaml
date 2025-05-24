@@ -3,4 +3,6 @@ kind: Kustomization
 resources:
   - ipaddresspool.yaml
   - postgresql-externalsecret.yaml
+  - grafana-externalsecret.yaml
+  - discord-externalsecret.yaml
   - secretstore.yaml
