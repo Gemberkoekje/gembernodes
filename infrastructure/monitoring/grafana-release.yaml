@@ -15,7 +15,9 @@ spec:
       version: "9.2.0"  # or latest stable
   interval: 5m
   values:
-    adminPassword: "admin"  # change or use secretRef in production
+    admin:
+      existingSecret: grafana-secret
+      passwordKey: grafana-password # Must match the secretKey in your ExternalSecret
     service:
       type: ClusterIP
     ingress:
