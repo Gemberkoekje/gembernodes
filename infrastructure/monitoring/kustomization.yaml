@@ -6,3 +6,4 @@ resources:
   - grafana-release.yaml
   - loki-release.yaml
   - kube-state-metrics-release.yaml
+  - promtail-release.yaml 
