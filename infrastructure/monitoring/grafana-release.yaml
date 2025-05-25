@@ -47,3 +47,5 @@ spec:
     securityContext:
       runAsUser: 0
       fsGroup: 472
+    initChownData:
+      enabled: false
