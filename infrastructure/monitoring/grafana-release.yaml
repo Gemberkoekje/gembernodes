@@ -44,8 +44,5 @@ spec:
             isDefault: true
     plugins:
       - grafana-piechart-panel
-    securityContext:
-      runAsUser: 0
-      fsGroup: 472
     initChownData:
       enabled: false
