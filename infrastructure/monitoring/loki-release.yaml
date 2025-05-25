@@ -11,7 +11,7 @@ spec:
         kind: HelmRepository
         name: grafana
         namespace: monitoring
-      version: "9.2.0" # Use the latest stable version or your preferred version
+      version: "3.5.0" # Use the latest stable version or your preferred version
   interval: 5m
   values:
     persistence:
