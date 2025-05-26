@@ -42,6 +42,11 @@ spec:
             access: proxy
             url: http://prometheus-server.monitoring.svc.cluster.local:80
             isDefault: true
+          - name: Loki
+            type: loki
+            access: proxy
+            url: http://loki.monitoring.svc.cluster.local:3100
+            isDefault: false
     plugins:
       - grafana-piechart-panel
     initChownData:
