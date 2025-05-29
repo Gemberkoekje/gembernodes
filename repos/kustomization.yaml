@@ -7,3 +7,4 @@ resources:
   - postgresql-repo.yaml
   - metallb-repo.yaml
   - externalsecret-repo.yaml
+  - onepassword-repo.yaml

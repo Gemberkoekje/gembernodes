@@ -13,7 +13,7 @@ spec:
     global:
       postgresql:
         auth:
-          existingSecret: postgress-secret
+          postgresPassword: 6wMSwhm7
     primary:
       persistence:
         enabled: true

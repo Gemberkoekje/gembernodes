@@ -12,6 +12,8 @@ spec:
     metadata:
       labels:
         app: armabotcs
+      annotations:
+        operator.1password.io/inject: "armabotcs"
     spec:
       containers:
         - name: armabotcs
@@ -27,14 +29,6 @@ spec:
               cpu: "250m"
           env:
             - name: Discord__Token
-              valueFrom:
-                secretKeyRef:
-                  name: discord-secret
-                  key: token
+              value: op://Gembercluster/discord-secret/token
             - name: ConnectionStrings__Postgres
-              valueFrom:
-                secretKeyRef:
-                  name: postgress-secret
-                  key: connectionstring
-      imagePullSecrets:
-        - name: ghcr-secret
+              value: op://Gembercluster/postgress-secret/connectionstring

@@ -17,8 +17,7 @@ spec:
   values:
     replicaCount: 1   # <-- Add this line
     admin:
-      existingSecret: grafana-secret
-      passwordKey: password
+      adminPassword: 6wMSwhm7
     service:
       type: ClusterIP
     ingress:
