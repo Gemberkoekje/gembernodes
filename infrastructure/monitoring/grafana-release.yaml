@@ -18,7 +18,7 @@ spec:
     replicaCount: 1   # <-- Add this line
     admin:
       existingSecret: grafana-secret
-      passwordKey: grafana-password # Must match the secretKey in your ExternalSecret
+      passwordKey: password
     service:
       type: ClusterIP
     ingress:

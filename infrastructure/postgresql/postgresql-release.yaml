@@ -13,7 +13,7 @@ spec:
     global:
       postgresql:
         auth:
-          existingSecret: postgresql-secret
+          existingSecret: postgress-secret
     primary:
       persistence:
         enabled: true

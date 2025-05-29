@@ -30,11 +30,11 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: discord-secret
-                  key: discord-token
+                  key: token
             - name: ConnectionStrings__Postgres
               valueFrom:
                 secretKeyRef:
-                  name: postgresql-connection-secret
-                  key: postgres-connectionstring
+                  name: postgress-secret
+                  key: connectionstring
       imagePullSecrets:
         - name: ghcr-secret
