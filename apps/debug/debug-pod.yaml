@@ -1,14 +1,17 @@
-# debug-pod.yaml
+# debug-cert.yaml
 apiVersion: v1
 kind: Pod
 metadata:
-  name: debug
+  name: debug-cert
   namespace: flux-system
 spec:
   containers:
   - name: debug
     image: nicolaka/netshoot
     command: ["sleep", "3600"]
+    volumeMounts:
+    - name: cert
+      mountPath: /cert
     securityContext:
       allowPrivilegeEscalation: false
       capabilities:
@@ -17,4 +20,8 @@ spec:
       runAsUser: 1000
       seccompProfile:
         type: RuntimeDefault
+  volumes:
+  - name: cert
+    secret:
+      secretName: external-secrets-webhook
   restartPolicy: Never
