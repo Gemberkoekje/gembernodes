@@ -19,7 +19,33 @@ spec:
         - url: http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push
     serviceMonitor:
       enabled: true
-    extraScrapeConfigs: []
+    extraScrapeConfigs:
+      - job_name: kubernetes-pods-default
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace]
+            regex: default
+            action: keep
+      - job_name: kubernetes-pods-other-namespaces-warn-error
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace]
+            regex: default
+            action: drop
+          - source_labels: [__meta_kubernetes_pod_container_name, __meta_kubernetes_namespace, __meta_kubernetes_pod_name, __meta_kubernetes_pod_label_app]
+            action: replace
+            target_label: job
+            replacement: "$1"
+        pipeline_stages:
+          - match:
+              selector: '{namespace!~"default"}'
+              stages:
+                - regex:
+                    expression: '(?i)\b(warn|error)\b'
+                - drop:
+                    expression: '!(?i)\b(warn|error)\b'
     resources:
       limits:
         cpu: 200m
