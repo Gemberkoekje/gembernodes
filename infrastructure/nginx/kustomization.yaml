@@ -1,3 +1,2 @@
 resources:
-  - ingress-nginx-namespace.yaml
   - ingress-nginx-release.yaml
