@@ -18,6 +18,7 @@ spec:
       containers:
         - name: armabotcs
           image: ghcr.io/gemberkoekje/armabotcs:1.0.0-37
+          command: ["dotnet", "ArmaBotCs.dll"] # <-- Add this line (replace with your actual entrypoint)
           ports:
             - containerPort: 8080
           resources:
