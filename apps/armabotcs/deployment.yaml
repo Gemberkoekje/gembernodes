@@ -13,6 +13,7 @@ spec:
       labels:
         app: armabotcs
       annotations:
+        secrets-injection: enabled
         operator.1password.io/inject: "armabotcs"
     spec:
       containers:
