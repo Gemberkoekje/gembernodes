@@ -4,5 +4,5 @@ resources:
 - ingress-nginx-namespace.yaml
 - metallb-namespace.yaml
 - monitoring-namespace.yaml
-- default-namespace.yaml
+- armabotcs-namespace.yaml
 - flux-system-namespace.yaml
