@@ -6,3 +6,4 @@ resources:
 - monitoring-namespace.yaml
 - armabotcs-namespace.yaml
 - flux-system-namespace.yaml
+- default-namespace.yaml
