@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: armabotcs
-  namespace: default
+  namespace: armabotcs
 spec:
   replicas: 2
   selector:
@@ -12,9 +12,10 @@ spec:
     metadata:
       labels:
         app: armabotcs
-      annotations:
         secrets-injection: enabled
+      annotations:
         operator.1password.io/inject: "armabotcs"
+        operator.1password.io/version: "2-beta"
     spec:
       containers:
         - name: armabotcs
@@ -30,6 +31,11 @@ spec:
               memory: "256Mi"
               cpu: "250m"
           env:
+            - name: OP_SERVICE_ACCOUNT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: op-service-account
+                  key: token
             - name: Discord__Token
               value: op://Gembercluster/discord-secret/token
             - name: ConnectionStrings__Postgres
