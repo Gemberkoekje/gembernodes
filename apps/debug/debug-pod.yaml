@@ -1,27 +1,42 @@
-# debug-cert.yaml
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1 
+kind: Deployment 
 metadata:
-  name: debug-cert
-  namespace: flux-system
+  name: botcs
+  namespace: botcs 
 spec:
-  containers:
-  - name: debug
-    image: nicolaka/netshoot
-    command: ["sleep", "3600"]
-    volumeMounts:
-    - name: cert
-      mountPath: /cert
-    securityContext:
-      allowPrivilegeEscalation: false
-      capabilities:
-        drop: ["ALL"]
-      runAsNonRoot: true
-      runAsUser: 1000
-      seccompProfile:
-        type: RuntimeDefault
-  volumes:
-  - name: cert
-    secret:
-      secretName: external-secrets-webhook
-  restartPolicy: Never
+  replicas: 2
+  selector:
+    matchLabels:
+      app: test-injector
+  template:
+    metadata:
+      labels:
+        app: test-injector
+        secrets-injection: enabled
+      annotations:
+        operator.1password.io/inject: app-1
+        operator.1password.io/version: "2-beta"
+    spec:
+      containers:
+        - name: app-1
+          image: alpine:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "USERNAME: $USERNAME"; \
+              echo "PASSWORD: $PASSWORD"; \
+              NUM1_INT=$(echo $NUM1 | awk '{print $1 + 0}'); \
+              NUM2_INT=$(echo $NUM2 | awk '{print $1 + 0}'); \
+              TOTAL=$(($NUM1_INT + $NUM2_INT)); \
+              echo "TOTAL: $TOTAL"; \
+              sleep 3600
+          env:
+            - name: OP_SERVICE_ACCOUNT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: service-account
+                  key: token
+            - name: Discord__Token
+              value: op://Gembercluster/discord-secret/token
+            - name: ConnectionStrings__Postgres
+              value: op://Gembercluster/postgress-secret/connectionstring
