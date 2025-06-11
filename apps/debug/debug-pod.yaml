@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment 
 metadata:
   name: botcs
-  namespace: botcs 
+  namespace: armabotcs 
 spec:
   replicas: 2
   selector:
