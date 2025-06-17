@@ -1,10 +1,5 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - prometheus-repo.yaml
-  - grafana-repo.yaml
-  - ingress-nginx-repo.yaml
-  - postgresql-repo.yaml
-  - metallb-repo.yaml
   - externalsecret-repo.yaml
   - onepassword-repo.yaml
