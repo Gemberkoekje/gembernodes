@@ -11,7 +11,7 @@ spec:
         kind: HelmRepository
         name: grafana
         namespace: monitoring
-      version: "3.5.0" # Use the latest stable version or your preferred version
+      version: "3.5.0"
   interval: 5m
   values:
     persistence:
@@ -20,20 +20,21 @@ spec:
       size: 10Gi
     service:
       type: ClusterIP
-    config:
-      schema_config:
-        configs:
-          - from: 2020-10-24
-            store: boltdb-shipper
-            object_store: filesystem
-            schema: v11
-            index:
-              prefix: index_
-              period: 24h
-      storage_config:
-        boltdb_shipper:
-          active_index_directory: /var/loki/index
-          cache_location: /var/loki/cache
-          shared_store: filesystem
-        filesystem:
-          directory: /var/loki/chunks
+    loki:
+      config:
+        schema_config:
+          configs:
+            - from: 2020-10-24
+              store: boltdb-shipper
+              object_store: filesystem
+              schema: v11
+              index:
+                prefix: index_
+                period: 24h
+        storage_config:
+          boltdb_shipper:
+            active_index_directory: /var/loki/index
+            cache_location: /var/loki/cache
+            shared_store: filesystem
+          filesystem:
+            directory: /var/loki/chunks
