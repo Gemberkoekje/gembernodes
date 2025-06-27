@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment 
 metadata:
   name: botcs
-  namespace: armabotcs 
+  namespace: flux-system 
 spec:
   replicas: 2
   selector:
