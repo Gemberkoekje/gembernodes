@@ -31,12 +31,10 @@ spec:
               echo "TOTAL: $TOTAL"; \
               sleep 3600
           env:
-            - name: OP_SERVICE_ACCOUNT_TOKEN
+            - name: ConnectionStrings__Postgres
               valueFrom:
                 secretKeyRef:
-                  name: service-account
-                  key: token
+                  name: postgress-secret
+                  key: connectionstring
             - name: Discord__Token
               value: op://Gembercluster/discord-secret/token
-            - name: ConnectionStrings__Postgres
-              value: op://Gembercluster/postgress-secret/connectionstring
