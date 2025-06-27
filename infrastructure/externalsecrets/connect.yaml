@@ -1,0 +1,30 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: connect
+  namespace: flux-system
+spec:
+  interval: 10m
+  chart:
+    spec:
+      chart: connect
+      version: "*"
+      sourceRef:
+        kind: HelmRepository
+        name: onepassword
+        namespace: flux-system
+  values:
+    operator:
+      create: true
+  valuesFrom:
+    - kind: Secret
+      name: 1password-credentials
+      valuesKey: 1password-credentials.json
+      targetPath: connect.credentials
+      optional: false
+    - kind: Secret
+      name: 1password-token-value
+      valuesKey: token
+      targetPath: operator.token.value
+      optional: false
+  # Make sure the Secret exists in the same namespace
