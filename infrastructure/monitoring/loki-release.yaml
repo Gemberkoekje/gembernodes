@@ -27,7 +27,7 @@ spec:
       ingester:
         chunk_encoding: snappy
       querier:
-        max_concurrent: 4
+        max_concurrent: 1
       pattern_ingester:
         enabled: true
       limits_config:
@@ -35,11 +35,11 @@ spec:
         volume_enabled: true
     deploymentMode: SimpleScalable
     backend:
-      replicas: 2
+      replicas: 1
     read:
-      replicas: 2
+      replicas: 1
     write:
-      replicas: 3
+      replicas: 1
     minio:
       enabled: true
     gateway:
