@@ -1,0 +1,39 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: loki
+  namespace: monitoring
+spec:
+  chart:
+    spec:
+      chart: loki
+      sourceRef:
+        kind: HelmRepository
+        name: grafana
+        namespace: monitoring
+      version: "3.5.0" # Use the latest stable version or your preferred version
+  interval: 5m
+  values:
+    persistence:
+      enabled: true
+      storageClassName: "local-path"
+      size: 10Gi
+    service:
+      type: ClusterIP
+    config:
+      schema_config:
+        configs:
+          - from: 2020-10-24
+            store: boltdb-shipper
+            object_store: filesystem
+            schema: v11
+            index:
+              prefix: index_
+              period: 24h
+      storage_config:
+        boltdb_shipper:
+          active_index_directory: /var/loki/index
+          cache_location: /var/loki/cache
+          shared_store: filesystem
+        filesystem:
+          directory: /var/loki/chunks

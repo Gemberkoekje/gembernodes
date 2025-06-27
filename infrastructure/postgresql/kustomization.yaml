@@ -1,0 +1,3 @@
+resources:
+  - postgresql-release.yaml
+  - postgresql-loadbalancer.yaml

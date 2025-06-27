@@ -1,0 +1,15 @@
+# filepath: ./kustomization.yaml
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: ingress
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure
+  interval: 10m0s
+  path: ./ingress
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system

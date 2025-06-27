@@ -4,3 +4,5 @@ resources:
 - armabotcs-namespace.yaml
 - flux-system-namespace.yaml
 - default-namespace.yaml
+- metallb-namespace.yaml
+- monitoring-namespace.yaml
