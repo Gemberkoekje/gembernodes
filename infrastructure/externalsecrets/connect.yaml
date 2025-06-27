@@ -16,12 +16,17 @@ spec:
   values:
     operator:
       create: true
+    connect:
+      credentialsPath: /etc/1password/credentials.json
+    extraVolumes:
+      - name: credentials
+        secret:
+          secretName: 1password-credentials
+    extraVolumeMounts:
+      - name: credentials
+        mountPath: /etc/1password
+        readOnly: true
   valuesFrom:
-    - kind: Secret
-      name: 1password-credentials
-      valuesKey: connect.credentials
-      targetPath: connect.credentials
-      optional: false
     - kind: Secret
       name: 1password-token-value
       valuesKey: token
