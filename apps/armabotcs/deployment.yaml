@@ -20,11 +20,8 @@ spec:
           image: ghcr.io/gemberkoekje/armabotcs:1.0.0-47
           command: ["dotnet", "ArmaBotCs.dll"] # <-- Add this line (replace with your actual entrypoint)
           resources:
-            limits:
-              memory: "512Mi"
-              cpu: "500m"
             requests:
-              memory: "256Mi"
+              memory: "512Mi"
               cpu: "250m"
           env:
             - name: ConnectionStrings__Postgres
