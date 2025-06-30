@@ -4,7 +4,7 @@ metadata:
   name: armabotcs
   namespace: armabotcs
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: armabotcs
