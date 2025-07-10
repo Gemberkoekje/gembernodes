@@ -17,7 +17,7 @@ spec:
         - name: ghcr-login
       containers:
         - name: armabotcs
-          image: ghcr.io/gemberkoekje/armabotcs:1.0.0-57
+          image: ghcr.io/gemberkoekje/armabotcs:1.0.0-58
           command: ["dotnet", "ArmaBotCs.dll"] # <-- Add this line (replace with your actual entrypoint)
           resources:
             requests:
