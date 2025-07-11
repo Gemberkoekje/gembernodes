@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: klaverjas-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: klaverjas-app
+  template:
+    metadata:
+      labels:
+        app: klaverjas-app
+    spec:
+      containers:
+        - name: web
+          image: webdevops/php-apache:8.2
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: website-content
+              mountPath: /app
+      volumes:
+        - name: website-content
+          persistentVolumeClaim:
+            claimName: klaverjas-content

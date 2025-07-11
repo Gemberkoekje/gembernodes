@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: klaverjas-ingress
+  annotations:
+    traefik.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /klaverjas(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: klaverjas-service
+                port:
+                  number: 80
