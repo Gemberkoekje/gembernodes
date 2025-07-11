@@ -51,3 +51,5 @@ spec:
       - grafana-piechart-panel
     initChownData:
       enabled: false
+    env:
+      GF_SECRETS_ENCRYPTION_PROVIDER: ""
