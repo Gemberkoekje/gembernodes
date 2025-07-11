@@ -6,3 +6,4 @@ resources:
 - default-namespace.yaml
 - metallb-namespace.yaml
 - monitoring-namespace.yaml
+- klaverjassen-namespace.yaml
