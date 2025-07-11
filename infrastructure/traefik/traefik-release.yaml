@@ -36,11 +36,13 @@ spec:
           claimName: traefik-acme
     ports:
       web:
-        expose: true
+        expose:
+          enabled: true
         port: 80
         protocol: TCP
       websecure:
-        expose: true
+        expose:
+          enabled: true
         port: 443
         protocol: TCP
     ingressRoute:
