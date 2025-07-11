@@ -7,3 +7,4 @@ resources:
 - metallb-namespace.yaml
 - monitoring-namespace.yaml
 - klaverjassen-namespace.yaml
+- mysql-namespace.yaml
