@@ -28,6 +28,7 @@ spec:
       storageClassName: "local-path"  # Set to your storage class if needed
       accessModes:
         - ReadWriteOnce
+      name: grafana  # <-- Add this line
     grafana.ini:
       server:
         root_url: "%(protocol)s://%(domain)s/grafana/"
