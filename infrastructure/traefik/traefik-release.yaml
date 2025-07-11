@@ -25,15 +25,7 @@ spec:
       path: /data
       size: 1Gi
       accessMode: ReadWriteOnce
-      storageClass: default
-    # Add this block for proper volume mounting
-    volumeMounts:
-      - name: data
-        mountPath: /data
-    volumes:
-      - name: data
-        persistentVolumeClaim:
-          claimName: traefik-acme
+      storageClass: "local-path"
     ports:
       web:
         expose:
