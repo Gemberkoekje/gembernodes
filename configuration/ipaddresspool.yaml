@@ -15,14 +15,3 @@ metadata:
 spec:
   ipAddressPools:
   - first-pool
----
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
-metadata:
-  name: default-ip-whitelist
-  namespace: mysql   # <-- Add this line
-spec:
-  ipWhiteList:
-    sourceRange:
-      - 10.0.0.0/8     # Your VPN or local network
-      - 192.168.0.0/16  
