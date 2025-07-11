@@ -17,6 +17,7 @@ spec:
   values:
     replicaCount: 1   # <-- Add this line
     admin:
+      adminUser: admin
       adminPassword: 6wMSwhm7
     service:
       type: ClusterIP
