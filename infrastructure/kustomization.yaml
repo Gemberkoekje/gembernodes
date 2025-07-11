@@ -6,3 +6,4 @@ resources:
 - monitoring
 - postgresql
 - traefik
+- pvcs
