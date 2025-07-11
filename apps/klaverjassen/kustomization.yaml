@@ -3,4 +3,3 @@ kind: Kustomization
 resources:
   - klaverjas-app.yaml
   - klaverjas-service.yaml
-  - klaverjas-ingress.yaml
