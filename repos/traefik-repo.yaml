@@ -6,3 +6,28 @@ metadata:
 spec:
   url: https://traefik.github.io/charts
   interval: 10m0s
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: GitRepository
+metadata:
+  name: traefik-crds
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://github.com/traefik/traefik
+  ref:
+    tag: v3.4.3
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: traefik-crds
+  namespace: flux-system
+spec:
+  interval: 10m
+  path: ./examples/kubernetes/crd
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: traefik-crds
+  wait: true
