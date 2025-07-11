@@ -21,11 +21,18 @@ spec:
       - "--certificatesresolvers.le.acme.httpchallenge.entrypoint=web"
     persistence:
       enabled: true
-      name: traefik-acme
-      accessMode: ReadWriteOnce
-      size: 1Gi
       path: /data
+      size: 1Gi
+      accessMode: ReadWriteOnce
       storageClass: default
+    # Add this block for proper volume mounting
+    volumeMounts:
+      - name: data
+        mountPath: /data
+    volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: traefik-acme
     ports:
       web:
         expose: true
