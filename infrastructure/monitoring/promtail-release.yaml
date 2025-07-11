@@ -39,6 +39,11 @@ spec:
             target_label: job
             replacement: "$1"
         pipeline_stages:
+          - json:
+              expressions:
+                detected_level
+          - labels:
+              detected_level: detected_level
           - match:
               selector: '{namespace!~"default"}'
               stages:
