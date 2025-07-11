@@ -10,7 +10,7 @@ spec:
     - host: db.example.com
       http:
         paths:
-          - path: /
+          - path: /phpmyadmin
             pathType: Prefix
             backend:
               service:
