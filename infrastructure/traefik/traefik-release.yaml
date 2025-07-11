@@ -4,11 +4,12 @@ metadata:
   name: traefik
   namespace: kube-system
 spec:
+  interval: 10m0s
   releaseName: traefik
   chart:
     spec:
       chart: traefik
-      version: ">=10.0.0"
+      version: "*"
       sourceRef:
         kind: HelmRepository
         name: traefik-charts
