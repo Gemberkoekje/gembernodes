@@ -7,6 +7,37 @@
   "schemaVersion": 38,
   "version": 1,
   "refresh": "10s",
+  "templating": {
+    "list": [
+      {
+        "name": "namespace",
+        "type": "query",
+        "datasource": { "type": "loki", "uid": null },
+        "query": "label_values(namespace)",
+        "refresh": 1,
+        "multi": true,
+        "includeAll": true
+      },
+      {
+        "name": "app",
+        "type": "query",
+        "datasource": { "type": "loki", "uid": null },
+        "query": "label_values(app)",
+        "refresh": 1,
+        "multi": true,
+        "includeAll": true
+      },
+      {
+        "name": "level",
+        "type": "query",
+        "datasource": { "type": "loki", "uid": null },
+        "query": "label_values(level)",
+        "refresh": 1,
+        "multi": true,
+        "includeAll": true
+      }
+    ]
+  },
   "panels": [
     {
       "type": "logs",
@@ -17,7 +48,7 @@
       },
       "targets": [
         {
-          "expr": "{namespace=~\".+\"}",
+          "expr": "{namespace=~\"$namespace\", app=~\"$app\", level=~\"$level\"}",
           "refId": "A"
         }
       ],

@@ -43,9 +43,9 @@ spec:
               selector: '{namespace!~"default"}'
               stages:
                 - regex:
-                    expression: '(?i)\b(warn|error)\b'
-                - drop:
-                    expression: '!(?i)\b(warn|error)\b'
+                    expression: '(?i)(info|warn|error|debug|trace)'
+                - labels:
+                    level: "$1"
     resources:
       limits:
         cpu: 200m
