@@ -13,7 +13,7 @@ spec:
         name: grafana
         namespace: monitoring
       version: "*"  # or latest stable
-  interval: 5m
+  interval: 6m
   values:
     replicaCount: 1   # <-- Add this line
     admin:
