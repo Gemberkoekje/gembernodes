@@ -6,6 +6,9 @@ metadata:
   annotations:
     traefik.ingress.kubernetes.io/router.middlewares: default-ip-whitelist@kubernetescrd
 spec:
+  stripPrefix:
+    prefixes:
+      - "/phpmyadmin"
   rules:
     - http:
         paths:
