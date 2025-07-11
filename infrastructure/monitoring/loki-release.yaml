@@ -11,7 +11,7 @@ spec:
       chart: loki
       sourceRef:
         kind: HelmRepository
-        name: grafana-chart
+        name: grafana
         namespace: flux-system
       interval: 60m
   values:
