@@ -12,7 +12,7 @@ spec:
         kind: HelmRepository
         name: grafana
         namespace: monitoring
-      version: "9.2.0"  # or latest stable
+      version: "*"  # or latest stable
   interval: 5m
   values:
     replicaCount: 1   # <-- Add this line
