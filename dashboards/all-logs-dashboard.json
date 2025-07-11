@@ -17,7 +17,7 @@
       },
       "targets": [
         {
-          "expr": "{namespace=~\".*\"}",
+          "expr": "{namespace=~\".+\"}",
           "refId": "A"
         }
       ],
