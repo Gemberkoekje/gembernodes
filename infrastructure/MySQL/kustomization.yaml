@@ -5,3 +5,4 @@ resources:
   - mysql-deploy.yaml
   - mysql-pvc.yaml
   - mysql-secret.yaml
+  - phpmyadmin-deploy.yaml

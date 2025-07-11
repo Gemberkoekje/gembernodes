@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: phpmyadmin-ingress
+  namespace: mysql
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: default-ip-whitelist@kubernetescrd
+spec:
+  rules:
+    - host: db.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: phpmyadmin
+                port:
+                  number: 80

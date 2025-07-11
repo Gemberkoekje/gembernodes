@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - grafana-ingress.yaml
   - klaverjas-ingress.yaml
+  - phpmyadmin-ingress.yaml
