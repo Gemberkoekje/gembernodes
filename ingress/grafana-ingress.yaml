@@ -4,7 +4,7 @@ metadata:
   name: grafana
   namespace: monitoring
 spec:
-  ingressClassName: traefik   # <--- Add this line
+  ingressClassName: nginx   # <--- Add this line
   rules:
     - http:
         paths:

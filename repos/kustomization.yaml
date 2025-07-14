@@ -6,4 +6,4 @@ resources:
   - metallb-repo.yaml
   - postgresql-repo.yaml
   - prometheus-repo.yaml
-  - traefik-repo.yaml
+  - nginx-repo.yaml

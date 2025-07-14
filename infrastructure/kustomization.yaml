@@ -5,6 +5,6 @@ resources:
 - metallb
 - monitoring
 - postgresql
-- traefik
+- nginx
 - pvcs
 - MySQL

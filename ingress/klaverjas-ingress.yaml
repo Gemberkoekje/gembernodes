@@ -4,12 +4,13 @@ metadata:
   name: klaverjas-ingress
   namespace: klaverjassen
   annotations:
-    traefik.ingress.kubernetes.io/rule-type: PathPrefixStrip
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
+  ingressClassName: nginx
   rules:
     - http:
         paths:
-          - path: /klaverjas
+          - path: /klaverjas(/|$)(.*)
             pathType: Prefix
             backend:
               service:
