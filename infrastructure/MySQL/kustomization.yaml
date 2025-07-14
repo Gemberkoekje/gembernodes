@@ -5,4 +5,5 @@ resources:
   - mysql-deploy.yaml
   - mysql-pvc.yaml
   - mysql-secret.yaml
+  - mysql-loadbalancer.yaml
   - phpmyadmin-deploy.yaml
