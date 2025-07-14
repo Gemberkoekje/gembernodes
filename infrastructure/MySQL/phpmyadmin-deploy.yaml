@@ -23,6 +23,8 @@ spec:
               value: mysql-deploy
             - name: PMA_PORT
               value: "3306"
+            - name: PMA_ABSOLUTE_URI
+              value: http://192.168.1.230/phpmyadmin/
 ---
 apiVersion: v1
 kind: Service
