@@ -1,7 +1,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: nginx-ingress
+  name: nginx-ingress-public
   namespace: kube-system
 spec:
   interval: 10m0s
@@ -15,6 +15,35 @@ spec:
         namespace: flux-system
   values:
     controller:
+      ingressClassResource:
+        name: nginx-public
+        enabled: true
+      ingressClass: nginx-public
       service:
         type: LoadBalancer
         loadBalancerIP: 192.168.1.230
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: nginx-ingress-private
+  namespace: kube-system
+spec:
+  interval: 10m0s
+  chart:
+    spec:
+      chart: ingress-nginx
+      version: "*"
+      sourceRef:
+        kind: HelmRepository
+        name: ingress-nginx-charts
+        namespace: flux-system
+  values:
+    controller:
+      ingressClassResource:
+        name: nginx-private
+        enabled: true
+      ingressClass: nginx-private
+      service:
+        type: LoadBalancer
+        loadBalancerIP: 192.168.1.234
