@@ -2,10 +2,12 @@ apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
   name: letsencrypt-prod
+  annotations:
+    flux.weave.works/depends-on: cert-manager:deployment/cert-manager-webhook
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: Arie_Hofland@hotmail.com  # Replace with your email
+    email: Arie_Hofland@hotmail.com
     privateKeySecretRef:
       name: letsencrypt-prod
     solvers:
