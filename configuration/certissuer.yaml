@@ -18,14 +18,4 @@ spec:
             metadata:
               annotations:
                 nginx.ingress.kubernetes.io/ssl-redirect: "false"
-            spec:
-              rules:
-              - http:
-                  paths:
-                  - path: /.well-known/acme-challenge
-                    pathType: Prefix
-                    backend:
-                      service:
-                        name: cert-manager-acme-http-solver
-                        port:
-                          number: 8089
+                nginx.ingress.kubernetes.io/use-regex: "true"
