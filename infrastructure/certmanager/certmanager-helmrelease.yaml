@@ -8,13 +8,14 @@ spec:
   chart:
     spec:
       chart: cert-manager
-      version: "1.13.x"
+      version: "*"
       sourceRef:
         kind: HelmRepository
         name: jetstack
         namespace: flux-system
   targetNamespace: cert-manager
-  createNamespace: true
+  install:
+    createNamespace: true
   values:
     installCRDs: true
     global:
