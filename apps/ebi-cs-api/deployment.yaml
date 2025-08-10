@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ebi-cs-api
+  namespace: ebi-cs-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ebi-cs-api
+  template:
+    metadata:
+      labels:
+        app: ebi-cs-api
+    spec:
+      imagePullSecrets:
+        - name: ghcr-login
+      containers:
+        - name: ebi-cs-api
+          image: ghcr.io/eosfrontier/ebi-cs-api:1.0.0-4
+          command: ["dotnet", "ebi-cs-api.webapi.dll"] # <-- Add this line (replace with your actual entrypoint)
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+          env:
+            - name: ConnectionStrings__Postgres
+              valueFrom:
+                secretKeyRef:
+                  name: postgress-secret
+                  key: connectionstring
+            - name: Discord__Token
+              valueFrom:
+                secretKeyRef:
+                  name: discord-secret
+                  key: token
