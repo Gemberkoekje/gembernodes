@@ -3,4 +3,3 @@ kind: Kustomization
 resources:
   - grafana-ingress.yaml
   - ebi-cs-api-ingress.yaml
-  - ebi-cs-api-internal-ingress.yaml
