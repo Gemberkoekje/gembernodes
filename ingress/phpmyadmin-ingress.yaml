@@ -6,7 +6,7 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/whitelist-source-range: 10.0.0.0/8,192.168.0.0/16
 spec:
-  ingressClassName: nginx-private
+  ingressClassName: nginx-public
   rules:
     - http:
         paths:

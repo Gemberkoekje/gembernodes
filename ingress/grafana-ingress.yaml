@@ -4,7 +4,7 @@ metadata:
   name: grafana
   namespace: monitoring
 spec:
-  ingressClassName: nginx-private   # <--- Add this line
+  ingressClassName: nginx-public   # <--- Add this line
   rules:
     - http:
         paths:
