@@ -23,3 +23,4 @@ spec:
             name: ebi-cs-api-service
             port:
               number: 80
+              
