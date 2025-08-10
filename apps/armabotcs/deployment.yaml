@@ -14,7 +14,7 @@ spec:
         app: armabotcs
     spec:
       imagePullSecrets:
-        - name: ghcr-login
+        - name: ghcr-secret
       containers:
         - name: armabotcs
           image: ghcr.io/gemberkoekje/armabotcs:1.0.0-58
