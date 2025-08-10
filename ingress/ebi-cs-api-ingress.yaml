@@ -4,17 +4,16 @@ metadata:
   name: ebi-cs-api-ingress
   namespace: ebi-cs-api
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   ingressClassName: nginx-public
   tls:
   - hosts:
-    - gemberkoekje.nl  # Replace with your actual domain
+    - gemberkoekje.nl
     secretName: ebi-cs-api-tls
   rules:
-  - host: gemberkoekje.nl  # Replace with your actual domain
+  - host: gemberkoekje.nl
     http:
       paths:
       - path: /ebi-cs-api
