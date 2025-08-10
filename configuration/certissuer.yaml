@@ -12,10 +12,6 @@ spec:
       name: letsencrypt-prod
     solvers:
     - http01:
-        ingress:
-          ingressClassName: nginx-public
-          ingressTemplate:
-            metadata:
-              annotations:
-                nginx.ingress.kubernetes.io/ssl-redirect: "false"
-                nginx.ingress.kubernetes.io/use-regex: "true"
+        gateway:
+          service:
+            type: NodePort
