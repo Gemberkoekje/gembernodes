@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ebi-cs-api-ingress
+  namespace: ebi-cs-api
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx-public
+  rules:
+    - http:
+        paths:
+          - path: /ebi-cs-api
+            pathType: Prefix
+            backend:
+              service:
+                name: ebi-cs-api-service
+                port:
+                  number: 80

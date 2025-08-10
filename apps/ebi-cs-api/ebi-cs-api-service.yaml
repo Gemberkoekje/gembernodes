@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ebi-cs-api-service
+  namespace: ebi-cs-api
+spec:
+  type: NodePort  # or LoadBalancer if using a cloud setup
+  selector:
+    app: ebi-cs-api
+  ports:
+    - port: 80
+      targetPort: 80
