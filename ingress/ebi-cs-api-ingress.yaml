@@ -6,6 +6,11 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    # Add this annotation to handle ACME challenges
+    nginx.ingress.kubernetes.io/server-snippet: |
+      location /.well-known/acme-challenge/ {
+        return 200 "OK";
+      }
 spec:
   ingressClassName: nginx-public
   tls:
@@ -16,6 +21,14 @@ spec:
   - host: gemberkoekje.nl
     http:
       paths:
+      # Add ACME challenge path first
+      - path: /.well-known/acme-challenge
+        pathType: Prefix
+        backend:
+          service:
+            name: ebi-cs-api-service
+            port:
+              number: 80
       - path: /ebi-cs-api
         pathType: Prefix
         backend:
