@@ -23,8 +23,7 @@ spec:
             name: ebi-cs-api-service
             port:
               number: 80
-  - host: 192.168.1.230
-    http:
+  - http:
       paths:
       - path: /ebi-cs-api
         pathType: Prefix
