@@ -7,3 +7,4 @@ resources:
   - postgresql-repo.yaml
   - prometheus-repo.yaml
   - nginx-repo.yaml
+  - certmanager-repo.yaml

@@ -8,3 +8,4 @@ resources:
 - nginx
 - pvcs
 - MySQL
+- certmanager
