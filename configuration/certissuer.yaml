@@ -14,7 +14,3 @@ spec:
     - http01:
         ingress:
           ingressClassName: nginx-public
-          podTemplate:
-            metadata:
-              annotations:
-                nginx.ingress.kubernetes.io/path-type: "Prefix"
