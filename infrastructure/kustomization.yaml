@@ -6,6 +6,4 @@ resources:
 - monitoring
 - postgresql
 - nginx
-- pvcs
-- MySQL
 - certmanager
