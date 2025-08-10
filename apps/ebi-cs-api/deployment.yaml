@@ -18,16 +18,12 @@ spec:
       containers:
         - name: ebi-cs-api
           image: ghcr.io/eosfrontier/ebi-cs-api:1.0.0-5
-          ports:
-            - containerPort: 80
           command: ["dotnet", "ebi-cs-api.webapi.dll"] # <-- Add this line (replace with your actual entrypoint)
           resources:
             requests:
               memory: "512Mi"
               cpu: "250m"
           env:
-            - name: ASPNETCORE_URLS
-              value: "http://+:80"
             - name: ConnectionStrings__Postgres
               valueFrom:
                 secretKeyRef:
