@@ -4,3 +4,4 @@ resources:
   - grafana-ingress.yaml
   - klaverjas-ingress.yaml
   - phpmyadmin-ingress.yaml
+  - ebi-cs-api-ingress.yaml

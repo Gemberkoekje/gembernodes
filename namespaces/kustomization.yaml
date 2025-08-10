@@ -8,3 +8,4 @@ resources:
 - monitoring-namespace.yaml
 - klaverjassen-namespace.yaml
 - mysql-namespace.yaml
+- ebi-cs-api-namespace.yaml
