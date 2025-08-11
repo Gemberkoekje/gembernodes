@@ -27,7 +27,7 @@ spec:
             - name: ConnectionStrings__Postgres
               valueFrom:
                 secretKeyRef:
-                  name: postgress-secret
+                  name: postgress-ebi-secret
                   key: connectionstring
             - name: Discord__Token
               valueFrom:
