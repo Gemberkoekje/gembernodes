@@ -5,3 +5,4 @@ resources:
   - discord-secret.yaml
   - postgress-secret.yaml
   - ebi-cs-api-service.yaml
+  - bearer-secret.yaml
