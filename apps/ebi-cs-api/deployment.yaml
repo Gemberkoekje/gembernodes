@@ -17,7 +17,7 @@ spec:
         - name: ghcr-login
       containers:
         - name: ebi-cs-api
-          image: ghcr.io/eosfrontier/ebi-cs-api:1.0.0-12
+          image: ghcr.io/eosfrontier/ebi-cs-api:1.0.0-13
           command: ["dotnet", "ebi-cs-api.webapi.dll"] # <-- Add this line (replace with your actual entrypoint)
           resources:
             requests:
