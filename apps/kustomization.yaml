@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - armabotcs
   - ebi-cs-api
+  - vortexplotboek

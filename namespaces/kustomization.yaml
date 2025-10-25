@@ -7,3 +7,4 @@ resources:
 - metallb-namespace.yaml
 - monitoring-namespace.yaml
 - ebi-cs-api-namespace.yaml
+- vortexplotboek-namespace.yaml
