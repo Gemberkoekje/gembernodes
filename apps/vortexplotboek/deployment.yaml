@@ -39,3 +39,13 @@ spec:
                 secretKeyRef:
                   name: bearer-secret
                   key: key
+            - name: Authentication__Google__ClientId
+              valueFrom:
+                secretKeyRef:
+                  name: oauth-google-vortexplotboek-secret
+                  key: client-id
+            - name: Authentication__Google__ClientSecret
+              valueFrom:
+                secretKeyRef:
+                  name: oauth-google-vortexplotboek-secret
+                  key: client-secret

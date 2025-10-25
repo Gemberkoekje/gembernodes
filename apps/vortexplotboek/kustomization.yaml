@@ -6,3 +6,4 @@ resources:
   - postgress-secret.yaml
   - vortexplotboek-service.yaml
   - bearer-secret.yaml
+  - oauth-secret.yaml
