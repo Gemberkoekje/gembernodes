@@ -6,7 +6,6 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   ingressClassName: nginx-public
   tls:
@@ -17,10 +16,11 @@ spec:
   - host: gemberkoekje.nl
     http:
       paths:
-      - path: /vortexplotboek(/|$)(.*)
-        pathType: ImplementationSpecific
+      - path: /vortexplotboek
+        pathType: Prefix
         backend:
           service:
             name: vortexplotboek-service
             port:
               number: 80
+              
