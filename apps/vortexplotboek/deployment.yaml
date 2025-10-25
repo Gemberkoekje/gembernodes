@@ -17,7 +17,7 @@ spec:
         - name: ghcr-login
       containers:
         - name: vortexplotboek
-          image: ghcr.io/gemberkoekje/vortexplotboekgenerator:1.0.0-7
+          image: ghcr.io/gemberkoekje/vortexplotboekgenerator:1.0.0-9
           command: ["dotnet", "VortexPlotboekGenerator.WebApp.dll"] # <-- Add this line (replace with your actual entrypoint)
           resources:
             requests:
@@ -48,4 +48,14 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: oauth-google-vortexplotboek-secret
+                  key: client-secret
+            - name: Authentication__Microsoft__ClientId
+              valueFrom:
+                secretKeyRef:
+                  name: oauth-microsoft-vortexplotboek-secret
+                  key: client-id
+            - name: Authentication__Microsoft__ClientSecret
+              valueFrom:
+                secretKeyRef:
+                  name: oauth-microsoft-vortexplotboek-secret
                   key: client-secret
