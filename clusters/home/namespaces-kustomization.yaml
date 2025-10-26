@@ -6,6 +6,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 10m0s
+  retryInterval: 5s
   path: ./namespaces
   prune: true
   sourceRef:

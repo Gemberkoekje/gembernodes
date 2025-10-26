@@ -8,6 +8,7 @@ spec:
   dependsOn:
     - name: infrastructure
     - name: apps
+  retryInterval: 5s
   interval: 10m0s
   path: ./ingress
   prune: true
