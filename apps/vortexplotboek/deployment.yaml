@@ -59,7 +59,6 @@ spec:
                 secretKeyRef:
                   name: oauth-microsoft-vortexplotboek-secret
                   key: client-secret
-                  env:
             - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
               value: "true"
             - name: ASPNETCORE_URLS
