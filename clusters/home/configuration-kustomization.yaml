@@ -8,7 +8,7 @@ spec:
   dependsOn:
     - name: infrastructure
   retryInterval: 5s
-  interval: 10m0s
+  interval: 1m0s
   path: ./configuration
   prune: true
   sourceRef:

@@ -9,7 +9,7 @@ spec:
     - name: infrastructure
     - name: apps
   retryInterval: 5s
-  interval: 10m0s
+  interval: 1m0s
   path: ./ingress
   prune: true
   sourceRef:
