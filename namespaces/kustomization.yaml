@@ -8,3 +8,4 @@ resources:
 - monitoring-namespace.yaml
 - ebi-cs-api-namespace.yaml
 - vortexplotboek-namespace.yaml
+- cov-website-namespace.yaml
