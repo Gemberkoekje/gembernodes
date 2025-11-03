@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - ebi-cs-api-ingress.yaml
   - vortexplotboek-ingress.yaml
+  - cov-website-ingress.yaml
