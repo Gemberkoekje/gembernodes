@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cov-website-service
+  namespace: cov-website
+spec:
+  type: NodePort  # or LoadBalancer if using a cloud setup
+  selector:
+    app: cov-website
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80

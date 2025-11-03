@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cov-website-ingress
+  namespace: cov-website
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx-public
+  tls:
+  - hosts:
+    - gemberkoekje.nl
+    secretName: ebi-cs-api-tls
+  rules:
+  - host: gemberkoekje.nl
+    http:
+      paths:
+      - path: /cov-website
+        pathType: Prefix
+        backend:
+          service:
+            name: cov-website-service
+            port:
+              number: 80
+              
