@@ -17,7 +17,7 @@ spec:
         - name: ghcr-login
       containers:
         - name: cov-website
-          image: ghcr.io/gemberkoekje/cov-website:e0353db-4
+          image: ghcr.io/gemberkoekje/cov-website:b6a1335-5
           imagePullPolicy: Always
           ports:
             - containerPort: 80
