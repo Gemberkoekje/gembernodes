@@ -40,3 +40,17 @@ spec:
               port: 80
             initialDelaySeconds: 15
             periodSeconds: 20
+          env:
+            - name: SMTP_HOST
+              value: "smtp.gmail.com"
+            - name: SMTP_PORT
+              value: "587"
+            - name: SMTP_FROM
+              value: "gemberkoekje@gmail.com"
+            - name: SMTP_USER
+              value: "gemberkoekje@gmail.com"
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mail-secret
+                  key: SMTP_PASSWORD
