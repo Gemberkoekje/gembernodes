@@ -17,7 +17,7 @@ spec:
         - name: ghcr-login
       containers:
         - name: vortexplotboek
-          image: ghcr.io/gemberkoekje/vortexplotboekgenerator:1.0.0-21
+          image: ghcr.io/gemberkoekje/vortexplotboekgenerator:1.0.0-22
           command: ["dotnet", "VortexPlotboekGenerator.WebApp.dll"] # <-- Add this line (replace with your actual entrypoint)
           resources:
             requests:
