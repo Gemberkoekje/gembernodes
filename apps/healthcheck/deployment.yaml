@@ -55,6 +55,16 @@ metadata:
 data:
   index.html: |
     <!doctype html>
-    <title>cluster healthy</title>
-    <h1>✅ All systems nominal</h1>
-    <p>{{ .Release.Name }} reports {{ .Values.clusterName }} alive at {{ .Values.timestamp }}</p>
+    <html>
+      <head>
+        <title>cluster healthy</title>
+      </head>
+      <body>
+        <h1>✅ All systems nominal</h1>
+        <p>{{ .Release.Name }} reports {{ .Values.clusterName }} alive at {{ .Values.timestamp }}</p>
+      </body>
+    </html>
+  ready: |
+    ok
+  live: |
+    ok
