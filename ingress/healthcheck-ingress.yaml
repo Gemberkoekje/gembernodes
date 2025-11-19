@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: healthcheck-ingress
+  namespace: cluster-healthcheck
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx-public
+  tls:
+  - hosts:
+    - gemberkoekje.nl
+    secretName: ebi-cs-api-tls
+  rules:
+  - host: gemberkoekje.nl
+    http:
+      paths:
+      - path: /healthcheck
+        pathType: Prefix
+        backend:
+          service:
+            name: cluster-healthcheck
+            port:
+              name: http
