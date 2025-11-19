@@ -9,3 +9,4 @@ resources:
 - ebi-cs-api-namespace.yaml
 - vortexplotboek-namespace.yaml
 - cov-website-namespace.yaml
+- cluster-healthcheck-namespace.yaml
