@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cluster-healthcheck
+  namespace: cluster-healthcheck
   labels:
     app: cluster-healthcheck
 spec:
@@ -44,6 +45,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: cluster-healthcheck-page
+  namespace: cluster-healthcheck
 data:
   index.html: |
     <!doctype html>
