@@ -18,13 +18,12 @@ spec:
       containers:
         - name: health
           image: caddy:2.10.2-alpine
-          command: ["caddy"]
+          command:
+            - caddy
           args:
-            - file-server
-            - --root
-            - /srv
-            - --listen
-            - :8080
+            - run
+            - --config
+            - /etc/caddy/Caddyfile
           ports:
             - containerPort: 8080
           readinessProbe:
@@ -42,10 +41,26 @@ spec:
           volumeMounts:
             - name: site
               mountPath: /srv
+            - name: caddy-config
+              mountPath: /etc/caddy
+              readOnly: true
       volumes:
         - name: site
           configMap:
             name: cluster-healthcheck-page
+            items:
+              - key: index.html
+                path: index.html
+              - key: ready
+                path: ready
+              - key: live
+                path: live
+        - name: caddy-config
+          configMap:
+            name: cluster-healthcheck-page
+            items:
+              - key: Caddyfile
+                path: Caddyfile
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -68,3 +83,25 @@ data:
     ok
   live: |
     ok
+  Caddyfile: |
+    :8080 {
+      handle_path /healthcheck* {
+        root * /srv
+        try_files {path} /index.html
+        file_server
+      }
+
+      handle_path /ready* {
+        root * /srv
+        file_server
+      }
+
+      handle_path /live* {
+        root * /srv
+        file_server
+      }
+
+      handle {
+        respond "not found" 404
+      }
+    }
