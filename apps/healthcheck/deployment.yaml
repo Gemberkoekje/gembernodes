@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cluster-healthcheck
+  labels:
+    app: cluster-healthcheck
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cluster-healthcheck
+  template:
+    metadata:
+      labels:
+        app: cluster-healthcheck
+    spec:
+      containers:
+        - name: health
+          image: ghcr.io/abiosoft/caddy:2.7.6-alpine
+          args: ["caddy", "file-server", "--listen", ":8080", "--browse", "--index", "index.html"]
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          volumeMounts:
+            - name: site
+              mountPath: /srv
+      volumes:
+        - name: site
+          configMap:
+            name: cluster-healthcheck-page
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-healthcheck-page
+data:
+  index.html: |
+    <!doctype html>
+    <title>cluster healthy</title>
+    <h1>✅ All systems nominal</h1>
+    <p>{{ .Release.Name }} reports {{ .Values.clusterName }} alive at {{ .Values.timestamp }}</p>

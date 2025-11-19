@@ -5,3 +5,4 @@ resources:
   - ebi-cs-api
   - vortexplotboek
   - cov-website
+  - healthcheck
