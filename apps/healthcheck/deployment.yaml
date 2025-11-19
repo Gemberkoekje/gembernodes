@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: health
-          image: ghcr.io/abiosoft/caddy:2.7.6-alpine
+          image: caddy:latest
           args: ["caddy", "file-server", "--listen", ":8080", "--browse", "--index", "index.html"]
           ports:
             - containerPort: 8080
