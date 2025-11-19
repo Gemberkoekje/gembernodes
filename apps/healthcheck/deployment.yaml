@@ -17,8 +17,14 @@ spec:
     spec:
       containers:
         - name: health
-          image: caddy:latest
-          args: ["caddy", "file-server", "--listen", ":8080", "--browse", "--index", "index.html"]
+          image: caddy:2.10.2-alpine
+          command: ["caddy"]
+          args:
+            - file-server
+            - --root
+            - /srv
+            - --listen
+            - :8080
           ports:
             - containerPort: 8080
           readinessProbe:
