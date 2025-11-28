@@ -5,3 +5,4 @@ resources:
   - vortexplotboek-ingress.yaml
   - cov-website-ingress.yaml
   - healthcheck-ingress.yaml
+  - fileserver-ingress.yaml
