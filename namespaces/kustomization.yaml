@@ -10,3 +10,4 @@ resources:
 - vortexplotboek-namespace.yaml
 - cov-website-namespace.yaml
 - cluster-healthcheck-namespace.yaml
+- fileserver-namespace.yaml

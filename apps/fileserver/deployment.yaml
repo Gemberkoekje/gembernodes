@@ -1,0 +1,35 @@
+# deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: file-server
+  namespace: file-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: file-server
+  template:
+    metadata:
+      labels:
+        app: file-server
+    spec:
+      containers:
+        - name: caddy
+          image: caddy:latest
+          command: ["caddy"]
+          args:
+            - file-server
+            - --root
+            - /srv
+            - --listen
+            - :8080
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: files
+              mountPath: /srv
+      volumes:
+        - name: files
+          persistentVolumeClaim:
+            name: file-server-pvc
