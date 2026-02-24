@@ -15,20 +15,22 @@ spec:
         app: file-server
     spec:
       containers:
-        - name: caddy
-          image: caddy:latest
-          command: ["caddy"]
+        - name: filebrowser
+          image: filebrowser/filebrowser:latest
           args:
-            - file-server
-            - --root
-            - /srv
-            - --listen
-            - :8080
+            - --root=/srv
+            - --port=8080
+            - --baseurl=/fileserver
+            - --database=/config/filebrowser.db
           ports:
             - containerPort: 8080
           volumeMounts:
             - name: files
               mountPath: /srv
+              subPath: files
+            - name: files
+              mountPath: /config
+              subPath: config
       volumes:
         - name: files
           persistentVolumeClaim:
