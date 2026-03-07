@@ -64,6 +64,11 @@ spec:
                 secretKeyRef:
                   name: oauth-google-refreshtoken
                   key: RefreshToken
+            - name: GoogleDrive__SyncApiKey
+              valueFrom:
+                secretKeyRef:
+                  name: sync-api-key
+                  key: key
             - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
               value: "true"
             - name: ASPNETCORE_URLS
