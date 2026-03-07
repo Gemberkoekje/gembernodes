@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: sync-google-drive
+  namespace: vortexplotboek
+spec:
+  schedule: "0 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: sync-google-drive
+              image: curlimages/curl:8.5.0
+              env:
+                - name: SYNC_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: sync-api-key
+                      key: key
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  curl -sf -X POST \
+                    http://vortexplotboek-service.vortexplotboek.svc.cluster.local/vortexplotboek/api/sync-google-drive \
+                    -H "X-Api-Key: ${SYNC_API_KEY}"
