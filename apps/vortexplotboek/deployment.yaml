@@ -59,6 +59,11 @@ spec:
                 secretKeyRef:
                   name: oauth-microsoft-vortexplotboek-secret
                   key: client-secret
+            - name: GoogleDrive__RefreshToken
+              valueFrom:
+                secretKeyRef:
+                  name: oauth-google-refreshtoken
+                  key: RefreshToken
             - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
               value: "true"
             - name: ASPNETCORE_URLS
