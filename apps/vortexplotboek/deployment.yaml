@@ -21,8 +21,10 @@ spec:
           command: ["dotnet", "VortexPlotboekGenerator.WebApp.dll"] # <-- Add this line (replace with your actual entrypoint)
           resources:
             requests:
-              memory: "512Mi"
+              memory: "1536Mi"
               cpu: "250m"
+            limits:
+              memory: "2Gi"
           env:
             - name: ConnectionStrings__Postgres
               valueFrom:
