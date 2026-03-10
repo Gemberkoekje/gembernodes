@@ -14,10 +14,10 @@ spec:
         app: vortexplotboek
     spec:
       imagePullSecrets:
-        - name: ghcr-login
+        - name: gitlab-login
       containers:
         - name: vortexplotboek
-          image: ghcr.io/gemberkoekje/vortexplotboekgenerator:1.0.0-75
+          image: registry.gitlab.com/vortexadventures/plotboek-generator:1.0.0-3
           command: ["dotnet", "VortexPlotboekGenerator.WebApp.dll"] # <-- Add this line (replace with your actual entrypoint)
           resources:
             requests:
