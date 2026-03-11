@@ -17,7 +17,7 @@ spec:
         - name: gitlab-login
       containers:
         - name: vortexplotboek
-          image: registry.gitlab.com/vortexadventures/plotboek-generator:1.0.0-18
+          image: registry.gitlab.com/vortexadventures/plotboek-generator:1.0.0-19
           command: ["dotnet", "VortexPlotboekGenerator.WebApp.dll"] # <-- Add this line (replace with your actual entrypoint)
           resources:
             requests:
