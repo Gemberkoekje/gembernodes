@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - armabotcs
   - ebi-cs-api
+  - ebi-cs-frontend
   - vortexplotboek
   - cov-website
   - healthcheck

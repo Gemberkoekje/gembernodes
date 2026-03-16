@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ebi-cs-frontend-ingress
+  namespace: ebi-cs-api
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx-public
+  tls:
+    - hosts:
+        - gemberkoekje.nl
+      secretName: ebi-cs-frontend-tls
+  rules:
+    - host: gemberkoekje.nl
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ebi-cs-frontend-service
+                port:
+                  number: 80
