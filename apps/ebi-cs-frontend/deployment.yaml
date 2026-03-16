@@ -17,7 +17,7 @@ spec:
         - name: ghcr-login
       containers:
         - name: ebi-cs-frontend
-          image: ghcr.io/eosfrontier/ebi-cs-frontend:latest # {"$imagepolicy": "flux-system:ebi-cs-frontend"}
+          image: ghcr.io/eosfrontier/ebi-cs-frontend:0.1.0-17
           ports:
             - containerPort: 80
           resources:
