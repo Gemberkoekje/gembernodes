@@ -17,8 +17,8 @@ spec:
         - name: ghcr-login
       containers:
         - name: ebi-cs-api
-          image: ghcr.io/eosfrontier/ebi-cs-api:1.0.0-14
-          command: ["dotnet", "ebi-cs-api.webapi.dll"] # <-- Add this line (replace with your actual entrypoint)
+          image: ghcr.io/eosfrontier/ebi-cs-api:1.0.0-14 # {"$imagepolicy": "flux-system:ebi-cs-api"}
+          command: ["dotnet", "ebi-cs-api.webapi.dll"]
           resources:
             requests:
               memory: "512Mi"
