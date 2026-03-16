@@ -6,6 +6,7 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: nginx-public
   tls:
@@ -16,7 +17,7 @@ spec:
     - host: gemberkoekje.nl
       http:
         paths:
-          - path: /
+          - path: /ebi-frontend
             pathType: Prefix
             backend:
               service:
