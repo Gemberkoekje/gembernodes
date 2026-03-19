@@ -39,3 +39,4 @@ spec:
                 secretKeyRef:
                   name: bearer-secret
                   key: key
+
