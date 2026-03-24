@@ -8,6 +8,7 @@ spec:
   chart:
     spec:
       chart: prometheus
+      version: "25.x"
       sourceRef:
         kind: HelmRepository
         name: prometheus-community

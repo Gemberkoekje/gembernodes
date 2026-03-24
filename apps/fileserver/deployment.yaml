@@ -16,14 +16,37 @@ spec:
     spec:
       containers:
         - name: filebrowser
-          image: filebrowser/filebrowser:latest
+          image: filebrowser/filebrowser:v2.31.2
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           args:
             - --root=/srv
             - --port=8080
             - --baseurl=/fileserver
             - --database=/config/filebrowser.db
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
           ports:
             - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /fileserver/
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /fileserver/
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
           volumeMounts:
             - name: files
               mountPath: /srv

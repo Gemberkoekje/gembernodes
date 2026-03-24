@@ -3,10 +3,18 @@ kind: Ingress
 metadata:
   name: grafana
   namespace: monitoring
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
-  ingressClassName: nginx-public   # <--- Add this line
+  ingressClassName: nginx-public
+  tls:
+    - hosts:
+        - gemberkoekje.nl
+      secretName: grafana-tls
   rules:
-    - http:
+    - host: gemberkoekje.nl
+      http:
         paths:
           - path: /grafana
             pathType: Prefix

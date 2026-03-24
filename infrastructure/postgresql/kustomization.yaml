@@ -1,3 +1,4 @@
 resources:
+  - postgresql-admin-secret.yaml
   - postgresql-release.yaml
   - postgresql-loadbalancer.yaml

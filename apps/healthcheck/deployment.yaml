@@ -24,6 +24,17 @@ spec:
             - run
             - --config
             - /etc/caddy/Caddyfile
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: "25m"
+              memory: "32Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
           ports:
             - containerPort: 8080
           readinessProbe:

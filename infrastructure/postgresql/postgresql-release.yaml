@@ -9,11 +9,12 @@ spec:
     kind: OCIRepository
     name: postgresql-chart
     namespace: flux-system
+  valuesFrom:
+    - kind: Secret
+      name: postgresql-admin-secret
+      valuesKey: postgresPassword
+      targetPath: global.postgresql.auth.postgresPassword
   values:
-    global:
-      postgresql:
-        auth:
-          postgresPassword: 6wMSwhm7
     primary:
       persistence:
         enabled: true

@@ -17,12 +17,33 @@ spec:
         - name: ghcr-login
       containers:
         - name: ebi-cs-api
-          image: ghcr.io/eosfrontier/ebi-cs-api:1.0.0-18
+          image: ghcr.io/eosfrontier/ebi-cs-api:1.0.0-19
           command: ["dotnet", "ebi-cs-api.webapi.dll"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 20
           resources:
             requests:
               memory: "512Mi"
               cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
           env:
             - name: ConnectionStrings__Postgres
               valueFrom:
