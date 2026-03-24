@@ -4,6 +4,7 @@ resources:
   - prometheus-release.yaml
   - grafana-secret.yaml
   - grafana-smtp-secret.yaml
+  - grafana-alerting-provisioning.yaml
   - grafana-release.yaml
   - loki-release.yaml
   - promtail-release.yaml

@@ -59,57 +59,15 @@ spec:
             access: proxy
             url: http://grafana-loki.monitoring.svc.cluster.local:3100
             isDefault: false
-    alerting:
-      contactpoints.yaml:
-        apiVersion: 1
-        contactPoints:
-          - orgId: 1
-            name: Email
-            receivers:
-              - uid: email-receiver
-                type: email
-                settings:
-                  addresses: Arie_Hofland@hotmail.com
-                  singleEmail: true
-      policies.yaml:
-        apiVersion: 1
-        policies:
-          - orgId: 1
-            receiver: Email
-            group_by: ['namespace', 'alertname']
-            group_wait: 1m
-            group_interval: 5m
-            repeat_interval: 12h
-      rules.yaml:
-        apiVersion: 1
-        groups:
-          - orgId: 1
-            name: error-logs
-            folder: Alerts
-            interval: 5m
-            rules:
-              - uid: loki-error-logs
-                title: Error logs detected
-                condition: A
-                data:
-                  - refId: A
-                    relativeTimeRange:
-                      from: 300
-                      to: 0
-                    datasourceUid: grafana-loki
-                    model:
-                      expr: 'sum(count_over_time({namespace=~"armabotcs|ebi-cs-api|vortexplotboek|cov-website|file-server"} |~ `(?i)error` [5m]))'
-                      queryType: range
-                      refId: A
-                noDataState: OK
-                execErrState: Error
-                for: 5m
-                annotations:
-                  summary: "Error logs detected in {{ $labels.namespace }}"
     plugins:
       - grafana-piechart-panel
     initChownData:
       enabled: false
+    extraConfigmapMounts:
+      - name: alerting-provisioning
+        mountPath: /etc/grafana/provisioning/alerting
+        configMap: grafana-alerting-provisioning
+        readOnly: true
     envFromSecret: grafana-smtp-secret
     env:
       GF_SECRETS_ENCRYPTION_PROVIDER: ""
