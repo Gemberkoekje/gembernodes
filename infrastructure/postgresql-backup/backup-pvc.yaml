@@ -4,6 +4,7 @@ metadata:
   name: postgresql-backup-pvc
   namespace: flux-system
 spec:
+  storageClassName: longhorn
   accessModes:
     - ReadWriteOnce
   resources:
