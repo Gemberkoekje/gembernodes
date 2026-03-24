@@ -17,25 +17,9 @@ spec:
   values:
     deploymentMode: SingleBinary
     resultsCache:
-      enabled: true
-      allocatedMemory: 1024
-      persistence:
-        enabled: false
-      statefulStrategy:
-        type: RollingUpdate
-      resources:
-        requests:
-          cpu: 100m
+      enabled: false
     chunksCache:
-      enabled: true
-      allocatedMemory: 1024
-      persistence:
-        enabled: false
-      statefulStrategy:
-        type: RollingUpdate
-      resources:
-        requests:
-          cpu: 100m
+      enabled: false
     lokiCanary:
       enabled: false
     test:
