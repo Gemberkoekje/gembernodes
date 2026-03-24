@@ -1,0 +1,15 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: system-upgrade-plans
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: infrastructure
+  retryInterval: 30s
+  interval: 1m0s
+  path: ./infrastructure/system-upgrade-plans
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
