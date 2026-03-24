@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgresql-backup
+  namespace: flux-system
+spec:
+  schedule: "0 2 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: pg-dump
+              image: postgres:16-alpine
+              command:
+                - sh
+                - -c
+                - |
+                  set -e
+                  FILENAME="/backup/postgres-$(date +%Y-%m-%d).sql.gz"
+                  echo "Starting backup to $FILENAME"
+                  pg_dumpall -h postgresql.flux-system.svc.cluster.local -U postgres | gzip > "$FILENAME"
+                  echo "Backup complete: $(du -sh $FILENAME)"
+                  # Rotate: keep last 7 dumps
+                  ls -t /backup/postgres-*.sql.gz | tail -n +8 | xargs -r rm -v
+              env:
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgresql-admin-secret
+                      key: postgresPassword
+              resources:
+                requests:
+                  cpu: "50m"
+                  memory: "64Mi"
+                limits:
+                  cpu: "200m"
+                  memory: "256Mi"
+              volumeMounts:
+                - name: backup
+                  mountPath: /backup
+          volumes:
+            - name: backup
+              persistentVolumeClaim:
+                claimName: postgresql-backup-pvc

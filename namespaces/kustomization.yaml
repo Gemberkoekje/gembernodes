@@ -11,3 +11,4 @@ resources:
 - cov-website-namespace.yaml
 - cluster-healthcheck-namespace.yaml
 - fileserver-namespace.yaml
+- longhorn-namespace.yaml

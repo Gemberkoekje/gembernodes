@@ -1,0 +1,3 @@
+resources:
+  - backup-pvc.yaml
+  - backup-cronjob.yaml

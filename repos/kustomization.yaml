@@ -8,3 +8,4 @@ resources:
   - prometheus-repo.yaml
   - nginx-repo.yaml
   - certmanager-repo.yaml
+  - longhorn-repo.yaml

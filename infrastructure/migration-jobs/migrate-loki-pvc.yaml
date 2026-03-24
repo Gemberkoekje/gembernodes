@@ -1,0 +1,64 @@
+# ONE-TIME migration: copies Loki data from local-path to Longhorn.
+#
+# Steps:
+#   1. Find the exact Loki PVC name:
+#      kubectl get pvc -n monitoring
+#      (likely "data-grafana-loki-0")
+#   2. Scale Loki down:     kubectl scale sts grafana-loki -n monitoring --replicas=0
+#   3. Apply this file:     kubectl apply -f migrate-loki-pvc.yaml
+#   4. Wait for completion: kubectl wait job/migrate-loki -n monitoring --for=condition=complete --timeout=600s
+#   5. Update loki-release.yaml singleBinary.persistence.storageClassName to "longhorn"
+#      and add singleBinary.persistence.existingClaim: "loki-longhorn"
+#   6. Delete old StatefulSet (orphan): kubectl delete sts grafana-loki -n monitoring --cascade=orphan
+#   7. Commit and let Flux reconcile
+#   8. Verify Loki is healthy, then delete old PVC:
+#      kubectl delete pvc data-grafana-loki-0 -n monitoring
+#   9. Clean up: kubectl delete -f migrate-loki-pvc.yaml
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: loki-longhorn
+  namespace: monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migrate-loki
+  namespace: monitoring
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: alpine:3.19
+          command:
+            - sh
+            - -c
+            - |
+              apk add --no-cache rsync
+              echo "Starting migration..."
+              rsync -av /source/ /target/
+              echo "Migration complete."
+              ls -lah /target/
+          volumeMounts:
+            - name: source
+              mountPath: /source
+            - name: target
+              mountPath: /target
+      volumes:
+        - name: source
+          persistentVolumeClaim:
+            # Update this to match the actual PVC name from: kubectl get pvc -n monitoring
+            claimName: data-grafana-loki-0
+        - name: target
+          persistentVolumeClaim:
+            claimName: loki-longhorn

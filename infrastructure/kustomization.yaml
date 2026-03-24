@@ -5,6 +5,8 @@ resources:
 - metallb
 - monitoring
 - postgresql
+- postgresql-backup
 - nginx
 - certmanager
 - pvcs
+- longhorn
