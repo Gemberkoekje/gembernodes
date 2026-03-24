@@ -18,11 +18,8 @@ spec:
               image: postgres:17-alpine
               securityContext:
                 allowPrivilegeEscalation: false
-                runAsNonRoot: true
                 capabilities:
                   drop: ["ALL"]
-                seccompProfile:
-                  type: RuntimeDefault
               command:
                 - sh
                 - -c
