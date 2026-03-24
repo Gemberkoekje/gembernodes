@@ -20,8 +20,6 @@ spec:
           image: ghcr.io/eosfrontier/ebi-cs-frontend:0.1.0-18
           securityContext:
             allowPrivilegeEscalation: false
-            capabilities:
-              drop: ["ALL"]
           ports:
             - containerPort: 80
           resources:

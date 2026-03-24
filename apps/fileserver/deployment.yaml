@@ -19,8 +19,6 @@ spec:
           image: filebrowser/filebrowser:v2.31.2
           securityContext:
             allowPrivilegeEscalation: false
-            capabilities:
-              drop: ["ALL"]
           args:
             - --root=/srv
             - --port=8080
