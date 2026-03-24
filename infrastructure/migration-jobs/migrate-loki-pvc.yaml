@@ -20,6 +20,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: loki-longhorn
   namespace: monitoring
+  annotations:
+    longhorn.io/volume-number-of-replicas: "1"
 spec:
   accessModes:
     - ReadWriteOnce
@@ -57,8 +59,7 @@ spec:
       volumes:
         - name: source
           persistentVolumeClaim:
-            # Update this to match the actual PVC name from: kubectl get pvc -n monitoring
-            claimName: data-grafana-loki-0
+            claimName: storage-grafana-loki-0
         - name: target
           persistentVolumeClaim:
             claimName: loki-longhorn
