@@ -23,4 +23,3 @@ spec:
         enabled: true
         size: 8Gi
         storageClass: longhorn
-        existingClaim: prometheus-server-longhorn
