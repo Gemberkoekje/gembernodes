@@ -6,13 +6,14 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
     nginx.ingress.kubernetes.io/whitelist-source-range: "192.168.0.0/16,10.0.0.0/8"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   ingressClassName: nginx-public
   rules:
     - http:
         paths:
-          - path: /longhorn
-            pathType: Prefix
+          - path: /longhorn(/|$)(.*)
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: longhorn-frontend
