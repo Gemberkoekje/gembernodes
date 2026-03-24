@@ -15,7 +15,14 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: pg-dump
-              image: postgres:16-alpine
+              image: postgres:17-alpine
+              securityContext:
+                allowPrivilegeEscalation: false
+                runAsNonRoot: true
+                capabilities:
+                  drop: ["ALL"]
+                seccompProfile:
+                  type: RuntimeDefault
               command:
                 - sh
                 - -c
