@@ -16,6 +16,8 @@ spec:
       targetPath: global.postgresql.auth.postgresPassword
   values:
     primary:
+      service:
+        type: ClusterIP
       persistence:
         enabled: true
         size: 8Gi
