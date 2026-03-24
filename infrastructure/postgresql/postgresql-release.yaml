@@ -19,4 +19,4 @@ spec:
       persistence:
         enabled: true
         size: 8Gi
-        storageClass: "local-path" # Set to your desired StorageClass, or leave empty for default
+        storageClass: "longhorn" # Set to your desired StorageClass, or leave empty for default
