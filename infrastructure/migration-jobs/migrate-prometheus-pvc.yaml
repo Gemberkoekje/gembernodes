@@ -1,0 +1,60 @@
+# ONE-TIME migration: copies Prometheus data from local-path to Longhorn.
+#
+# Steps:
+#   1. Scale Prometheus down:  kubectl scale deploy prometheus-server -n monitoring --replicas=0
+#   2. Apply this file:        kubectl apply -f infrastructure/migration-jobs/migrate-prometheus-pvc.yaml
+#   3. Wait for completion:    kubectl wait job/migrate-prometheus -n monitoring --for=condition=complete --timeout=600s
+#   4. Verify:                 kubectl logs -n monitoring -l job-name=migrate-prometheus
+#   5. Commit prometheus-release.yaml change and let Flux reconcile
+#   6. Verify Prometheus is healthy, then delete old PVC:
+#      kubectl delete pvc prometheus-server -n monitoring
+#   7. Clean up: kubectl delete -f infrastructure/migration-jobs/migrate-prometheus-pvc.yaml
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-server-longhorn
+  namespace: monitoring
+  annotations:
+    longhorn.io/volume-number-of-replicas: "2"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 8Gi
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migrate-prometheus
+  namespace: monitoring
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: alpine:3.19
+          command:
+            - sh
+            - -c
+            - |
+              apk add --no-cache rsync
+              echo "Starting migration..."
+              rsync -av /source/ /target/
+              echo "Migration complete."
+              ls -lah /target/
+          volumeMounts:
+            - name: source
+              mountPath: /source
+            - name: target
+              mountPath: /target
+      volumes:
+        - name: source
+          persistentVolumeClaim:
+            claimName: prometheus-server
+        - name: target
+          persistentVolumeClaim:
+            claimName: prometheus-server-longhorn

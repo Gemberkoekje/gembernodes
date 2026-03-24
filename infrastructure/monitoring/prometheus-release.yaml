@@ -18,3 +18,9 @@ spec:
       enabled: false
     pushgateway:
       enabled: false
+    server:
+      persistentVolume:
+        enabled: true
+        size: 8Gi
+        storageClass: longhorn
+        existingClaim: prometheus-server-longhorn
