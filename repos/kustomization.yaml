@@ -9,3 +9,4 @@ resources:
   - nginx-repo.yaml
   - certmanager-repo.yaml
   - longhorn-repo.yaml
+  - kured-repo.yaml

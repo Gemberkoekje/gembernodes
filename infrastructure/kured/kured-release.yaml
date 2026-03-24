@@ -1,0 +1,26 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kured
+  namespace: kube-system
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: kured
+      version: "5.x"
+      sourceRef:
+        kind: HelmRepository
+        name: kured
+        namespace: flux-system
+  values:
+    configuration:
+      # Only reboot between 02:00 and 05:00 to avoid disrupting daytime usage
+      startTime: "2"
+      endTime: "5"
+      # Wait 5 minutes between rebooting each node so the cluster stabilises
+      period: 5m
+    tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule

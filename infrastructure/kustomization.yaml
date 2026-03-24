@@ -10,3 +10,5 @@ resources:
 - certmanager
 - pvcs
 - longhorn
+- kured
+- system-upgrade
