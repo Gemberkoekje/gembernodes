@@ -6,9 +6,6 @@ metadata:
   namespace: file-server
 spec:
   replicas: 1
-  strategy:
-    type: Recreate
-    rollingUpdate: null
   selector:
     matchLabels:
       app: file-server
@@ -19,35 +16,15 @@ spec:
     spec:
       containers:
         - name: filebrowser
-          image: filebrowser/filebrowser:v2.62.1
-          securityContext:
-            allowPrivilegeEscalation: false
+          image: filebrowser/filebrowser:latest
+          imagePullPolicy: Always
           args:
             - --root=/srv
             - --port=8080
-            - --baseURL=/fileserver
+            - --baseurl=/fileserver
             - --database=/config/filebrowser.db
-          resources:
-            requests:
-              cpu: "50m"
-              memory: "128Mi"
-            limits:
-              cpu: "200m"
-              memory: "256Mi"
           ports:
             - containerPort: 8080
-          readinessProbe:
-            httpGet:
-              path: /fileserver/
-              port: 8080
-            initialDelaySeconds: 5
-            periodSeconds: 10
-          livenessProbe:
-            httpGet:
-              path: /fileserver/
-              port: 8080
-            initialDelaySeconds: 15
-            periodSeconds: 20
           volumeMounts:
             - name: files
               mountPath: /srv
