@@ -1,2 +1,3 @@
 resources:
   - longhorn-release.yaml
+  - longhorn-internal-ingress.yaml
