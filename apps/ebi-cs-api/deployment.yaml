@@ -24,22 +24,22 @@ spec:
             capabilities:
               drop: ["ALL"]
           ports:
-            - containerPort: 80
+            - containerPort: 8080
           startupProbe:
             httpGet:
-              path: /health
-              port: 80
+              path: /ebi-cs-api/health
+              port: 8080
             failureThreshold: 18
             periodSeconds: 5
           readinessProbe:
             httpGet:
-              path: /health
-              port: 80
+              path: /ebi-cs-api/health
+              port: 8080
             periodSeconds: 10
           livenessProbe:
             httpGet:
-              path: /health
-              port: 80
+              path: /ebi-cs-api/health
+              port: 8080
             periodSeconds: 20
           resources:
             requests:
