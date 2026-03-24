@@ -6,6 +6,8 @@ metadata:
   namespace: file-server
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: file-server
@@ -16,13 +18,13 @@ spec:
     spec:
       containers:
         - name: filebrowser
-          image: filebrowser/filebrowser@sha256:a7b81cab28cf93de4c3ac97403d92f38d23191d7247e9c37611d4afa2d8d0c69
+          image: filebrowser/filebrowser:v2.62.1
           securityContext:
             allowPrivilegeEscalation: false
           args:
             - --root=/srv
             - --port=8080
-            - --baseurl=/fileserver
+            - --baseURL=/fileserver
             - --database=/config/filebrowser.db
           resources:
             requests:
