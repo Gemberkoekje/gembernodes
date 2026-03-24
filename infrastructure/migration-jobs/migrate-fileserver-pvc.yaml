@@ -18,6 +18,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: file-server-pvc-longhorn
   namespace: file-server
+  annotations:
+    longhorn.io/volume-number-of-replicas: "1"
 spec:
   accessModes:
     - ReadWriteOnce
