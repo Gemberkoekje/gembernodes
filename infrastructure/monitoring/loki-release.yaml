@@ -20,7 +20,7 @@ spec:
       enabled: true
       allocatedMemory: 1024
       persistence:
-        enabled: true
+        enabled: false
       statefulStrategy:
         type: RollingUpdate
       resources:
@@ -30,7 +30,7 @@ spec:
       enabled: true
       allocatedMemory: 1024
       persistence:
-        enabled: true
+        enabled: false
       statefulStrategy:
         type: RollingUpdate
       resources:
@@ -64,7 +64,8 @@ spec:
       replicas: 1
       persistence:
         enabled: true
-        storageClassName: "local-path"
+        storageClassName: "longhorn"
+        existingClaim: loki-longhorn
         accessModes:
           - ReadWriteOnce
         size: 10Gi
