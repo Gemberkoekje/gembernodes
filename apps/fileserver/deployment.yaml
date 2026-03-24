@@ -16,10 +16,7 @@ spec:
     spec:
       containers:
         - name: filebrowser
-          # TODO: pin to specific version - check running pod first:
-          # kubectl get pod -n file-server -o jsonpath='{.items[0].spec.containers[0].image}'
-          image: filebrowser/filebrowser:latest
-          imagePullPolicy: Always
+          image: filebrowser/filebrowser@sha256:a7b81cab28cf93de4c3ac97403d92f38d23191d7247e9c37611d4afa2d8d0c69
           securityContext:
             allowPrivilegeEscalation: false
           args:
