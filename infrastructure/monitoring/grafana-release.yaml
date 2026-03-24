@@ -27,10 +27,10 @@ spec:
     persistence:
       enabled: true
       size: 10Gi
-      storageClassName: "local-path"  # Set to your storage class if needed
+      storageClassName: "longhorn"
       accessModes:
         - ReadWriteOnce
-      name: grafana  # <-- Add this line
+      existingClaim: grafana-longhorn
     grafana.ini:
       server:
         root_url: "%(protocol)s://%(domain)s/grafana/"
