@@ -8,3 +8,4 @@ resources:
   - bearer-secret.yaml
   - oauth-secret.yaml
   - sync-cronjob.yaml
+  - gemini-secret.yaml

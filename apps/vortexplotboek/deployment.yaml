@@ -98,3 +98,8 @@ spec:
               value: "true"
             - name: ASPNETCORE_URLS
               value: "http://+:8080"
+            - name: Gemini__ApiKey
+              valueFrom:
+                secretKeyRef:
+                  name: gemini-secret
+                  key: apikey
