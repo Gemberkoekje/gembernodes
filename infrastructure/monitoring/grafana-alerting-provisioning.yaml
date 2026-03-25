@@ -34,7 +34,7 @@ data:
         rules:
           - uid: loki-error-logs
             title: Error logs detected
-            condition: A
+            condition: B
             data:
               - refId: A
                 relativeTimeRange:
@@ -45,6 +45,23 @@ data:
                   expr: 'sum(count_over_time({namespace=~"armabotcs|ebi-cs-api|vortexplotboek|cov-website|file-server"} |~ `(?i)error` [5m]))'
                   queryType: range
                   refId: A
+              - refId: B
+                datasourceUid: "__expr__"
+                model:
+                  type: reduce
+                  refId: B
+                  conditions:
+                    - evaluator:
+                        type: gt
+                        params:
+                          - 0
+                      operator:
+                        type: and
+                      query:
+                        params:
+                          - A
+                      reducer:
+                        type: last
             noDataState: OK
             execErrState: Error
             for: 5m
