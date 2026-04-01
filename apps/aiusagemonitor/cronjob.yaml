@@ -1,0 +1,52 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: aiusagemonitor
+  namespace: aiusagemonitor
+spec:
+  schedule: "0 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          imagePullSecrets:
+            - name: ghcr-login
+          containers:
+            - name: aiusagemonitor
+              image: ghcr.io/gemberkoekje/aiusagemonitor:latest
+              imagePullPolicy: Always
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 250m
+                  memory: 256Mi
+              envFrom:
+                - secretRef:
+                    name: aiusagemonitor-secrets
+              env:
+                - name: ASPNETCORE_ENVIRONMENT
+                  value: "Production"
+                - name: Smtp__Host
+                  value: "smtp.gmail.com"
+                - name: Smtp__Port
+                  value: "587"
+                - name: Smtp__User
+                  value: "gemberkoekje@gmail.com"
+                - name: Smtp__Password
+                  valueFrom:
+                    secretKeyRef:
+                      name: mail-secret
+                      key: SMTP_PASSWORD
+                - name: Email__From
+                  value: "gemberkoekje@gmail.com"
