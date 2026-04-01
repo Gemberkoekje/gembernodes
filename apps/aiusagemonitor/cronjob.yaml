@@ -13,9 +13,8 @@ spec:
       backoffLimit: 2
       template:
         spec:
+          serviceAccountName: default
           restartPolicy: OnFailure
-          imagePullSecrets:
-            - name: ghcr-login
           containers:
             - name: aiusagemonitor
               image: ghcr.io/gemberkoekje/aiusagemonitor:latest
