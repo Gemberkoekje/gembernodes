@@ -17,7 +17,7 @@ spec:
         - name: ghcr-login
       containers:
         - name: ebi-cs-frontend
-          image: ghcr.io/eosfrontier/ebi-cs-frontend:0.1.0-22
+          image: ghcr.io/eosfrontier/ebi-cs-frontend:0.1.0-23
           securityContext:
             allowPrivilegeEscalation: false
           ports:
