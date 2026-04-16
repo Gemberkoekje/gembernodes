@@ -27,18 +27,19 @@ spec:
             - containerPort: 8080
           startupProbe:
             httpGet:
-              path: /
+              path: /healthz
               port: 8080
-            failureThreshold: 18
-            periodSeconds: 5
+            failureThreshold: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
           readinessProbe:
             httpGet:
-              path: /
+              path: /healthz
               port: 8080
             periodSeconds: 10
           livenessProbe:
             httpGet:
-              path: /
+              path: /healthz
               port: 8080
             periodSeconds: 20
           resources:
