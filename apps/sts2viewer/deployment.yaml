@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sts2viewer
+  namespace: sts2viewer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sts2viewer
+  template:
+    metadata:
+      labels:
+        app: sts2viewer
+    spec:
+      imagePullSecrets:
+        - name: ghcr-login
+      containers:
+        - name: sts2viewer
+          image: ghcr.io/gemberkoekje/sts2viewer:latest
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - containerPort: 8080
+          startupProbe:
+            httpGet:
+              path: /
+              port: 8080
+            failureThreshold: 18
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            periodSeconds: 20
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Production"
+            - name: Database__ConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: sts2viewer-secrets
+                  key: Database__ConnectionString
+            - name: Llm__AnthropicApiKey
+              valueFrom:
+                secretKeyRef:
+                  name: sts2viewer-secrets
+                  key: Llm__AnthropicApiKey
+            - name: Llm__OpenAiApiKey
+              valueFrom:
+                secretKeyRef:
+                  name: sts2viewer-secrets
+                  key: Llm__OpenAiApiKey

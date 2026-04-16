@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sts2viewer-service
+  namespace: sts2viewer
+spec:
+  selector:
+    app: sts2viewer
+  ports:
+    - port: 80
+      targetPort: 8080

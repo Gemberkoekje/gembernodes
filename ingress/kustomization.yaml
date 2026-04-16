@@ -7,3 +7,4 @@ resources:
   - cov-website-ingress.yaml
   - healthcheck-ingress.yaml
   - fileserver-ingress.yaml
+  - sts2viewer-ingress.yaml
