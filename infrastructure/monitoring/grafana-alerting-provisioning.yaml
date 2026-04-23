@@ -48,7 +48,7 @@ data:
               - refId: B
                 datasourceUid: "__expr__"
                 model:
-                  type: reduce
+                  type: classic_conditions
                   refId: B
                   conditions:
                     - evaluator:
