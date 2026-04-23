@@ -52,7 +52,7 @@ spec:
         existingClaim: loki-longhorn
         accessModes:
           - ReadWriteOnce
-        size: 10Gi
+        size: 5Gi
     read:
       replicas: 0
     backend:
