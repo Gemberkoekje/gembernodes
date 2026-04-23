@@ -19,3 +19,4 @@ spec:
       defaultClassReplicaCount: 2
     defaultSettings:
       defaultReplicaCount: 2
+      defaultDataLocality: best-effort
