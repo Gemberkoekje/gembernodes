@@ -1,0 +1,55 @@
+# deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vscode-tunnel
+  namespace: vscode-tunnel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vscode-tunnel
+  template:
+    metadata:
+      labels:
+        app: vscode-tunnel
+    spec:
+      containers:
+        - name: vscode-tunnel
+          image: ubuntu:24.04
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              set -e
+              apt-get update -qq && apt-get install -y -qq curl
+              curl -Lk 'https://code.visualstudio.com/sha/download?build=stable&os=cli-alpine-x64' \
+                --output /tmp/vscode_cli.tar.gz
+              tar -xf /tmp/vscode_cli.tar.gz -C /usr/local/bin
+              code tunnel user login --provider github --access-token "$GITHUB_TOKEN"
+              exec code tunnel --accept-server-license-terms --name gembercluster
+          env:
+            - name: HOME
+              value: /config
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: vscode-tunnel-github-token
+                  key: token
+          volumeMounts:
+            - name: data
+              mountPath: /workspace
+              subPath: workspace
+            - name: data
+              mountPath: /config
+              subPath: config
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: vscode-tunnel-pvc-longhorn

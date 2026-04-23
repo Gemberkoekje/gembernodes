@@ -9,3 +9,4 @@ resources:
   - healthcheck
   - fileserver
   - sts2viewer
+  - vscode-tunnel
