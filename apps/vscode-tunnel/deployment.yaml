@@ -25,16 +25,10 @@ spec:
               curl -Lk 'https://code.visualstudio.com/sha/download?build=stable&os=cli-alpine-x64' \
                 --output /tmp/vscode_cli.tar.gz
               tar -xf /tmp/vscode_cli.tar.gz -C /usr/local/bin
-              code tunnel user login --provider github --access-token "$GITHUB_TOKEN"
               exec code tunnel --accept-server-license-terms --name gembercluster
           env:
             - name: HOME
               value: /config
-            - name: GITHUB_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: vscode-tunnel-github-token
-                  key: token
           volumeMounts:
             - name: data
               mountPath: /workspace
