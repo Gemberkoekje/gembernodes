@@ -23,11 +23,22 @@ spec:
               set -e
               mkdir -p /config/.vscode-cli /config/.vscode-serverdata
               if ! command -v code >/dev/null 2>&1; then
+                mkdir -p /tmp/vscode-cli
                 curl -Lk 'https://code.visualstudio.com/sha/download?build=stable&os=cli-linux-x64' \
                   --output /tmp/vscode_cli.tar.gz
-                tar -xf /tmp/vscode_cli.tar.gz -C /usr/local/bin
+                tar -xf /tmp/vscode_cli.tar.gz -C /tmp/vscode-cli
+                CODE_PATH="$(find /tmp/vscode-cli -type f -name code | head -n 1)"
+                if [ -n "$CODE_PATH" ]; then
+                  chmod +x "$CODE_PATH"
+                  ln -sf "$CODE_PATH" /usr/local/bin/code
+                fi
               fi
-              exec code tunnel \
+              CODE_BIN="$(command -v code || command -v code-insiders || true)"
+              if [ -z "$CODE_BIN" ]; then
+                echo "code or code-insiders is not installed" >&2
+                exit 1
+              fi
+              exec "$CODE_BIN" tunnel \
                 --accept-server-license-terms \
                 --name gembercluster \
                 --cli-data-dir /config/.vscode-cli \
