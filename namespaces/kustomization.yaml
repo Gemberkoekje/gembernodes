@@ -14,3 +14,4 @@ resources:
 - fileserver-namespace.yaml
 - longhorn-namespace.yaml
 - sts2viewer-namespace.yaml
+- vscode-tunnel-namespace.yaml
