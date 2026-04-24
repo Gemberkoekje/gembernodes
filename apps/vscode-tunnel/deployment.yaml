@@ -22,13 +22,20 @@ spec:
             - |
               set -e
               apt-get update -qq && apt-get install -y -qq curl
+              mkdir -p /config/.vscode-cli /config/.vscode-userdata
               curl -Lk 'https://code.visualstudio.com/sha/download?build=stable&os=cli-alpine-x64' \
                 --output /tmp/vscode_cli.tar.gz
               tar -xf /tmp/vscode_cli.tar.gz -C /usr/local/bin
-              exec code tunnel --accept-server-license-terms --name gembercluster
+              exec code tunnel \
+                --accept-server-license-terms \
+                --name gembercluster \
+                --cli-data-dir /config/.vscode-cli \
+                --user-data-dir /config/.vscode-userdata
           env:
             - name: HOME
               value: /config
+            - name: XDG_CONFIG_HOME
+              value: /config/.config
           volumeMounts:
             - name: data
               mountPath: /workspace
