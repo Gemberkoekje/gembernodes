@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: vscode-tunnel-pvc-longhorn
-  namespace: vscode-tunnel
+  name: prometheus-server-longhorn
+  namespace: monitoring
   annotations:
-    longhorn.io/volume-number-of-replicas: "1"
+    longhorn.io/volume-number-of-replicas: "2"
 spec:
   accessModes:
     - ReadWriteOnce

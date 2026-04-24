@@ -3,3 +3,6 @@ kind: Kustomization
 resources:
 - fileserver.yaml
 - vscode-tunnel.yaml
+- grafana.yaml
+- loki.yaml
+- prometheus.yaml
