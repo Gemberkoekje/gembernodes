@@ -21,29 +21,16 @@ spec:
           args:
             - |
               set -e
-              mkdir -p /config/.vscode-cli /config/.vscode-serverdata
-              CODE_BIN="$(command -v code || command -v code-insiders || true)"
-              if [ -z "$CODE_BIN" ]; then
-                mkdir -p /tmp/vscode-cli
-                curl -fsSL 'https://code.visualstudio.com/sha/download?build=stable&os=cli-linux-x64' \
-                  -o /tmp/vscode_cli.tar.gz
-                tar -xzf /tmp/vscode_cli.tar.gz -C /tmp/vscode-cli
-                CODE_PATH="$(find /tmp/vscode-cli -type f \( -name code -o -name code-insiders -o -name code-cli \) | head -n 1)"
-                if [ -z "$CODE_PATH" ]; then
-                  CODE_PATH="$(find /tmp/vscode-cli -type f -perm -111 | head -n 1)"
-                fi
-                if [ -z "$CODE_PATH" ]; then
-                  echo "vscode cli extracted, but no executable was found" >&2
-                  exit 1
-                fi
-                chmod +x "$CODE_PATH"
-                CODE_BIN="$CODE_PATH"
-              fi
-              exec "$CODE_BIN" tunnel \
+              apt-get update -qq && apt-get install -y -qq curl
+              mkdir -p /config/.vscode-cli /config/.vscode-userdata
+              curl -Lk 'https://code.visualstudio.com/sha/download?build=stable&os=cli-alpine-x64' \
+                --output /tmp/vscode_cli.tar.gz
+              tar -xf /tmp/vscode_cli.tar.gz -C /usr/local/bin
+              exec code tunnel \
                 --accept-server-license-terms \
                 --name gembercluster \
                 --cli-data-dir /config/.vscode-cli \
-                --server-data-dir /config/.vscode-serverdata
+                --user-data-dir /config/.vscode-userdata
           env:
             - name: HOME
               value: /config
