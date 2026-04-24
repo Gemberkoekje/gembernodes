@@ -16,16 +16,17 @@ spec:
     spec:
       containers:
         - name: vscode-tunnel
-          image: ubuntu:24.04
+          image: mcr.microsoft.com/devcontainers/dotnet
           command: ["/bin/bash", "-c"]
           args:
             - |
               set -e
-              apt-get update -qq && apt-get install -y -qq curl
               mkdir -p /config/.vscode-cli /config/.vscode-serverdata
-              curl -Lk 'https://code.visualstudio.com/sha/download?build=stable&os=cli-alpine-x64' \
-                --output /tmp/vscode_cli.tar.gz
-              tar -xf /tmp/vscode_cli.tar.gz -C /usr/local/bin
+              if ! command -v code >/dev/null 2>&1; then
+                curl -Lk 'https://code.visualstudio.com/sha/download?build=stable&os=cli-linux-x64' \
+                  --output /tmp/vscode_cli.tar.gz
+                tar -xf /tmp/vscode_cli.tar.gz -C /usr/local/bin
+              fi
               exec code tunnel \
                 --accept-server-license-terms \
                 --name gembercluster \
