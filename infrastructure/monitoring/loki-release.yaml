@@ -46,13 +46,15 @@ spec:
         chunk_encoding: zstd
     singleBinary:
       replicas: 1
+      extraVolumeMounts:
+        - name: loki-data
+          mountPath: /var/loki
+      extraVolumes:
+        - name: loki-data
+          persistentVolumeClaim:
+            claimName: loki-longhorn
       persistence:
-        enabled: true
-        storageClassName: "longhorn"
-        existingClaim: loki-longhorn
-        accessModes:
-          - ReadWriteOnce
-        size: 5Gi
+        enabled: false
     read:
       replicas: 0
     backend:
