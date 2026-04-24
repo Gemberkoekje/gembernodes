@@ -5,6 +5,8 @@ metadata:
   namespace: monitoring
 spec:
   interval: 5m
+  upgrade:
+    force: true
   chart:
     spec:
       version: "6.x"
@@ -46,15 +48,9 @@ spec:
         chunk_encoding: zstd
     singleBinary:
       replicas: 1
-      extraVolumeMounts:
-        - name: loki-data
-          mountPath: /var/loki
-      extraVolumes:
-        - name: loki-data
-          persistentVolumeClaim:
-            claimName: loki-longhorn
       persistence:
-        enabled: false
+        enabled: true
+        existingClaim: loki-longhorn
     read:
       replicas: 0
     backend:
