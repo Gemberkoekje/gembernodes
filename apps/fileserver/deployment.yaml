@@ -14,6 +14,22 @@ spec:
       labels:
         app: file-server
     spec:
+      securityContext:
+        fsGroup: 1000
+      initContainers:
+        - name: init-permissions
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              mkdir -p /pvc/files /pvc/config
+              chown -R 1000:1000 /pvc/files /pvc/config
+              chmod -R ug+rwX /pvc/files /pvc/config
+          volumeMounts:
+            - name: files
+              mountPath: /pvc
       containers:
         - name: filebrowser
           image: filebrowser/filebrowser:latest
