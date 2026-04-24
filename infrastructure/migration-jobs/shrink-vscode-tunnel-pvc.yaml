@@ -1,0 +1,73 @@
+# ONE-TIME migration: move vscode-tunnel data to a smaller Longhorn PVC.
+#
+# Why:
+# - Kubernetes does not allow shrinking a bound PVC in-place.
+# - Create a new smaller PVC, copy data, then point the deployment to the new claim.
+#
+# Steps:
+#   1. Ensure the new size is large enough:
+#      kubectl -n vscode-tunnel exec deploy/vscode-tunnel -- du -sh /workspace /config
+#   2. Scale vscode-tunnel down:
+#      kubectl scale deploy vscode-tunnel -n vscode-tunnel --replicas=0
+#   3. Apply this migration file:
+#      kubectl apply -f infrastructure/migration-jobs/shrink-vscode-tunnel-pvc.yaml
+#   4. Wait for completion:
+#      kubectl wait job/shrink-vscode-tunnel-pvc -n vscode-tunnel --for=condition=complete --timeout=900s
+#   5. Update apps/vscode-tunnel/deployment.yaml claimName to "vscode-tunnel-pvc-longhorn-small" and commit.
+#   6. Scale vscode-tunnel up and validate.
+#   7. After validation, delete old PVC if desired:
+#      kubectl delete pvc vscode-tunnel-pvc-longhorn -n vscode-tunnel
+#   8. Clean up this job:
+#      kubectl delete -f infrastructure/migration-jobs/shrink-vscode-tunnel-pvc.yaml
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vscode-tunnel-pvc-longhorn-small
+  namespace: vscode-tunnel
+  annotations:
+    longhorn.io/volume-number-of-replicas: "1"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: shrink-vscode-tunnel-pvc
+  namespace: vscode-tunnel
+spec:
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: alpine:3.20
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              apk add --no-cache rsync
+              echo "Copying data from old PVC to new smaller PVC..."
+              rsync -aHAX --delete /source/ /target/
+              echo "Copy complete."
+              echo "Source usage:"; du -sh /source/
+              echo "Target usage:"; du -sh /target/
+          volumeMounts:
+            - name: source
+              mountPath: /source
+            - name: target
+              mountPath: /target
+      volumes:
+        - name: source
+          persistentVolumeClaim:
+            claimName: vscode-tunnel-pvc-longhorn
+        - name: target
+          persistentVolumeClaim:
+            claimName: vscode-tunnel-pvc-longhorn-small

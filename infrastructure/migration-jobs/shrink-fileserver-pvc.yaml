@@ -1,0 +1,73 @@
+# ONE-TIME migration: move fileserver data to a smaller Longhorn PVC.
+#
+# Why:
+# - Kubernetes does not allow shrinking a bound PVC in-place.
+# - Create a new smaller PVC, copy data, then point the deployment to the new claim.
+#
+# Steps:
+#   1. Ensure the new size is large enough:
+#      kubectl -n file-server exec deploy/file-server -- du -sh /srv /config
+#   2. Scale fileserver down:
+#      kubectl scale deploy file-server -n file-server --replicas=0
+#   3. Apply this migration file:
+#      kubectl apply -f infrastructure/migration-jobs/shrink-fileserver-pvc.yaml
+#   4. Wait for completion:
+#      kubectl wait job/shrink-fileserver-pvc -n file-server --for=condition=complete --timeout=900s
+#   5. Update apps/fileserver/deployment.yaml claimName to "file-server-pvc-longhorn-small" and commit.
+#   6. Scale fileserver up and validate contents.
+#   7. After validation, delete old PVC if desired:
+#      kubectl delete pvc file-server-pvc-longhorn -n file-server
+#   8. Clean up this job:
+#      kubectl delete -f infrastructure/migration-jobs/shrink-fileserver-pvc.yaml
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: file-server-pvc-longhorn-small
+  namespace: file-server
+  annotations:
+    longhorn.io/volume-number-of-replicas: "1"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: shrink-fileserver-pvc
+  namespace: file-server
+spec:
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: alpine:3.20
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              apk add --no-cache rsync
+              echo "Copying data from old PVC to new smaller PVC..."
+              rsync -aHAX --delete /source/ /target/
+              echo "Copy complete."
+              echo "Source usage:"; du -sh /source/
+              echo "Target usage:"; du -sh /target/
+          volumeMounts:
+            - name: source
+              mountPath: /source
+            - name: target
+              mountPath: /target
+      volumes:
+        - name: source
+          persistentVolumeClaim:
+            claimName: file-server-pvc-longhorn
+        - name: target
+          persistentVolumeClaim:
+            claimName: file-server-pvc-longhorn-small
