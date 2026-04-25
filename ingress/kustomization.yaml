@@ -8,3 +8,4 @@ resources:
   - healthcheck-ingress.yaml
   - fileserver-ingress.yaml
   - sts2viewer-ingress.yaml
+  - spacetraders-ingress.yaml

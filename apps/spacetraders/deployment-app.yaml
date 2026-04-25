@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spacetraders-app
+  namespace: spacetraders
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spacetraders-app
+  template:
+    metadata:
+      labels:
+        app: spacetraders-app
+    spec:
+      imagePullSecrets:
+        - name: ghcr-login
+      containers:
+        - name: spacetraders-app
+          image: ghcr.io/gemberkoekje/spacetraders-app:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8081
+          envFrom:
+            - configMapRef:
+                name: spacetraders-config
+            - secretRef:
+                name: spacetraders-secrets
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8081
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: spacetraders-api-service
+  namespace: spacetraders
+spec:
+  selector:
+    app: spacetraders-api
+  ports:
+    - port: 80
+      targetPort: 8080

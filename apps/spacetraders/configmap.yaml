@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spacetraders-config
+  namespace: spacetraders
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  SpaceTradersApi__BaseUrl: "https://api.spacetraders.io/v2/"
+  Logging__LogLevel__Default: "Information"
+  Logging__LogLevel__Microsoft.AspNetCore: "Warning"
