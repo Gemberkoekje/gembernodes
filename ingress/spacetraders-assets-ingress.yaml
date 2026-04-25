@@ -1,0 +1,53 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: spacetraders-assets-ingress
+  namespace: spacetraders
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx-public
+  tls:
+  - hosts:
+    - gemberkoekje.nl
+    secretName: ebi-cs-api-tls
+  rules:
+  - host: gemberkoekje.nl
+    http:
+      paths:
+      - path: /css
+        pathType: Prefix
+        backend:
+          service:
+            name: spacetraders-app-service
+            port:
+              number: 80
+      - path: /js
+        pathType: Prefix
+        backend:
+          service:
+            name: spacetraders-app-service
+            port:
+              number: 80
+      - path: /lib
+        pathType: Prefix
+        backend:
+          service:
+            name: spacetraders-app-service
+            port:
+              number: 80
+      - path: /favicon.ico
+        pathType: Exact
+        backend:
+          service:
+            name: spacetraders-app-service
+            port:
+              number: 80
+      - path: /SpaceTraders.App.styles.css
+        pathType: Exact
+        backend:
+          service:
+            name: spacetraders-app-service
+            port:
+              number: 80
