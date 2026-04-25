@@ -17,7 +17,7 @@ spec:
         - name: ghcr-login
       containers:
         - name: spacetraders-app
-          image: ghcr.io/gemberkoekje/spacetraders-app:9a6bde3e3f8556e711d2bac4b5412ba8a126a023
+          image: ghcr.io/gemberkoekje/spacetraders-app:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8081
