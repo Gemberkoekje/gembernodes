@@ -6,7 +6,6 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   ingressClassName: nginx-public
   tls:
@@ -17,15 +16,15 @@ spec:
   - host: gemberkoekje.nl
     http:
       paths:
-      - path: (/spacetraders/api/|$)(.*)
-        pathType: ImplementationSpecific
+      - path: /spacetraders/api
+        pathType: Prefix
         backend:
           service:
             name: spacetraders-api-service
             port:
               number: 80
-      - path: (/spacetraders/|$)(.*)
-        pathType: ImplementationSpecific
+      - path: /spacetraders
+        pathType: Prefix
         backend:
           service:
             name: spacetraders-app-service
