@@ -17,14 +17,14 @@ spec:
   - host: gemberkoekje.nl
     http:
       paths:
-      - path: /spacetraders/api(/|$)(.*)
+      - path: (/spacetraders/api/|$)(.*)
         pathType: ImplementationSpecific
         backend:
           service:
             name: spacetraders-api-service
             port:
               number: 80
-      - path: /spacetraders(/|$)(.*)
+      - path: (/spacetraders/|$)(.*)
         pathType: ImplementationSpecific
         backend:
           service:
