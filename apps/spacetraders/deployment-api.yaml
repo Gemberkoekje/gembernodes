@@ -31,7 +31,7 @@ spec:
                 name: spacetraders-secrets
           startupProbe:
             httpGet:
-              path: /health/startup
+              path: /health/live
               port: 8080
             initialDelaySeconds: 5
             failureThreshold: 120
