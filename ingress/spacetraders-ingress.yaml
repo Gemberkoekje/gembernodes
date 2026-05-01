@@ -23,6 +23,13 @@ spec:
             name: spacetraders-api-service
             port:
               number: 80
+      - path: /spacetraders/dashboard
+        pathType: Prefix
+        backend:
+          service:
+            name: spacetraders-webui-service
+            port:
+              number: 80
       - path: /spacetraders
         pathType: Prefix
         backend:
