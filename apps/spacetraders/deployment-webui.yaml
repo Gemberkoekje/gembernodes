@@ -20,7 +20,7 @@ spec:
           image: ghcr.io/gemberkoekje/spacetraders-webui:latest
           imagePullPolicy: Always
           ports:
-            - containerPort: 8082
+            - containerPort: 80
           envFrom:
             - configMapRef:
                 name: spacetraders-config
@@ -28,14 +28,14 @@ spec:
                 name: spacetraders-secrets
           livenessProbe:
             httpGet:
-              path: /
-              port: 8082
+              path: /healthz
+              port: 80
             initialDelaySeconds: 10
             periodSeconds: 30
           readinessProbe:
             httpGet:
-              path: /
-              port: 8082
+              path: /healthz
+              port: 80
             initialDelaySeconds: 5
             periodSeconds: 10
           resources:

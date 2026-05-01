@@ -16,35 +16,35 @@ spec:
   - host: gemberkoekje.nl
     http:
       paths:
-      - path: /css
+      - path: /spacetraders/css
         pathType: Prefix
         backend:
           service:
             name: spacetraders-app-service
             port:
               number: 80
-      - path: /js
+      - path: /spacetraders/js
         pathType: Prefix
         backend:
           service:
             name: spacetraders-app-service
             port:
               number: 80
-      - path: /lib
+      - path: /spacetraders/lib
         pathType: Prefix
         backend:
           service:
             name: spacetraders-app-service
             port:
               number: 80
-      - path: /favicon.ico
+      - path: /spacetraders/favicon.ico
         pathType: Exact
         backend:
           service:
             name: spacetraders-app-service
             port:
               number: 80
-      - path: /SpaceTraders.App.styles.css
+      - path: /spacetraders/SpaceTraders.App.styles.css
         pathType: Exact
         backend:
           service:

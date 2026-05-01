@@ -8,4 +8,4 @@ spec:
     app: spacetraders-webui
   ports:
     - port: 80
-      targetPort: 8082
+      targetPort: 80
