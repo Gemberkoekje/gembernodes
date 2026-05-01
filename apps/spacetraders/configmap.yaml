@@ -6,6 +6,6 @@ metadata:
 data:
   ASPNETCORE_ENVIRONMENT: "Production"
   SpaceTradersApi__BaseUrl: "https://api.spacetraders.io/v2/"
-  WebUi__ApiBaseUrl: "http://spacetraders-api-service/"
+  WebUI__ApiBaseUrl: "http://spacetraders-api-service/"
   Logging__LogLevel__Default: "Information"
   Logging__LogLevel__Microsoft.AspNetCore: "Warning"
