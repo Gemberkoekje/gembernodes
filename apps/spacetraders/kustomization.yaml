@@ -3,10 +3,8 @@ kind: Kustomization
 resources:
   - configmap.yaml
   - deployment-api.yaml
-  - deployment-app.yaml
   - deployment-webui.yaml
   - service-api.yaml
-  - service-app.yaml
   - service-webui.yaml
   - ghcr-login.yaml
   - spacetraders-secrets.yaml
