@@ -17,7 +17,7 @@ spec:
         - name: ghcr-login
       containers:
         - name: spacetraders-api
-          image: ghcr.io/gemberkoekje/spacetraders-api:0e29b87d4abb596de952c1060741909a1401312f
+          image: ghcr.io/gemberkoekje/spacetraders-api:23fb3d99b84a0af14eaf091645f47c46371229fe
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -33,7 +33,8 @@ spec:
             httpGet:
               path: /health/startup
               port: 8080
-            failureThreshold: 30
+            initialDelaySeconds: 5
+            failureThreshold: 120
             periodSeconds: 5
           readinessProbe:
             httpGet:
