@@ -17,7 +17,7 @@ spec:
         - name: ghcr-login
       containers:
         - name: spacetraders-webui
-          image: ghcr.io/gemberkoekje/spacetraders-webui:23fb3d99b84a0af14eaf091645f47c46371229fe
+          image: ghcr.io/gemberkoekje/spacetraders-webui:60fe590c05afec18a63e940d4f27da6868a16c5f
           imagePullPolicy: Always
           ports:
             - containerPort: 80
