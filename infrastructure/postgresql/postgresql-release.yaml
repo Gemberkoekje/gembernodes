@@ -16,6 +16,20 @@ spec:
       targetPath: global.postgresql.auth.postgresPassword
   values:
     primary:
+      resourcesPreset: "none"
+      resources:
+        requests:
+          cpu: "250m"
+          memory: "512Mi"
+        limits:
+          cpu: "1000m"
+          memory: "1Gi"
+      # Keep PostgreSQL memory usage bounded for small clusters.
+      extendedConfiguration: |
+        shared_buffers = 256MB
+        work_mem = 4MB
+        maintenance_work_mem = 64MB
+        effective_cache_size = 768MB
       service:
         type: ClusterIP
       persistence:
