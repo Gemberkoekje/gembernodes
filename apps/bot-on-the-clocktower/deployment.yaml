@@ -17,7 +17,7 @@ spec:
         - name: ghcr-login
       containers:
         - name: bot-on-the-clocktower
-          image: ghcr.io/gemberkoekje/bot-on-the-clocktower:sha-275164a
+          image: ghcr.io/gemberkoekje/bot-on-the-clocktower:sha-5c61a65
           imagePullPolicy: Always
           securityContext:
             allowPrivilegeEscalation: false
