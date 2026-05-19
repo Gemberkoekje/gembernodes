@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bot-on-the-clocktower
+  namespace: bot-on-the-clocktower
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bot-on-the-clocktower
+  template:
+    metadata:
+      labels:
+        app: bot-on-the-clocktower
+    spec:
+      imagePullSecrets:
+        - name: ghcr-login
+      containers:
+        - name: bot-on-the-clocktower
+          image: ghcr.io/gemberkoekje/bot-on-the-clocktower:sha-275164a
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          env:
+            - name: DOTNET_ENVIRONMENT
+              value: "Production"
+            - name: Discord__Token
+              valueFrom:
+                secretKeyRef:
+                  name: bot-on-the-clocktower-secrets
+                  key: discord_token
+            - name: ConnectionStrings__Postgres
+              valueFrom:
+                secretKeyRef:
+                  name: bot-on-the-clocktower-secrets
+                  key: postgres_connection_string
+            - name: Deployment__Type
+              valueFrom:
+                secretKeyRef:
+                  name: bot-on-the-clocktower-secrets
+                  key: deployment_type
