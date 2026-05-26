@@ -30,9 +30,15 @@ spec:
         work_mem = 4MB
         maintenance_work_mem = 64MB
         effective_cache_size = 768MB
+        # Keep WAL growth bounded so disk usage is more predictable.
+        max_wal_size = 2GB
+        min_wal_size = 256MB
+        checkpoint_timeout = 10min
+        checkpoint_completion_target = 0.9
+        wal_compression = on
       service:
         type: ClusterIP
       persistence:
         enabled: true
-        size: 8Gi
+        size: 32Gi
         storageClass: "longhorn" # Set to your desired StorageClass, or leave empty for default
