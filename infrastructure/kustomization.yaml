@@ -3,7 +3,6 @@ kind: Kustomization
 resources:
 - externalsecrets
 - metallb
-- monitoring
 - postgresql
 - postgresql-backup
 - nginx
