@@ -16,4 +16,3 @@ resources:
 - longhorn-namespace.yaml
 - sts2viewer-namespace.yaml
 - spacetraders-namespace.yaml
-- vscode-tunnel-namespace.yaml
