@@ -5,7 +5,6 @@ resources:
   - bot-on-the-clocktower
   - ebi-cs-api
   - ebi-cs-frontend
-  - spacetraders
   - vortexplotboek
   - cov-website
   - healthcheck
