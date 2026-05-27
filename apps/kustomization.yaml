@@ -7,6 +7,7 @@ resources:
   - ebi-cs-frontend
   - vortexplotboek
   - cov-website
+  - curatool
   - healthcheck
   - fileserver
   - sts2viewer

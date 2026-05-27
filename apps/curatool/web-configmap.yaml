@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: curatool-web-config
+  namespace: curatool
+data:
+  Database__AutoMigrate: "true"

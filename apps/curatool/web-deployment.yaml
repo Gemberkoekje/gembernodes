@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: curatool
+  namespace: curatool
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: curatool
+  template:
+    metadata:
+      labels:
+        app: curatool
+    spec:
+      imagePullSecrets:
+        - name: ghcr-login
+      containers:
+        - name: curatool
+          image: ghcr.io/gemberkoekje/thecuratool:fb41c28288619556ea052a9ea0a44ba0b5de7ce3
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Production
+            - name: ConnectionStrings__Postgres
+              valueFrom:
+                secretKeyRef:
+                  name: curatool-secrets
+                  key: CONNECTION_STRING
+            - name: Database__AutoMigrate
+              valueFrom:
+                configMapKeyRef:
+                  name: curatool-web-config
+                  key: Database__AutoMigrate
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 6
