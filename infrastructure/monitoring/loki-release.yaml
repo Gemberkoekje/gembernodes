@@ -50,7 +50,7 @@ spec:
       replicas: 1
       persistence:
         enabled: true
-        existingClaim: loki-longhorn
+        existingClaim: loki-qnap
     read:
       replicas: 0
     backend:

@@ -10,3 +10,4 @@ resources:
   - certmanager-repo.yaml
   - longhorn-repo.yaml
   - kured-repo.yaml
+  - csi-driver-nfs-repo.yaml

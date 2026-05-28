@@ -21,6 +21,6 @@ spec:
     server:
       persistentVolume:
         enabled: true
-        storageClass: longhorn
-        existingClaim: prometheus-longhorn
+        storageClass: qnap-nfs
+        existingClaim: prometheus-server-qnap
  

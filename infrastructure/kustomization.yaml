@@ -7,6 +7,7 @@ resources:
 - postgresql-backup
 - nginx
 - certmanager
+- nfs-provisioner
 - pvcs
 - longhorn
 - kured

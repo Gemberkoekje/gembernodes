@@ -50,4 +50,4 @@ spec:
           volumes:
             - name: backup
               persistentVolumeClaim:
-                claimName: postgresql-backup-pvc
+                claimName: postgresql-backup-pvc-qnap

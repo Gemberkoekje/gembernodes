@@ -1,14 +1,12 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: prometheus-server-longhorn
+  name: prometheus-server-qnap
   namespace: monitoring
-  annotations:
-    longhorn.io/volume-number-of-replicas: "2"
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: longhorn
+  storageClassName: qnap-nfs
   resources:
     requests:
       storage: 2Gi

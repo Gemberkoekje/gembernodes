@@ -27,10 +27,10 @@ spec:
     persistence:
       enabled: true
       size: 2Gi
-      storageClassName: "longhorn"
+      storageClassName: "qnap-nfs"
       accessModes:
         - ReadWriteOnce
-      existingClaim: grafana-longhorn
+      existingClaim: grafana-qnap
     grafana.ini:
       server:
         root_url: "%(protocol)s://%(domain)s/grafana/"
