@@ -5,6 +5,13 @@ metadata:
   namespace: flux-system
 spec:
   interval: 11m
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    force: true
+    remediation:
+      retries: 3
   chartRef:
     kind: OCIRepository
     name: postgresql-chart
