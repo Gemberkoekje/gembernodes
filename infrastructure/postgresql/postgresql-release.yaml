@@ -40,5 +40,4 @@ spec:
         type: ClusterIP
       persistence:
         enabled: true
-        size: 32Gi
-        storageClass: "qnap-nfs" # Set to your desired StorageClass, or leave empty for default
+        existingClaim: postgresql-data-qnap
