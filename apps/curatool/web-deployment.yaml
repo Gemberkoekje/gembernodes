@@ -17,7 +17,7 @@ spec:
         - name: ghcr-login
       containers:
         - name: curatool
-          image: ghcr.io/gemberkoekje/thecuratool:6419be6908473911f260fcfabb2333d7eea1e013
+          image: ghcr.io/gemberkoekje/thecuratool:c704fba307940f8271ed0c210d4c1cad1e2b2da0
           ports:
             - containerPort: 8080
           env:
