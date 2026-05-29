@@ -9,4 +9,3 @@ resources:
   - web-configmap.yaml
   - web-deployment.yaml
   - web-service.yaml
-  - ingress.yaml
