@@ -13,12 +13,23 @@ spec:
   tls:
     - hosts:
         - gemberkoekje.nl
+        - ebi-frontend.gemberkoekje.nl
       secretName: ebi-cs-frontend-tls
   rules:
     - host: gemberkoekje.nl
       http:
         paths:
           - path: /ebi-frontend(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: ebi-cs-frontend-service
+                port:
+                  number: 80
+    - host: ebi-frontend.gemberkoekje.nl
+      http:
+        paths:
+          - path: /(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
               service:

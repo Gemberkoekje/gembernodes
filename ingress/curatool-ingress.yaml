@@ -1,8 +1,8 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: healthcheck-ingress
-  namespace: cluster-healthcheck
+  name: curatool-ingress
+  namespace: curatool
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
@@ -11,26 +11,26 @@ spec:
   tls:
   - hosts:
     - gemberkoekje.nl
-    - healthcheck.gemberkoekje.nl
+    - curatool.gemberkoekje.nl
     secretName: ebi-cs-api-tls
   rules:
   - host: gemberkoekje.nl
     http:
       paths:
-      - path: /healthcheck
+      - path: /curatool
         pathType: Prefix
         backend:
           service:
-            name: cluster-healthcheck
+            name: curatool
             port:
-              name: http
-  - host: healthcheck.gemberkoekje.nl
+              number: 80
+  - host: curatool.gemberkoekje.nl
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: cluster-healthcheck
+            name: curatool
             port:
-              name: http
+              number: 80

@@ -11,12 +11,23 @@ spec:
   tls:
   - hosts:
     - gemberkoekje.nl
+    - cov-website.gemberkoekje.nl
     secretName: ebi-cs-api-tls
   rules:
   - host: gemberkoekje.nl
     http:
       paths:
       - path: /cov-website
+        pathType: Prefix
+        backend:
+          service:
+            name: cov-website-service
+            port:
+              number: 80
+  - host: cov-website.gemberkoekje.nl
+    http:
+      paths:
+      - path: /
         pathType: Prefix
         backend:
           service:

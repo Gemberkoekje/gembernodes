@@ -10,3 +10,4 @@ resources:
   - sts2viewer-ingress.yaml
   - spacetraders-ingress.yaml
   - spacetraders-assets-ingress.yaml
+  - curatool-ingress.yaml

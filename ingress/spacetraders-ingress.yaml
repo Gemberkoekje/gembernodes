@@ -11,6 +11,7 @@ spec:
   tls:
   - hosts:
     - gemberkoekje.nl
+    - spacetraders.gemberkoekje.nl
     secretName: ebi-cs-api-tls
   rules:
   - host: gemberkoekje.nl
@@ -31,6 +32,16 @@ spec:
             port:
               number: 80
       - path: /spacetraders
+        pathType: Prefix
+        backend:
+          service:
+            name: spacetraders-app-service
+            port:
+              number: 80
+  - host: spacetraders.gemberkoekje.nl
+    http:
+      paths:
+      - path: /
         pathType: Prefix
         backend:
           service:

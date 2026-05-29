@@ -11,12 +11,23 @@ spec:
   tls:
     - hosts:
         - gemberkoekje.nl
+        - grafana.gemberkoekje.nl
       secretName: grafana-tls
   rules:
     - host: gemberkoekje.nl
       http:
         paths:
           - path: /grafana
+            pathType: Prefix
+            backend:
+              service:
+                name: grafana
+                port:
+                  number: 80
+    - host: grafana.gemberkoekje.nl
+      http:
+        paths:
+          - path: /
             pathType: Prefix
             backend:
               service:

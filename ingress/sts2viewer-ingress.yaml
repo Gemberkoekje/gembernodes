@@ -12,12 +12,23 @@ spec:
   tls:
   - hosts:
     - gemberkoekje.nl
+    - sts2viewer.gemberkoekje.nl
     secretName: ebi-cs-api-tls
   rules:
   - host: gemberkoekje.nl
     http:
       paths:
       - path: /sts2viewer(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: sts2viewer-service
+            port:
+              number: 80
+  - host: sts2viewer.gemberkoekje.nl
+    http:
+      paths:
+      - path: /(/|$)(.*)
         pathType: ImplementationSpecific
         backend:
           service:
