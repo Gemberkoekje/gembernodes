@@ -8,6 +8,5 @@ resources:
   - prometheus-repo.yaml
   - nginx-repo.yaml
   - certmanager-repo.yaml
-  - longhorn-repo.yaml
   - kured-repo.yaml
   - csi-driver-nfs-repo.yaml

@@ -13,7 +13,6 @@ resources:
 - cov-website-namespace.yaml
 - cluster-healthcheck-namespace.yaml
 - fileserver-namespace.yaml
-- longhorn-namespace.yaml
 - sts2viewer-namespace.yaml
 - spacetraders-namespace.yaml
 - curatool-namespace.yaml

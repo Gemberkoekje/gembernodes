@@ -9,6 +9,5 @@ resources:
 - certmanager
 - nfs-provisioner
 - pvcs
-- longhorn
 - kured
 - system-upgrade
