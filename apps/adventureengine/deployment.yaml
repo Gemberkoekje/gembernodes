@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adventureengine
+  namespace: adventureengine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: adventureengine
+  template:
+    metadata:
+      labels:
+        app: adventureengine
+    spec:
+      imagePullSecrets:
+        - name: ghcr-login
+      containers:
+        - name: adventureengine
+          image: ghcr.io/gemberkoekje/adventureengine:47d44a1bb70b56c4f452dff1a4232252a581ec38
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - containerPort: 8080
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            failureThreshold: 18
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            periodSeconds: 20
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          env:
+            - name: DOTNET_ENVIRONMENT
+              value: "Production"
+            - name: ConnectionStrings__Postgres
+              valueFrom:
+                secretKeyRef:
+                  name: adventureengine-secrets
+                  key: postgres_connection_string
+            - name: Anthropic__ApiKey
+              valueFrom:
+                secretKeyRef:
+                  name: adventureengine-secrets
+                  key: anthropic_api_key

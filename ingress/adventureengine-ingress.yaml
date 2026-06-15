@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: adventureengine-ingress
+  namespace: adventureengine
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx-public
+  tls:
+  - hosts:
+    - gemberkoekje.nl
+    - adventureengine.gemberkoekje.nl
+    secretName: ebi-cs-api-tls
+  rules:
+  - host: gemberkoekje.nl
+    http:
+      paths:
+      - path: /adventureengine
+        pathType: Prefix
+        backend:
+          service:
+            name: adventureengine-service
+            port:
+              number: 80
+  - host: adventureengine.gemberkoekje.nl
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: adventureengine-service
+            port:
+              number: 80

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: adventureengine-service
+  namespace: adventureengine
+spec:
+  type: ClusterIP
+  selector:
+    app: adventureengine
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
