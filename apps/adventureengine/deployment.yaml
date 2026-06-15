@@ -17,7 +17,7 @@ spec:
         - name: ghcr-login
       containers:
         - name: adventureengine
-          image: ghcr.io/gemberkoekje/adventureengine:05426bc0abca5c5c9151d4a255a6318c71ea94b8
+          image: ghcr.io/gemberkoekje/adventureengine:220c893470bf949be394f3d2fd2f143cc5d0c23b
           imagePullPolicy: Always
           securityContext:
             allowPrivilegeEscalation: false
