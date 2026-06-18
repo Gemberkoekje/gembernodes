@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dockhand
+  namespace: dockhand
+  labels:
+    app: dockhand
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dockhand
+  template:
+    metadata:
+      labels:
+        app: dockhand
+    spec:
+      containers:
+        - name: dockhand
+          image: fnsys/dockhand:v1.0.34
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
