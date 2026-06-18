@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: dockhand
-          image: fnsys/dockhand:latest
+          image: fnsys/dockhand:v1.0.34
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
