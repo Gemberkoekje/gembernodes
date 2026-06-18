@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hackerminigames-ingress
+  namespace: hackerminigames
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx-public
+  tls:
+  - hosts:
+    - gemberkoekje.nl
+    - hackerminigames.gemberkoekje.nl
+    secretName: ebi-cs-api-tls
+  rules:
+  - host: gemberkoekje.nl
+    http:
+      paths:
+      - path: /hackerminigames
+        pathType: Prefix
+        backend:
+          service:
+            name: hackerminigames-service
+            port:
+              number: 80
+  - host: hackerminigames.gemberkoekje.nl
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hackerminigames-service
+            port:
+              number: 80

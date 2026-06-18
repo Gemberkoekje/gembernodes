@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hackerminigames
+  namespace: hackerminigames
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hackerminigames
+  template:
+    metadata:
+      labels:
+        app: hackerminigames
+    spec:
+      imagePullSecrets:
+        - name: ghcr-login
+      containers:
+        - name: hackerminigames
+          image: ghcr.io/gemberkoekje/hackerminigames:latest
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Production
+            - name: ASPNETCORE_HTTP_PORTS
+              value: "8080"
+            - name: ASPNETCORE_PATHBASE
+              value: /hackerminigames
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi

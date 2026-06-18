@@ -18,3 +18,4 @@ resources:
 - spacetraders-namespace.yaml
 - curatool-namespace.yaml
 - dockhand-namespace.yaml
+- hackerminigames-namespace.yaml

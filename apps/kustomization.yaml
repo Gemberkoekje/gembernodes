@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - armabotcs
   - adventureengine
+  - hackerminigames
   - bot-on-the-clocktower
   - ebi-cs-api
   - ebi-cs-frontend
