@@ -17,7 +17,7 @@ spec:
         - name: ghcr-login
       containers:
         - name: hackerminigames
-          image: ghcr.io/gemberkoekje/hackerminigames:latest
+          image: ghcr.io/gemberkoekje/hackerminigames:225a42e11e1d66b5e46a7642d39e14cd205e6b5e
           imagePullPolicy: Always
           securityContext:
             allowPrivilegeEscalation: false
