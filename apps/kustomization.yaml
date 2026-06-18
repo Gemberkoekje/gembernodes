@@ -12,3 +12,4 @@ resources:
   - healthcheck
   - fileserver
   - sts2viewer
+  - dockhand
