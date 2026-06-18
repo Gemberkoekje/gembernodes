@@ -12,4 +12,3 @@ resources:
   - spacetraders-ingress.yaml
   - spacetraders-assets-ingress.yaml
   - curatool-ingress.yaml
-  - dockhand-ingress.yaml
