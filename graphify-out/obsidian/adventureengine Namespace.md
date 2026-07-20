@@ -1,0 +1,16 @@
+---
+source_file: "namespaces/adventureengine-namespace.yaml"
+type: "document"
+community: "Per-App Namespaces"
+tags:
+  - graphify/document
+  - graphify/EXTRACTED
+  - community/Per-App_Namespaces
+---
+
+# adventureengine Namespace
+
+## Connections
+- [[Namespaces Kustomization (aggregator)]] - `references` [EXTRACTED]
+
+#graphify/document #graphify/EXTRACTED #community/Per-App_Namespaces

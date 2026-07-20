@@ -1,0 +1,1 @@
+{"nodes": [{"id": "repos_kured_repo_kured", "label": "kured HelmRepository", "file_type": "document", "source_file": "repos/kured-repo.yaml", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null, "rationale": "Chart source https://kubereboot.github.io/charts for the Kured reboot daemon release."}], "edges": [], "hyperedges": []}

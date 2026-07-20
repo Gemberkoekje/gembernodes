@@ -1,0 +1,3161 @@
+{
+  "nodes": [
+    {
+      "id": "g0",
+      "type": "group",
+      "label": "Infrastructure Helm Releases & Sources",
+      "x": 0,
+      "y": 0,
+      "width": 1320,
+      "height": 620,
+      "color": "1"
+    },
+    {
+      "id": "n_concept_helm_chart_sources",
+      "type": "file",
+      "file": "Helm chart sources.md",
+      "x": 20,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_repos_kustomization",
+      "type": "file",
+      "file": "Repos Kustomization (aggregator).md",
+      "x": 220,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_certmanager_certmanager_helmrelease_cert_manager",
+      "type": "file",
+      "file": "cert-manager HelmRelease.md",
+      "x": 420,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_certmanager_kustomization",
+      "type": "file",
+      "file": "certmanager Kustomization.md",
+      "x": 620,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_externalsecrets_connect_connect",
+      "type": "file",
+      "file": "connect (1Password Connect) HelmRelease.md",
+      "x": 820,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_nfs_provisioner_nfs_csi_release_csi_driver_nfs",
+      "type": "file",
+      "file": "csi-driver-nfs HelmRelease.md",
+      "x": 1020,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_repos_csi_driver_nfs_repo_csi_driver_nfs",
+      "type": "file",
+      "file": "csi-driver-nfs HelmRepository.md",
+      "x": 20,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_externalsecrets_kustomization",
+      "type": "file",
+      "file": "externalsecrets Kustomization.md",
+      "x": 220,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_kustomization",
+      "type": "file",
+      "file": "infrastructure Kustomization (aggregator).md",
+      "x": 420,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_repos_nginx_repo_nginx",
+      "type": "file",
+      "file": "ingress-nginx-charts HelmRepository.md",
+      "x": 620,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_repos_certmanager_repo_certmanager",
+      "type": "file",
+      "file": "jetstack HelmRepository (cert-manager charts).md",
+      "x": 820,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_kured_kured_release_kured",
+      "type": "file",
+      "file": "kured HelmRelease.md",
+      "x": 1020,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_repos_kured_repo_kured",
+      "type": "file",
+      "file": "kured HelmRepository.md",
+      "x": 20,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_kured_kustomization",
+      "type": "file",
+      "file": "kured Kustomization.md",
+      "x": 220,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_metallb_metallb_release_metallb",
+      "type": "file",
+      "file": "metallb HelmRelease.md",
+      "x": 420,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_repos_metallb_repo_metallb",
+      "type": "file",
+      "file": "metallb HelmRepository.md",
+      "x": 620,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_metallb_kustomization",
+      "type": "file",
+      "file": "metallb Kustomization.md",
+      "x": 820,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_nfs_provisioner_kustomization",
+      "type": "file",
+      "file": "nfs-provisioner Kustomization.md",
+      "x": 1020,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_nginx_kustomization",
+      "type": "file",
+      "file": "nginx Kustomization.md",
+      "x": 20,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_nginx_nginx_release_nginx_ingress_public",
+      "type": "file",
+      "file": "nginx-ingress-public HelmRelease.md",
+      "x": 220,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_repos_onepassword_repo_onepassword",
+      "type": "file",
+      "file": "onepassword HelmRepository (1Password Connect charts).md",
+      "x": 420,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_postgresql_backup_backup_cronjob_postgresql_backup",
+      "type": "file",
+      "file": "postgresql-backup CronJob.md",
+      "x": 620,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_postgresql_backup_kustomization",
+      "type": "file",
+      "file": "postgresql-backup Kustomization.md",
+      "x": 820,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_postgresql_backup_backup_pvc_postgresql_backup_pvc_qnap",
+      "type": "file",
+      "file": "postgresql-backup-pvc-qnap PVC.md",
+      "x": 1020,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_repos_postgresql_repo_postgresql",
+      "type": "file",
+      "file": "postgresql-chart OCIRepository (Bitnami).md",
+      "x": 20,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_repos_prometheus_repo_prometheus",
+      "type": "file",
+      "file": "prometheus-community HelmRepository.md",
+      "x": 220,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_nfs_provisioner_qnap_nfs_storageclass_qnap_nfs",
+      "type": "file",
+      "file": "qnap-nfs StorageClass.md",
+      "x": 420,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g1",
+      "type": "group",
+      "label": "Per-App Namespaces",
+      "x": 1400,
+      "y": 0,
+      "width": 1100,
+      "height": 520,
+      "color": "2"
+    },
+    {
+      "id": "n_concept_namespace_isolation_per_app",
+      "type": "file",
+      "file": "Namespace isolation per app.md",
+      "x": 1420,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespaces_kustomization",
+      "type": "file",
+      "file": "Namespaces Kustomization (aggregator).md",
+      "x": 1620,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespaces_adventureengine_namespace_adventureengine",
+      "type": "file",
+      "file": "adventureengine Namespace.md",
+      "x": 1820,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespaces_aiusagemonitor_namespace_aiusagemonitor",
+      "type": "file",
+      "file": "aiusagemonitor Namespace.md",
+      "x": 2020,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespaces_armabotcs_namespace_armabotcs",
+      "type": "file",
+      "file": "armabotcs Namespace.md",
+      "x": 2220,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespaces_bot_on_the_clocktower_namespace_bot_on_the_clocktower",
+      "type": "file",
+      "file": "bot-on-the-clocktower Namespace.md",
+      "x": 1420,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespaces_cluster_healthcheck_namespace_cluster_healthcheck",
+      "type": "file",
+      "file": "cluster-healthcheck Namespace.md",
+      "x": 1620,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespaces_cov_website_namespace_cov_website",
+      "type": "file",
+      "file": "cov-website Namespace.md",
+      "x": 1820,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespaces_curatool_namespace_curatool",
+      "type": "file",
+      "file": "curatool Namespace.md",
+      "x": 2020,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespaces_default_namespace_default",
+      "type": "file",
+      "file": "default Namespace.md",
+      "x": 2220,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespaces_dockhand_namespace_dockhand",
+      "type": "file",
+      "file": "dockhand Namespace.md",
+      "x": 1420,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespaces_ebi_cs_api_namespace_ebi_cs_api",
+      "type": "file",
+      "file": "ebi-cs-api Namespace.md",
+      "x": 1620,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespaces_fileserver_namespace_file_server",
+      "type": "file",
+      "file": "file-server Namespace.md",
+      "x": 1820,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespaces_flux_system_namespace_flux_system",
+      "type": "file",
+      "file": "flux-system Namespace.md",
+      "x": 2020,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespaces_hackerminigames_namespace_hackerminigames",
+      "type": "file",
+      "file": "hackerminigames Namespace.md",
+      "x": 2220,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespaces_metallb_namespace_metallb_system",
+      "type": "file",
+      "file": "metallb-system Namespace.md",
+      "x": 1420,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespaces_monitoring_namespace_monitoring",
+      "type": "file",
+      "file": "monitoring Namespace.md",
+      "x": 1620,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespaces_spacetraders_namespace_spacetraders",
+      "type": "file",
+      "file": "spacetraders Namespace.md",
+      "x": 1820,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespaces_sts2viewer_namespace_sts2viewer",
+      "type": "file",
+      "file": "sts2viewer Namespace.md",
+      "x": 2020,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespaces_vortexplotboek_namespace_vortexplotboek",
+      "type": "file",
+      "file": "vortexplotboek Namespace.md",
+      "x": 2220,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g2",
+      "type": "group",
+      "label": "ArmaBot & EBI-CS Apps",
+      "x": 2580,
+      "y": 0,
+      "width": 880,
+      "height": 520,
+      "color": "3"
+    },
+    {
+      "id": "n_apps_armabotcs_deployment_armabotcs",
+      "type": "file",
+      "file": "Deployment armabotcs.md",
+      "x": 2600,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_ebi_cs_api_deployment_ebi_cs_api",
+      "type": "file",
+      "file": "Deployment ebi-cs-api.md",
+      "x": 2800,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_ebi_cs_frontend_deployment_ebi_cs_frontend",
+      "type": "file",
+      "file": "Deployment ebi-cs-frontend.md",
+      "x": 3000,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_armabotcs_deployment_ghcr_io_gemberkoekje_armabotcs",
+      "type": "file",
+      "file": "Image ghcr.iogemberkoekjearmabotcs.md",
+      "x": 3200,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_ebi_cs_api_deployment_image_ebi_cs_api",
+      "type": "file",
+      "file": "Image ghcr.ioeosfrontierebi-cs-api1.0.0-27.md",
+      "x": 2600,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_ebi_cs_frontend_deployment_image_ebi_cs_frontend",
+      "type": "file",
+      "file": "Image ghcr.ioeosfrontierebi-cs-frontend0.1.0-27.md",
+      "x": 2800,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_ebi_cs_api_kustomization",
+      "type": "file",
+      "file": "Kustomization ebi-cs-api.md",
+      "x": 3000,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_ebi_cs_frontend_kustomization",
+      "type": "file",
+      "file": "Kustomization ebi-cs-frontend.md",
+      "x": 3200,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespace_armabotcs",
+      "type": "file",
+      "file": "Namespace armabotcs.md",
+      "x": 2600,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespace_ebi_cs_api",
+      "type": "file",
+      "file": "Namespace ebi-cs-api.md",
+      "x": 2800,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_kustomization",
+      "type": "file",
+      "file": "Parent Kustomization apps (aggregator).md",
+      "x": 3000,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_armabotcs_deployment_discord_secret",
+      "type": "file",
+      "file": "Secret discord-secret.md",
+      "x": 3200,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_armabotcs_deployment_postgress_secret",
+      "type": "file",
+      "file": "Secret postgress-secret.md",
+      "x": 2600,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_ebi_cs_api_ebi_cs_api_service_ebi_cs_api_service",
+      "type": "file",
+      "file": "Service ebi-cs-api-service (NodePort).md",
+      "x": 2800,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_ebi_cs_frontend_service_ebi_cs_frontend_service",
+      "type": "file",
+      "file": "Service ebi-cs-frontend-service (ClusterIP).md",
+      "x": 3000,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_armabotcs_kustomization",
+      "type": "file",
+      "file": "armabotcs Kustomization.md",
+      "x": 3200,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g3",
+      "type": "group",
+      "label": "AI Usage Monitor & COV Website",
+      "x": 3540,
+      "y": 0,
+      "width": 880,
+      "height": 520,
+      "color": "4"
+    },
+    {
+      "id": "n_apps_aiusagemonitor_readme",
+      "type": "file",
+      "file": "AiUsageMonitor Deployment Notes.md",
+      "x": 3560,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_aiusagemonitor_cronjob_aiusagemonitor",
+      "type": "file",
+      "file": "CronJob aiusagemonitor.md",
+      "x": 3760,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_cov_website_deployment_cov_website",
+      "type": "file",
+      "file": "Deployment cov-website.md",
+      "x": 3960,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_aiusagemonitor_cronjob_ghcr_io_gemberkoekje_aiusagemonitor",
+      "type": "file",
+      "file": "Image ghcr.iogemberkoekjeaiusagemonitor.md",
+      "x": 4160,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_cov_website_deployment_ghcr_io_gemberkoekje_cov_website",
+      "type": "file",
+      "file": "Image ghcr.iogemberkoekjecov-website.md",
+      "x": 3560,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespace_aiusagemonitor",
+      "type": "file",
+      "file": "Namespace aiusagemonitor.md",
+      "x": 3760,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespace_cov_website",
+      "type": "file",
+      "file": "Namespace cov-website.md",
+      "x": 3960,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_aiusagemonitor_ghcr_login_ghcr_login",
+      "type": "file",
+      "file": "OnePasswordItem ghcr-login (aiusagemonitor).md",
+      "x": 4160,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_aiusagemonitor_cronjob_aiusagemonitor_secrets",
+      "type": "file",
+      "file": "Secret aiusagemonitor-secrets.md",
+      "x": 3560,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_aiusagemonitor_cronjob_mail_secret",
+      "type": "file",
+      "file": "Secret mail-secret (aiusagemonitor).md",
+      "x": 3760,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_cov_website_deployment_mail_secret",
+      "type": "file",
+      "file": "Secret mail-secret (cov-website).md",
+      "x": 3960,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_cov_website_service_cov_website_service",
+      "type": "file",
+      "file": "Service cov-website-service.md",
+      "x": 4160,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_aiusagemonitor_serviceaccount_default",
+      "type": "file",
+      "file": "ServiceAccount default (aiusagemonitor).md",
+      "x": 3560,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_aiusagemonitor_kustomization",
+      "type": "file",
+      "file": "aiusagemonitor Kustomization.md",
+      "x": 3760,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_cov_website_kustomization",
+      "type": "file",
+      "file": "cov-website Kustomization.md",
+      "x": 3960,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g4",
+      "type": "group",
+      "label": "Flux GitOps Cluster Root",
+      "x": 4500,
+      "y": 0,
+      "width": 880,
+      "height": 520,
+      "color": "5"
+    },
+    {
+      "id": "n_clusters_home_flux_system_gotk_components_bootstrap",
+      "type": "file",
+      "file": "Flux Controllers Bootstrap (gotk-components).md",
+      "x": 4520,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_clusters_home_apps_kustomization_apps",
+      "type": "file",
+      "file": "Flux Kustomization apps.md",
+      "x": 4720,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_clusters_home_configuration_kustomization_configuration",
+      "type": "file",
+      "file": "Flux Kustomization configuration.md",
+      "x": 4920,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_clusters_home_flux_system_gotk_sync_flux_system",
+      "type": "file",
+      "file": "Flux Kustomization flux-system (root sync).md",
+      "x": 5120,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_clusters_home_infrastructure_kustomization_infrastructure",
+      "type": "file",
+      "file": "Flux Kustomization infrastructure.md",
+      "x": 4520,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_clusters_home_ingress_kustomization_ingress",
+      "type": "file",
+      "file": "Flux Kustomization ingress.md",
+      "x": 4720,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_clusters_home_namespaces_kustomization_namespaces",
+      "type": "file",
+      "file": "Flux Kustomization namespaces.md",
+      "x": 4920,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_clusters_home_repos_kustomization_repos",
+      "type": "file",
+      "file": "Flux Kustomization repos.md",
+      "x": 5120,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_clusters_home_system_upgrade_plans_kustomization_system_upgrade_plans",
+      "type": "file",
+      "file": "Flux Kustomization system-upgrade-plans.md",
+      "x": 4520,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_concept_gitops_reconciliation_order",
+      "type": "file",
+      "file": "GitOps reconciliation order.md",
+      "x": 4720,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_clusters_home_flux_system_gotk_sync_flux_system_gitrepository",
+      "type": "file",
+      "file": "GitRepository flux-system (root source).md",
+      "x": 4920,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_configuration_kustomization_overlay",
+      "type": "file",
+      "file": "Kustomize overlay configuration.md",
+      "x": 5120,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_clusters_home_flux_system_kustomization_overlay",
+      "type": "file",
+      "file": "Kustomize overlay flux-system.md",
+      "x": 4520,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_configuration_ipaddresspool_first_pool",
+      "type": "file",
+      "file": "MetalLB IPAddressPool first-pool.md",
+      "x": 4720,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_configuration_ipaddresspool_l2lbadv",
+      "type": "file",
+      "file": "MetalLB L2Advertisement l2lbadv.md",
+      "x": 4920,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g5",
+      "type": "group",
+      "label": "Clocktower Bot & Curatool",
+      "x": 0,
+      "y": 700,
+      "width": 880,
+      "height": 520,
+      "color": "6"
+    },
+    {
+      "id": "n_apps_curatool_web_configmap_curatool_web_config",
+      "type": "file",
+      "file": "ConfigMap curatool-web-config.md",
+      "x": 20,
+      "y": 780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_bot_on_the_clocktower_deployment_bot_on_the_clocktower",
+      "type": "file",
+      "file": "Deployment bot-on-the-clocktower.md",
+      "x": 220,
+      "y": 780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_curatool_web_deployment_curatool",
+      "type": "file",
+      "file": "Deployment curatool.md",
+      "x": 420,
+      "y": 780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_bot_on_the_clocktower_deployment_ghcr_io_gemberkoekje_bot_on_the_clocktower",
+      "type": "file",
+      "file": "Image ghcr.iogemberkoekjebot-on-the-clocktower.md",
+      "x": 620,
+      "y": 780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_curatool_web_deployment_ghcr_io_gemberkoekje_thecuratool",
+      "type": "file",
+      "file": "Image ghcr.iogemberkoekjethecuratool.md",
+      "x": 20,
+      "y": 860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespace_bot_on_the_clocktower",
+      "type": "file",
+      "file": "Namespace bot-on-the-clocktower.md",
+      "x": 220,
+      "y": 860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespace_curatool",
+      "type": "file",
+      "file": "Namespace curatool.md",
+      "x": 420,
+      "y": 860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_bot_on_the_clocktower_ghcr_login_ghcr_login",
+      "type": "file",
+      "file": "OnePasswordItem ghcr-login (bot-on-the-clocktower).md",
+      "x": 620,
+      "y": 860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_curatool_ghcr_login_ghcr_login",
+      "type": "file",
+      "file": "OnePasswordItem ghcr-login (curatool).md",
+      "x": 20,
+      "y": 940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_bot_on_the_clocktower_deployment_bot_on_the_clocktower_secrets",
+      "type": "file",
+      "file": "Secret bot-on-the-clocktower-secrets.md",
+      "x": 220,
+      "y": 940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_curatool_web_deployment_curatool_secrets",
+      "type": "file",
+      "file": "Secret curatool-secrets.md",
+      "x": 420,
+      "y": 940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_curatool_web_service_curatool",
+      "type": "file",
+      "file": "Service curatool.md",
+      "x": 620,
+      "y": 940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_bot_on_the_clocktower_kustomization",
+      "type": "file",
+      "file": "bot-on-the-clocktower Kustomization.md",
+      "x": 20,
+      "y": 1020,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_curatool_kustomization",
+      "type": "file",
+      "file": "curatool Kustomization.md",
+      "x": 220,
+      "y": 1020,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g6",
+      "type": "group",
+      "label": "Ingress Routing & TLS",
+      "x": 1400,
+      "y": 700,
+      "width": 880,
+      "height": 520,
+      "color": "1"
+    },
+    {
+      "id": "n_ingress_adventureengine_ingress_adventureengine_ingress",
+      "type": "file",
+      "file": "AdventureEngine Ingress.md",
+      "x": 1420,
+      "y": 780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_ingress_cov_website_ingress_cov_website_ingress",
+      "type": "file",
+      "file": "COV Website Ingress.md",
+      "x": 1620,
+      "y": 780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_ingress_healthcheck_ingress_healthcheck_ingress",
+      "type": "file",
+      "file": "Cluster Healthcheck Ingress.md",
+      "x": 1820,
+      "y": 780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_configuration_certissuer_letsencrypt_prod",
+      "type": "file",
+      "file": "ClusterIssuer letsencrypt-prod.md",
+      "x": 2020,
+      "y": 780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_ingress_curatool_ingress_curatool_ingress",
+      "type": "file",
+      "file": "Curatool Ingress.md",
+      "x": 1420,
+      "y": 860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_ingress_ebi_cs_api_ingress_ebi_cs_api_ingress",
+      "type": "file",
+      "file": "EBI CS API Ingress.md",
+      "x": 1620,
+      "y": 860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_ingress_ebi_cs_frontend_ingress_ebi_cs_frontend_ingress",
+      "type": "file",
+      "file": "EBI CS Frontend Ingress.md",
+      "x": 1820,
+      "y": 860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_ingress_fileserver_ingress_file_server_ingress",
+      "type": "file",
+      "file": "File Server Ingress.md",
+      "x": 2020,
+      "y": 860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_ingress_grafana_ingress_grafana",
+      "type": "file",
+      "file": "Grafana Ingress.md",
+      "x": 1420,
+      "y": 940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_ingress_hackerminigames_ingress_hackerminigames_ingress",
+      "type": "file",
+      "file": "Hacker Minigames Ingress.md",
+      "x": 1620,
+      "y": 940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_ingress_kustomization_kustomization",
+      "type": "file",
+      "file": "Ingress Kustomization.md",
+      "x": 1820,
+      "y": 940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_ingress_sts2viewer_ingress_sts2viewer_ingress",
+      "type": "file",
+      "file": "STS2 Viewer Ingress.md",
+      "x": 2020,
+      "y": 940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_ingress_spacetraders_assets_ingress_spacetraders_assets_ingress",
+      "type": "file",
+      "file": "SpaceTraders Assets Ingress.md",
+      "x": 1420,
+      "y": 1020,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_ingress_vortexplotboek_ingress_vortexplotboek_ingress",
+      "type": "file",
+      "file": "Vortexplotboek Ingress.md",
+      "x": 1620,
+      "y": 1020,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g7",
+      "type": "group",
+      "label": "SpaceTraders App",
+      "x": 2580,
+      "y": 700,
+      "width": 880,
+      "height": 420,
+      "color": "2"
+    },
+    {
+      "id": "n_apps_spacetraders_configmap_spacetraders_config",
+      "type": "file",
+      "file": "ConfigMap spacetraders-config.md",
+      "x": 2600,
+      "y": 780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_spacetraders_deployment_api_spacetraders_api",
+      "type": "file",
+      "file": "Deployment spacetraders-api.md",
+      "x": 2800,
+      "y": 780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_spacetraders_deployment_webui_spacetraders_webui",
+      "type": "file",
+      "file": "Deployment spacetraders-webui.md",
+      "x": 3000,
+      "y": 780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_spacetraders_deployment_api_image_spacetraders_api",
+      "type": "file",
+      "file": "Image ghcr.iogemberkoekjespacetraders-api.md",
+      "x": 3200,
+      "y": 780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_spacetraders_deployment_webui_image_spacetraders_webui",
+      "type": "file",
+      "file": "Image ghcr.iogemberkoekjespacetraders-webui.md",
+      "x": 2600,
+      "y": 860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_spacetraders_kustomization",
+      "type": "file",
+      "file": "Kustomization spacetraders.md",
+      "x": 2800,
+      "y": 860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespace_spacetraders",
+      "type": "file",
+      "file": "Namespace spacetraders.md",
+      "x": 3000,
+      "y": 860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_spacetraders_ghcr_login_ghcr_login",
+      "type": "file",
+      "file": "OnePasswordItem ghcr-login (spacetraders).md",
+      "x": 3200,
+      "y": 860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_spacetraders_service_api_spacetraders_api_service",
+      "type": "file",
+      "file": "Service spacetraders-api-service.md",
+      "x": 2600,
+      "y": 940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_spacetraders_service_webui_spacetraders_webui_service",
+      "type": "file",
+      "file": "Service spacetraders-webui-service.md",
+      "x": 2800,
+      "y": 940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_ingress_spacetraders_ingress_spacetraders_ingress",
+      "type": "file",
+      "file": "SpaceTraders Ingress.md",
+      "x": 3000,
+      "y": 940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g8",
+      "type": "group",
+      "label": "Persistent Storage & PostgreSQL",
+      "x": 3540,
+      "y": 700,
+      "width": 880,
+      "height": 420,
+      "color": "3"
+    },
+    {
+      "id": "n_infrastructure_pvcs_fileserver_file_server_pvc_qnap",
+      "type": "file",
+      "file": "File Server PVC (file-server-pvc-qnap).md",
+      "x": 3560,
+      "y": 780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_pvcs_grafana_grafana_qnap",
+      "type": "file",
+      "file": "Grafana PVC (grafana-qnap).md",
+      "x": 3760,
+      "y": 780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_pvcs_loki_loki_qnap",
+      "type": "file",
+      "file": "Loki PVC (loki-qnap).md",
+      "x": 3960,
+      "y": 780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_concept_persistent_storage_layer",
+      "type": "file",
+      "file": "Persistent Storage Layer (qnap-nfs).md",
+      "x": 4160,
+      "y": 780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_postgresql_postgresql_data_pvc_postgresql_data_qnap",
+      "type": "file",
+      "file": "PostgreSQL Data PVC (postgresql-data-qnap).md",
+      "x": 3560,
+      "y": 860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_postgresql_postgresql_release_postgresql",
+      "type": "file",
+      "file": "PostgreSQL HelmRelease.md",
+      "x": 3760,
+      "y": 860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_postgresql_kustomization_kustomization",
+      "type": "file",
+      "file": "PostgreSQL Kustomization.md",
+      "x": 3960,
+      "y": 860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_postgresql_postgresql_loadbalancer_postgresql",
+      "type": "file",
+      "file": "PostgreSQL LoadBalancer Service.md",
+      "x": 4160,
+      "y": 860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_pvcs_prometheus_prometheus_server_qnap",
+      "type": "file",
+      "file": "Prometheus PVC (prometheus-server-qnap).md",
+      "x": 3560,
+      "y": 940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_pvcs_kustomization_kustomization",
+      "type": "file",
+      "file": "Shared PVCs Kustomization.md",
+      "x": 3760,
+      "y": 940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g9",
+      "type": "group",
+      "label": "Observability / Monitoring Stack",
+      "x": 4500,
+      "y": 700,
+      "width": 880,
+      "height": 420,
+      "color": "4"
+    },
+    {
+      "id": "n_observability_stack",
+      "type": "file",
+      "file": "Observability Stack.md",
+      "x": 4520,
+      "y": 780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_monitoring_grafana_release_grafana",
+      "type": "file",
+      "file": "grafana HelmRelease.md",
+      "x": 4720,
+      "y": 780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_repos_grafana_repo_grafana",
+      "type": "file",
+      "file": "grafana HelmRepository.md",
+      "x": 4920,
+      "y": 780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_monitoring_grafana_alerting_provisioning_grafana_alerting_provisioning",
+      "type": "file",
+      "file": "grafana-alerting-provisioning ConfigMap.md",
+      "x": 5120,
+      "y": 780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_monitoring_grafana_internal_ingress_grafana_internal",
+      "type": "file",
+      "file": "grafana-internal Ingress.md",
+      "x": 4520,
+      "y": 860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_monitoring_loki_release_grafana_loki",
+      "type": "file",
+      "file": "grafana-loki HelmRelease.md",
+      "x": 4720,
+      "y": 860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_monitoring_kube_state_metrics_release_kube_state_metrics",
+      "type": "file",
+      "file": "kube-state-metrics HelmRelease.md",
+      "x": 4920,
+      "y": 860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_monitoring_kustomization",
+      "type": "file",
+      "file": "monitoring Kustomization.md",
+      "x": 5120,
+      "y": 860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_monitoring_prometheus_release_prometheus",
+      "type": "file",
+      "file": "prometheus HelmRelease.md",
+      "x": 4520,
+      "y": 940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_monitoring_promtail_release_promtail",
+      "type": "file",
+      "file": "promtail HelmRelease.md",
+      "x": 4720,
+      "y": 940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g10",
+      "type": "group",
+      "label": "STS2 Viewer & Vortexplotboek",
+      "x": 0,
+      "y": 1300,
+      "width": 660,
+      "height": 420,
+      "color": "5"
+    },
+    {
+      "id": "n_apps_vortexplotboek_sync_cronjob_sync_google_drive",
+      "type": "file",
+      "file": "CronJob sync-google-drive.md",
+      "x": 20,
+      "y": 1380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_sts2viewer_deployment_sts2viewer",
+      "type": "file",
+      "file": "Deployment sts2viewer.md",
+      "x": 220,
+      "y": 1380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_vortexplotboek_deployment_vortexplotboek",
+      "type": "file",
+      "file": "Deployment vortexplotboek.md",
+      "x": 420,
+      "y": 1380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_sts2viewer_kustomization_overlay",
+      "type": "file",
+      "file": "Kustomize overlay sts2viewer.md",
+      "x": 20,
+      "y": 1460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_vortexplotboek_kustomization_overlay",
+      "type": "file",
+      "file": "Kustomize overlay vortexplotboek.md",
+      "x": 220,
+      "y": 1460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_sts2viewer_ghcr_login_ghcr_login",
+      "type": "file",
+      "file": "OnePasswordItem ghcr-login.md",
+      "x": 420,
+      "y": 1460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_sts2viewer_service_sts2viewer_service",
+      "type": "file",
+      "file": "Service sts2viewer-service.md",
+      "x": 20,
+      "y": 1540,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_vortexplotboek_vortexplotboek_service_vortexplotboek_service",
+      "type": "file",
+      "file": "Service vortexplotboek-service.md",
+      "x": 220,
+      "y": 1540,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g11",
+      "type": "group",
+      "label": "Adventure Engine App",
+      "x": 1400,
+      "y": 1300,
+      "width": 660,
+      "height": 400,
+      "color": "6"
+    },
+    {
+      "id": "n_apps_adventureengine_deployment_adventureengine",
+      "type": "file",
+      "file": "Deployment adventureengine.md",
+      "x": 1420,
+      "y": 1380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_adventureengine_deployment_ghcr_io_gemberkoekje_adventureengine",
+      "type": "file",
+      "file": "Image ghcr.iogemberkoekjeadventureengine.md",
+      "x": 1620,
+      "y": 1380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespace_adventureengine",
+      "type": "file",
+      "file": "Namespace adventureengine.md",
+      "x": 1820,
+      "y": 1380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_adventureengine_deployment_adventureengine_secrets",
+      "type": "file",
+      "file": "Secret adventureengine-secrets.md",
+      "x": 1420,
+      "y": 1460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_adventureengine_service_adventureengine_service",
+      "type": "file",
+      "file": "Service adventureengine-service.md",
+      "x": 1620,
+      "y": 1460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_adventureengine_kustomization",
+      "type": "file",
+      "file": "adventureengine Kustomization.md",
+      "x": 1820,
+      "y": 1460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g12",
+      "type": "group",
+      "label": "File Server App",
+      "x": 2580,
+      "y": 1300,
+      "width": 660,
+      "height": 400,
+      "color": "1"
+    },
+    {
+      "id": "n_apps_fileserver_deployment_file_server",
+      "type": "file",
+      "file": "Deployment file-server (filebrowser).md",
+      "x": 2600,
+      "y": 1380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_fileserver_deployment_image_busybox",
+      "type": "file",
+      "file": "Image busybox1.36 (init-permissions).md",
+      "x": 2800,
+      "y": 1380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_fileserver_deployment_image_filebrowser",
+      "type": "file",
+      "file": "Image filebrowserfilebrowserlatest.md",
+      "x": 3000,
+      "y": 1380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_fileserver_kustomization",
+      "type": "file",
+      "file": "Kustomization fileserver.md",
+      "x": 2600,
+      "y": 1460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespace_file_server",
+      "type": "file",
+      "file": "Namespace file-server.md",
+      "x": 2800,
+      "y": 1460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_fileserver_service_file_server",
+      "type": "file",
+      "file": "Service file-server (ClusterIP).md",
+      "x": 3000,
+      "y": 1460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g13",
+      "type": "group",
+      "label": "Hacker Minigames App",
+      "x": 3540,
+      "y": 1300,
+      "width": 660,
+      "height": 400,
+      "color": "2"
+    },
+    {
+      "id": "n_apps_hackerminigames_deployment_hackerminigames",
+      "type": "file",
+      "file": "Deployment hackerminigames.md",
+      "x": 3560,
+      "y": 1380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_hackerminigames_deployment_image_hackerminigames",
+      "type": "file",
+      "file": "Image ghcr.iogemberkoekjehackerminigames.md",
+      "x": 3760,
+      "y": 1380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_hackerminigames_kustomization",
+      "type": "file",
+      "file": "Kustomization hackerminigames.md",
+      "x": 3960,
+      "y": 1380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespace_hackerminigames",
+      "type": "file",
+      "file": "Namespace hackerminigames.md",
+      "x": 3560,
+      "y": 1460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_hackerminigames_ghcr_login_ghcr_login",
+      "type": "file",
+      "file": "OnePasswordItem ghcr-login (hackerminigames).md",
+      "x": 3760,
+      "y": 1460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_hackerminigames_service_hackerminigames_service",
+      "type": "file",
+      "file": "Service hackerminigames-service (ClusterIP).md",
+      "x": 3960,
+      "y": 1460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g14",
+      "type": "group",
+      "label": "Cluster Healthcheck App",
+      "x": 4500,
+      "y": 1300,
+      "width": 660,
+      "height": 400,
+      "color": "3"
+    },
+    {
+      "id": "n_apps_healthcheck_deployment_cluster_healthcheck_page",
+      "type": "file",
+      "file": "ConfigMap cluster-healthcheck-page.md",
+      "x": 4520,
+      "y": 1380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_healthcheck_deployment_cluster_healthcheck",
+      "type": "file",
+      "file": "Deployment cluster-healthcheck (caddy).md",
+      "x": 4720,
+      "y": 1380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_healthcheck_deployment_image_caddy",
+      "type": "file",
+      "file": "Image caddy2.10.2-alpine.md",
+      "x": 4920,
+      "y": 1380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_healthcheck_kustomization",
+      "type": "file",
+      "file": "Kustomization healthcheck.md",
+      "x": 4520,
+      "y": 1460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespace_cluster_healthcheck",
+      "type": "file",
+      "file": "Namespace cluster-healthcheck.md",
+      "x": 4720,
+      "y": 1460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_healthcheck_service_cluster_healthcheck",
+      "type": "file",
+      "file": "Service cluster-healthcheck.md",
+      "x": 4920,
+      "y": 1460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g15",
+      "type": "group",
+      "label": "Dockhand App",
+      "x": 0,
+      "y": 1800,
+      "width": 660,
+      "height": 400,
+      "color": "4"
+    },
+    {
+      "id": "n_apps_dockhand_deployment_dockhand",
+      "type": "file",
+      "file": "Deployment dockhand.md",
+      "x": 20,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_dockhand_deployment_image_fnsys_dockhand",
+      "type": "file",
+      "file": "Image fnsysdockhandv1.0.34.md",
+      "x": 220,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_dockhand_kustomization",
+      "type": "file",
+      "file": "Kustomization dockhand.md",
+      "x": 420,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_namespace_dockhand",
+      "type": "file",
+      "file": "Namespace dockhand.md",
+      "x": 20,
+      "y": 1960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_apps_dockhand_service_dockhand",
+      "type": "file",
+      "file": "Service dockhand (NodePort).md",
+      "x": 220,
+      "y": 1960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g16",
+      "type": "group",
+      "label": "k3s System Upgrade Plans",
+      "x": 1400,
+      "y": 1800,
+      "width": 600,
+      "height": 400,
+      "color": "5"
+    },
+    {
+      "id": "n_infrastructure_system_upgrade_plans_kustomization_kustomization",
+      "type": "file",
+      "file": "System Upgrade Plans Kustomization.md",
+      "x": 1420,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_system_upgrade_plans_k3s_upgrade_plan_k3s_agent",
+      "type": "file",
+      "file": "k3s Agent Upgrade Plan.md",
+      "x": 1620,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_infrastructure_system_upgrade_plans_k3s_upgrade_plan_k3s_server",
+      "type": "file",
+      "file": "k3s Server Upgrade Plan.md",
+      "x": 1420,
+      "y": 1960,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g17",
+      "type": "group",
+      "label": "Graphify Knowledge Graph",
+      "x": 2580,
+      "y": 1800,
+      "width": 600,
+      "height": 400,
+      "color": "6"
+    },
+    {
+      "id": "n_claude_graphify",
+      "type": "file",
+      "file": "Graphify Knowledge Graph.md",
+      "x": 2600,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g18",
+      "type": "group",
+      "label": "System Upgrade Controller",
+      "x": 3540,
+      "y": 1800,
+      "width": 600,
+      "height": 400,
+      "color": "1"
+    },
+    {
+      "id": "n_infrastructure_system_upgrade_kustomization_kustomization",
+      "type": "file",
+      "file": "System Upgrade Controller Kustomization.md",
+      "x": 3560,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g19",
+      "type": "group",
+      "label": "HTTP Routing / TLS Concept",
+      "x": 4500,
+      "y": 1800,
+      "width": 600,
+      "height": 400,
+      "color": "2"
+    },
+    {
+      "id": "n_ingress_kustomization_external_http_routing_tls_termination",
+      "type": "file",
+      "file": "External HTTP Routing  TLS Termination.md",
+      "x": 4520,
+      "y": 1880,
+      "width": 180,
+      "height": 60
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_apps_adventureengine_deployment_adventureengine_apps_adventureengine_deployment_adventureengine_secrets",
+      "fromNode": "n_apps_adventureengine_deployment_adventureengine",
+      "toNode": "n_apps_adventureengine_deployment_adventureengine_secrets",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_adventureengine_deployment_adventureengine_apps_adventureengine_deployment_ghcr_io_gemberkoekje_adventureengine",
+      "fromNode": "n_apps_adventureengine_deployment_adventureengine",
+      "toNode": "n_apps_adventureengine_deployment_ghcr_io_gemberkoekje_adventureengine",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_adventureengine_deployment_adventureengine_namespace_adventureengine",
+      "fromNode": "n_apps_adventureengine_deployment_adventureengine",
+      "toNode": "n_namespace_adventureengine",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_adventureengine_deployment_adventureengine_apps_adventureengine_kustomization",
+      "fromNode": "n_apps_adventureengine_deployment_adventureengine",
+      "toNode": "n_apps_adventureengine_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_adventureengine_deployment_adventureengine_apps_adventureengine_service_adventureengine_service",
+      "fromNode": "n_apps_adventureengine_deployment_adventureengine",
+      "toNode": "n_apps_adventureengine_service_adventureengine_service",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_adventureengine_kustomization_apps_adventureengine_deployment_adventureengine_secrets",
+      "fromNode": "n_apps_adventureengine_kustomization",
+      "toNode": "n_apps_adventureengine_deployment_adventureengine_secrets",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_adventureengine_kustomization_apps_adventureengine_service_adventureengine_service",
+      "fromNode": "n_apps_adventureengine_kustomization",
+      "toNode": "n_apps_adventureengine_service_adventureengine_service",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_adventureengine_kustomization_apps_kustomization",
+      "fromNode": "n_apps_adventureengine_kustomization",
+      "toNode": "n_apps_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_adventureengine_service_adventureengine_service_namespace_adventureengine",
+      "fromNode": "n_apps_adventureengine_service_adventureengine_service",
+      "toNode": "n_namespace_adventureengine",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_adventureengine_service_adventureengine_service_ingress_adventureengine_ingress_adventureengine_ingress",
+      "fromNode": "n_apps_adventureengine_service_adventureengine_service",
+      "toNode": "n_ingress_adventureengine_ingress_adventureengine_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_aiusagemonitor_readme_apps_aiusagemonitor_cronjob_aiusagemonitor",
+      "fromNode": "n_apps_aiusagemonitor_readme",
+      "toNode": "n_apps_aiusagemonitor_cronjob_aiusagemonitor",
+      "label": "conceptually_related_to [INFERRED]"
+    },
+    {
+      "id": "e_apps_aiusagemonitor_readme_apps_aiusagemonitor_cronjob_aiusagemonitor_secrets",
+      "fromNode": "n_apps_aiusagemonitor_readme",
+      "toNode": "n_apps_aiusagemonitor_cronjob_aiusagemonitor_secrets",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_aiusagemonitor_readme_apps_aiusagemonitor_cronjob_ghcr_io_gemberkoekje_aiusagemonitor",
+      "fromNode": "n_apps_aiusagemonitor_readme",
+      "toNode": "n_apps_aiusagemonitor_cronjob_ghcr_io_gemberkoekje_aiusagemonitor",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_aiusagemonitor_readme_apps_aiusagemonitor_cronjob_mail_secret",
+      "fromNode": "n_apps_aiusagemonitor_readme",
+      "toNode": "n_apps_aiusagemonitor_cronjob_mail_secret",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_aiusagemonitor_readme_apps_aiusagemonitor_ghcr_login_ghcr_login",
+      "fromNode": "n_apps_aiusagemonitor_readme",
+      "toNode": "n_apps_aiusagemonitor_ghcr_login_ghcr_login",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_aiusagemonitor_cronjob_aiusagemonitor_apps_aiusagemonitor_cronjob_aiusagemonitor_secrets",
+      "fromNode": "n_apps_aiusagemonitor_cronjob_aiusagemonitor",
+      "toNode": "n_apps_aiusagemonitor_cronjob_aiusagemonitor_secrets",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_aiusagemonitor_cronjob_aiusagemonitor_apps_aiusagemonitor_cronjob_ghcr_io_gemberkoekje_aiusagemonitor",
+      "fromNode": "n_apps_aiusagemonitor_cronjob_aiusagemonitor",
+      "toNode": "n_apps_aiusagemonitor_cronjob_ghcr_io_gemberkoekje_aiusagemonitor",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_aiusagemonitor_cronjob_aiusagemonitor_apps_aiusagemonitor_cronjob_mail_secret",
+      "fromNode": "n_apps_aiusagemonitor_cronjob_aiusagemonitor",
+      "toNode": "n_apps_aiusagemonitor_cronjob_mail_secret",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_aiusagemonitor_cronjob_aiusagemonitor_apps_aiusagemonitor_serviceaccount_default",
+      "fromNode": "n_apps_aiusagemonitor_cronjob_aiusagemonitor",
+      "toNode": "n_apps_aiusagemonitor_serviceaccount_default",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_aiusagemonitor_cronjob_aiusagemonitor_namespace_aiusagemonitor",
+      "fromNode": "n_apps_aiusagemonitor_cronjob_aiusagemonitor",
+      "toNode": "n_namespace_aiusagemonitor",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_aiusagemonitor_cronjob_aiusagemonitor_apps_aiusagemonitor_kustomization",
+      "fromNode": "n_apps_aiusagemonitor_cronjob_aiusagemonitor",
+      "toNode": "n_apps_aiusagemonitor_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_aiusagemonitor_ghcr_login_ghcr_login_apps_bot_on_the_clocktower_ghcr_login_ghcr_login",
+      "fromNode": "n_apps_aiusagemonitor_ghcr_login_ghcr_login",
+      "toNode": "n_apps_bot_on_the_clocktower_ghcr_login_ghcr_login",
+      "label": "semantically_similar_to [INFERRED]"
+    },
+    {
+      "id": "e_apps_aiusagemonitor_ghcr_login_ghcr_login_apps_aiusagemonitor_kustomization",
+      "fromNode": "n_apps_aiusagemonitor_ghcr_login_ghcr_login",
+      "toNode": "n_apps_aiusagemonitor_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_aiusagemonitor_ghcr_login_ghcr_login_apps_aiusagemonitor_serviceaccount_default",
+      "fromNode": "n_apps_aiusagemonitor_ghcr_login_ghcr_login",
+      "toNode": "n_apps_aiusagemonitor_serviceaccount_default",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_aiusagemonitor_kustomization_apps_aiusagemonitor_cronjob_aiusagemonitor_secrets",
+      "fromNode": "n_apps_aiusagemonitor_kustomization",
+      "toNode": "n_apps_aiusagemonitor_cronjob_aiusagemonitor_secrets",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_aiusagemonitor_kustomization_apps_aiusagemonitor_cronjob_mail_secret",
+      "fromNode": "n_apps_aiusagemonitor_kustomization",
+      "toNode": "n_apps_aiusagemonitor_cronjob_mail_secret",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_aiusagemonitor_kustomization_apps_aiusagemonitor_serviceaccount_default",
+      "fromNode": "n_apps_aiusagemonitor_kustomization",
+      "toNode": "n_apps_aiusagemonitor_serviceaccount_default",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_aiusagemonitor_serviceaccount_default_namespace_aiusagemonitor",
+      "fromNode": "n_apps_aiusagemonitor_serviceaccount_default",
+      "toNode": "n_namespace_aiusagemonitor",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_aiusagemonitor_cronjob_mail_secret_apps_cov_website_deployment_mail_secret",
+      "fromNode": "n_apps_aiusagemonitor_cronjob_mail_secret",
+      "toNode": "n_apps_cov_website_deployment_mail_secret",
+      "label": "semantically_similar_to [INFERRED]"
+    },
+    {
+      "id": "e_apps_armabotcs_deployment_armabotcs_apps_armabotcs_deployment_discord_secret",
+      "fromNode": "n_apps_armabotcs_deployment_armabotcs",
+      "toNode": "n_apps_armabotcs_deployment_discord_secret",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_armabotcs_deployment_armabotcs_apps_armabotcs_deployment_ghcr_io_gemberkoekje_armabotcs",
+      "fromNode": "n_apps_armabotcs_deployment_armabotcs",
+      "toNode": "n_apps_armabotcs_deployment_ghcr_io_gemberkoekje_armabotcs",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_armabotcs_deployment_armabotcs_apps_armabotcs_deployment_postgress_secret",
+      "fromNode": "n_apps_armabotcs_deployment_armabotcs",
+      "toNode": "n_apps_armabotcs_deployment_postgress_secret",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_armabotcs_deployment_armabotcs_namespace_armabotcs",
+      "fromNode": "n_apps_armabotcs_deployment_armabotcs",
+      "toNode": "n_namespace_armabotcs",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_armabotcs_deployment_armabotcs_apps_armabotcs_kustomization",
+      "fromNode": "n_apps_armabotcs_deployment_armabotcs",
+      "toNode": "n_apps_armabotcs_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_armabotcs_kustomization_apps_armabotcs_deployment_discord_secret",
+      "fromNode": "n_apps_armabotcs_kustomization",
+      "toNode": "n_apps_armabotcs_deployment_discord_secret",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_armabotcs_kustomization_apps_armabotcs_deployment_postgress_secret",
+      "fromNode": "n_apps_armabotcs_kustomization",
+      "toNode": "n_apps_armabotcs_deployment_postgress_secret",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_armabotcs_kustomization_apps_kustomization",
+      "fromNode": "n_apps_armabotcs_kustomization",
+      "toNode": "n_apps_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_bot_on_the_clocktower_deployment_bot_on_the_clocktower_apps_bot_on_the_clocktower_deployment_bot_on_the_clocktower_secrets",
+      "fromNode": "n_apps_bot_on_the_clocktower_deployment_bot_on_the_clocktower",
+      "toNode": "n_apps_bot_on_the_clocktower_deployment_bot_on_the_clocktower_secrets",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_bot_on_the_clocktower_deployment_bot_on_the_clocktower_apps_bot_on_the_clocktower_deployment_ghcr_io_gemberkoekje_bot_on_the_clocktower",
+      "fromNode": "n_apps_bot_on_the_clocktower_deployment_bot_on_the_clocktower",
+      "toNode": "n_apps_bot_on_the_clocktower_deployment_ghcr_io_gemberkoekje_bot_on_the_clocktower",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_bot_on_the_clocktower_deployment_bot_on_the_clocktower_apps_bot_on_the_clocktower_ghcr_login_ghcr_login",
+      "fromNode": "n_apps_bot_on_the_clocktower_deployment_bot_on_the_clocktower",
+      "toNode": "n_apps_bot_on_the_clocktower_ghcr_login_ghcr_login",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_bot_on_the_clocktower_deployment_bot_on_the_clocktower_namespace_bot_on_the_clocktower",
+      "fromNode": "n_apps_bot_on_the_clocktower_deployment_bot_on_the_clocktower",
+      "toNode": "n_namespace_bot_on_the_clocktower",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_bot_on_the_clocktower_deployment_bot_on_the_clocktower_apps_bot_on_the_clocktower_kustomization",
+      "fromNode": "n_apps_bot_on_the_clocktower_deployment_bot_on_the_clocktower",
+      "toNode": "n_apps_bot_on_the_clocktower_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_bot_on_the_clocktower_ghcr_login_ghcr_login_apps_curatool_ghcr_login_ghcr_login",
+      "fromNode": "n_apps_bot_on_the_clocktower_ghcr_login_ghcr_login",
+      "toNode": "n_apps_curatool_ghcr_login_ghcr_login",
+      "label": "semantically_similar_to [INFERRED]"
+    },
+    {
+      "id": "e_apps_bot_on_the_clocktower_ghcr_login_ghcr_login_apps_bot_on_the_clocktower_kustomization",
+      "fromNode": "n_apps_bot_on_the_clocktower_ghcr_login_ghcr_login",
+      "toNode": "n_apps_bot_on_the_clocktower_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_bot_on_the_clocktower_kustomization_apps_bot_on_the_clocktower_deployment_bot_on_the_clocktower_secrets",
+      "fromNode": "n_apps_bot_on_the_clocktower_kustomization",
+      "toNode": "n_apps_bot_on_the_clocktower_deployment_bot_on_the_clocktower_secrets",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_bot_on_the_clocktower_kustomization_apps_kustomization",
+      "fromNode": "n_apps_bot_on_the_clocktower_kustomization",
+      "toNode": "n_apps_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_cov_website_deployment_cov_website_apps_cov_website_deployment_ghcr_io_gemberkoekje_cov_website",
+      "fromNode": "n_apps_cov_website_deployment_cov_website",
+      "toNode": "n_apps_cov_website_deployment_ghcr_io_gemberkoekje_cov_website",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_cov_website_deployment_cov_website_apps_cov_website_deployment_mail_secret",
+      "fromNode": "n_apps_cov_website_deployment_cov_website",
+      "toNode": "n_apps_cov_website_deployment_mail_secret",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_cov_website_deployment_cov_website_namespace_cov_website",
+      "fromNode": "n_apps_cov_website_deployment_cov_website",
+      "toNode": "n_namespace_cov_website",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_cov_website_deployment_cov_website_apps_cov_website_kustomization",
+      "fromNode": "n_apps_cov_website_deployment_cov_website",
+      "toNode": "n_apps_cov_website_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_cov_website_deployment_cov_website_apps_cov_website_service_cov_website_service",
+      "fromNode": "n_apps_cov_website_deployment_cov_website",
+      "toNode": "n_apps_cov_website_service_cov_website_service",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_cov_website_kustomization_apps_cov_website_deployment_mail_secret",
+      "fromNode": "n_apps_cov_website_kustomization",
+      "toNode": "n_apps_cov_website_deployment_mail_secret",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_cov_website_kustomization_apps_cov_website_service_cov_website_service",
+      "fromNode": "n_apps_cov_website_kustomization",
+      "toNode": "n_apps_cov_website_service_cov_website_service",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_cov_website_kustomization_apps_kustomization",
+      "fromNode": "n_apps_cov_website_kustomization",
+      "toNode": "n_apps_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_cov_website_service_cov_website_service_ingress_cov_website_ingress_cov_website_ingress",
+      "fromNode": "n_apps_cov_website_service_cov_website_service",
+      "toNode": "n_ingress_cov_website_ingress_cov_website_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_curatool_ghcr_login_ghcr_login_apps_curatool_kustomization",
+      "fromNode": "n_apps_curatool_ghcr_login_ghcr_login",
+      "toNode": "n_apps_curatool_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_curatool_ghcr_login_ghcr_login_apps_curatool_web_deployment_curatool",
+      "fromNode": "n_apps_curatool_ghcr_login_ghcr_login",
+      "toNode": "n_apps_curatool_web_deployment_curatool",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_curatool_kustomization_apps_curatool_web_configmap_curatool_web_config",
+      "fromNode": "n_apps_curatool_kustomization",
+      "toNode": "n_apps_curatool_web_configmap_curatool_web_config",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_curatool_kustomization_apps_curatool_web_deployment_curatool",
+      "fromNode": "n_apps_curatool_kustomization",
+      "toNode": "n_apps_curatool_web_deployment_curatool",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_curatool_kustomization_apps_curatool_web_deployment_curatool_secrets",
+      "fromNode": "n_apps_curatool_kustomization",
+      "toNode": "n_apps_curatool_web_deployment_curatool_secrets",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_curatool_kustomization_apps_curatool_web_service_curatool",
+      "fromNode": "n_apps_curatool_kustomization",
+      "toNode": "n_apps_curatool_web_service_curatool",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_curatool_kustomization_namespace_curatool",
+      "fromNode": "n_apps_curatool_kustomization",
+      "toNode": "n_namespace_curatool",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_curatool_kustomization_apps_kustomization",
+      "fromNode": "n_apps_curatool_kustomization",
+      "toNode": "n_apps_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_curatool_web_configmap_curatool_web_config_apps_curatool_web_deployment_curatool",
+      "fromNode": "n_apps_curatool_web_configmap_curatool_web_config",
+      "toNode": "n_apps_curatool_web_deployment_curatool",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_curatool_web_deployment_curatool_apps_curatool_web_deployment_curatool_secrets",
+      "fromNode": "n_apps_curatool_web_deployment_curatool",
+      "toNode": "n_apps_curatool_web_deployment_curatool_secrets",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_curatool_web_deployment_curatool_apps_curatool_web_deployment_ghcr_io_gemberkoekje_thecuratool",
+      "fromNode": "n_apps_curatool_web_deployment_curatool",
+      "toNode": "n_apps_curatool_web_deployment_ghcr_io_gemberkoekje_thecuratool",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_curatool_web_deployment_curatool_namespace_curatool",
+      "fromNode": "n_apps_curatool_web_deployment_curatool",
+      "toNode": "n_namespace_curatool",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_curatool_web_deployment_curatool_apps_curatool_web_service_curatool",
+      "fromNode": "n_apps_curatool_web_deployment_curatool",
+      "toNode": "n_apps_curatool_web_service_curatool",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_curatool_web_service_curatool_ingress_curatool_ingress_curatool_ingress",
+      "fromNode": "n_apps_curatool_web_service_curatool",
+      "toNode": "n_ingress_curatool_ingress_curatool_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_namespace_dockhand_apps_dockhand_deployment_dockhand",
+      "fromNode": "n_namespace_dockhand",
+      "toNode": "n_apps_dockhand_deployment_dockhand",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_namespace_dockhand_apps_dockhand_service_dockhand",
+      "fromNode": "n_namespace_dockhand",
+      "toNode": "n_apps_dockhand_service_dockhand",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_namespace_ebi_cs_api_apps_ebi_cs_api_deployment_ebi_cs_api",
+      "fromNode": "n_namespace_ebi_cs_api",
+      "toNode": "n_apps_ebi_cs_api_deployment_ebi_cs_api",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_namespace_ebi_cs_api_apps_ebi_cs_api_ebi_cs_api_service_ebi_cs_api_service",
+      "fromNode": "n_namespace_ebi_cs_api",
+      "toNode": "n_apps_ebi_cs_api_ebi_cs_api_service_ebi_cs_api_service",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_namespace_ebi_cs_api_apps_ebi_cs_frontend_deployment_ebi_cs_frontend",
+      "fromNode": "n_namespace_ebi_cs_api",
+      "toNode": "n_apps_ebi_cs_frontend_deployment_ebi_cs_frontend",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_namespace_ebi_cs_api_apps_ebi_cs_frontend_service_ebi_cs_frontend_service",
+      "fromNode": "n_namespace_ebi_cs_api",
+      "toNode": "n_apps_ebi_cs_frontend_service_ebi_cs_frontend_service",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_namespace_file_server_apps_fileserver_deployment_file_server",
+      "fromNode": "n_namespace_file_server",
+      "toNode": "n_apps_fileserver_deployment_file_server",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_namespace_file_server_apps_fileserver_service_file_server",
+      "fromNode": "n_namespace_file_server",
+      "toNode": "n_apps_fileserver_service_file_server",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_namespace_hackerminigames_apps_hackerminigames_deployment_hackerminigames",
+      "fromNode": "n_namespace_hackerminigames",
+      "toNode": "n_apps_hackerminigames_deployment_hackerminigames",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_namespace_hackerminigames_apps_hackerminigames_ghcr_login_ghcr_login",
+      "fromNode": "n_namespace_hackerminigames",
+      "toNode": "n_apps_hackerminigames_ghcr_login_ghcr_login",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_namespace_hackerminigames_apps_hackerminigames_service_hackerminigames_service",
+      "fromNode": "n_namespace_hackerminigames",
+      "toNode": "n_apps_hackerminigames_service_hackerminigames_service",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_namespace_cluster_healthcheck_apps_healthcheck_deployment_cluster_healthcheck",
+      "fromNode": "n_namespace_cluster_healthcheck",
+      "toNode": "n_apps_healthcheck_deployment_cluster_healthcheck",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_namespace_cluster_healthcheck_apps_healthcheck_deployment_cluster_healthcheck_page",
+      "fromNode": "n_namespace_cluster_healthcheck",
+      "toNode": "n_apps_healthcheck_deployment_cluster_healthcheck_page",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_namespace_cluster_healthcheck_apps_healthcheck_service_cluster_healthcheck",
+      "fromNode": "n_namespace_cluster_healthcheck",
+      "toNode": "n_apps_healthcheck_service_cluster_healthcheck",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_namespace_spacetraders_apps_spacetraders_configmap_spacetraders_config",
+      "fromNode": "n_namespace_spacetraders",
+      "toNode": "n_apps_spacetraders_configmap_spacetraders_config",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_namespace_spacetraders_apps_spacetraders_deployment_api_spacetraders_api",
+      "fromNode": "n_namespace_spacetraders",
+      "toNode": "n_apps_spacetraders_deployment_api_spacetraders_api",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_namespace_spacetraders_apps_spacetraders_deployment_webui_spacetraders_webui",
+      "fromNode": "n_namespace_spacetraders",
+      "toNode": "n_apps_spacetraders_deployment_webui_spacetraders_webui",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_namespace_spacetraders_apps_spacetraders_ghcr_login_ghcr_login",
+      "fromNode": "n_namespace_spacetraders",
+      "toNode": "n_apps_spacetraders_ghcr_login_ghcr_login",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_namespace_spacetraders_apps_spacetraders_service_api_spacetraders_api_service",
+      "fromNode": "n_namespace_spacetraders",
+      "toNode": "n_apps_spacetraders_service_api_spacetraders_api_service",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_namespace_spacetraders_apps_spacetraders_service_webui_spacetraders_webui_service",
+      "fromNode": "n_namespace_spacetraders",
+      "toNode": "n_apps_spacetraders_service_webui_spacetraders_webui_service",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_dockhand_deployment_dockhand_apps_dockhand_deployment_image_fnsys_dockhand",
+      "fromNode": "n_apps_dockhand_deployment_dockhand",
+      "toNode": "n_apps_dockhand_deployment_image_fnsys_dockhand",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_dockhand_deployment_dockhand_apps_dockhand_kustomization",
+      "fromNode": "n_apps_dockhand_deployment_dockhand",
+      "toNode": "n_apps_dockhand_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_dockhand_deployment_dockhand_apps_dockhand_service_dockhand",
+      "fromNode": "n_apps_dockhand_deployment_dockhand",
+      "toNode": "n_apps_dockhand_service_dockhand",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_dockhand_kustomization_apps_dockhand_service_dockhand",
+      "fromNode": "n_apps_dockhand_kustomization",
+      "toNode": "n_apps_dockhand_service_dockhand",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_dockhand_kustomization_apps_kustomization",
+      "fromNode": "n_apps_dockhand_kustomization",
+      "toNode": "n_apps_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_ebi_cs_api_deployment_ebi_cs_api_apps_ebi_cs_api_deployment_image_ebi_cs_api",
+      "fromNode": "n_apps_ebi_cs_api_deployment_ebi_cs_api",
+      "toNode": "n_apps_ebi_cs_api_deployment_image_ebi_cs_api",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_ebi_cs_api_deployment_ebi_cs_api_apps_ebi_cs_api_ebi_cs_api_service_ebi_cs_api_service",
+      "fromNode": "n_apps_ebi_cs_api_deployment_ebi_cs_api",
+      "toNode": "n_apps_ebi_cs_api_ebi_cs_api_service_ebi_cs_api_service",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_ebi_cs_api_deployment_ebi_cs_api_apps_ebi_cs_api_kustomization",
+      "fromNode": "n_apps_ebi_cs_api_deployment_ebi_cs_api",
+      "toNode": "n_apps_ebi_cs_api_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_ebi_cs_api_ebi_cs_api_service_ebi_cs_api_service_apps_ebi_cs_api_kustomization",
+      "fromNode": "n_apps_ebi_cs_api_ebi_cs_api_service_ebi_cs_api_service",
+      "toNode": "n_apps_ebi_cs_api_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_ebi_cs_api_ebi_cs_api_service_ebi_cs_api_service_ingress_ebi_cs_api_ingress_ebi_cs_api_ingress",
+      "fromNode": "n_apps_ebi_cs_api_ebi_cs_api_service_ebi_cs_api_service",
+      "toNode": "n_ingress_ebi_cs_api_ingress_ebi_cs_api_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_ebi_cs_api_kustomization_apps_kustomization",
+      "fromNode": "n_apps_ebi_cs_api_kustomization",
+      "toNode": "n_apps_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_ebi_cs_frontend_deployment_ebi_cs_frontend_apps_ebi_cs_frontend_deployment_image_ebi_cs_frontend",
+      "fromNode": "n_apps_ebi_cs_frontend_deployment_ebi_cs_frontend",
+      "toNode": "n_apps_ebi_cs_frontend_deployment_image_ebi_cs_frontend",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_ebi_cs_frontend_deployment_ebi_cs_frontend_apps_ebi_cs_frontend_kustomization",
+      "fromNode": "n_apps_ebi_cs_frontend_deployment_ebi_cs_frontend",
+      "toNode": "n_apps_ebi_cs_frontend_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_ebi_cs_frontend_deployment_ebi_cs_frontend_apps_ebi_cs_frontend_service_ebi_cs_frontend_service",
+      "fromNode": "n_apps_ebi_cs_frontend_deployment_ebi_cs_frontend",
+      "toNode": "n_apps_ebi_cs_frontend_service_ebi_cs_frontend_service",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_ebi_cs_frontend_kustomization_apps_ebi_cs_frontend_service_ebi_cs_frontend_service",
+      "fromNode": "n_apps_ebi_cs_frontend_kustomization",
+      "toNode": "n_apps_ebi_cs_frontend_service_ebi_cs_frontend_service",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_ebi_cs_frontend_kustomization_apps_kustomization",
+      "fromNode": "n_apps_ebi_cs_frontend_kustomization",
+      "toNode": "n_apps_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_ebi_cs_frontend_service_ebi_cs_frontend_service_ingress_ebi_cs_frontend_ingress_ebi_cs_frontend_ingress",
+      "fromNode": "n_apps_ebi_cs_frontend_service_ebi_cs_frontend_service",
+      "toNode": "n_ingress_ebi_cs_frontend_ingress_ebi_cs_frontend_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_fileserver_deployment_file_server_apps_fileserver_deployment_image_busybox",
+      "fromNode": "n_apps_fileserver_deployment_file_server",
+      "toNode": "n_apps_fileserver_deployment_image_busybox",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_fileserver_deployment_file_server_apps_fileserver_deployment_image_filebrowser",
+      "fromNode": "n_apps_fileserver_deployment_file_server",
+      "toNode": "n_apps_fileserver_deployment_image_filebrowser",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_fileserver_deployment_file_server_apps_fileserver_kustomization",
+      "fromNode": "n_apps_fileserver_deployment_file_server",
+      "toNode": "n_apps_fileserver_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_fileserver_deployment_file_server_apps_fileserver_service_file_server",
+      "fromNode": "n_apps_fileserver_deployment_file_server",
+      "toNode": "n_apps_fileserver_service_file_server",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_fileserver_kustomization_apps_fileserver_service_file_server",
+      "fromNode": "n_apps_fileserver_kustomization",
+      "toNode": "n_apps_fileserver_service_file_server",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_fileserver_kustomization_apps_kustomization",
+      "fromNode": "n_apps_fileserver_kustomization",
+      "toNode": "n_apps_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_fileserver_service_file_server_ingress_fileserver_ingress_file_server_ingress",
+      "fromNode": "n_apps_fileserver_service_file_server",
+      "toNode": "n_ingress_fileserver_ingress_file_server_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_hackerminigames_deployment_hackerminigames_apps_hackerminigames_deployment_image_hackerminigames",
+      "fromNode": "n_apps_hackerminigames_deployment_hackerminigames",
+      "toNode": "n_apps_hackerminigames_deployment_image_hackerminigames",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_hackerminigames_deployment_hackerminigames_apps_hackerminigames_ghcr_login_ghcr_login",
+      "fromNode": "n_apps_hackerminigames_deployment_hackerminigames",
+      "toNode": "n_apps_hackerminigames_ghcr_login_ghcr_login",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_hackerminigames_deployment_hackerminigames_apps_hackerminigames_kustomization",
+      "fromNode": "n_apps_hackerminigames_deployment_hackerminigames",
+      "toNode": "n_apps_hackerminigames_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_hackerminigames_deployment_hackerminigames_apps_hackerminigames_service_hackerminigames_service",
+      "fromNode": "n_apps_hackerminigames_deployment_hackerminigames",
+      "toNode": "n_apps_hackerminigames_service_hackerminigames_service",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_hackerminigames_ghcr_login_ghcr_login_apps_spacetraders_ghcr_login_ghcr_login",
+      "fromNode": "n_apps_hackerminigames_ghcr_login_ghcr_login",
+      "toNode": "n_apps_spacetraders_ghcr_login_ghcr_login",
+      "label": "semantically_similar_to [INFERRED]"
+    },
+    {
+      "id": "e_apps_hackerminigames_ghcr_login_ghcr_login_apps_hackerminigames_kustomization",
+      "fromNode": "n_apps_hackerminigames_ghcr_login_ghcr_login",
+      "toNode": "n_apps_hackerminigames_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_hackerminigames_kustomization_apps_hackerminigames_service_hackerminigames_service",
+      "fromNode": "n_apps_hackerminigames_kustomization",
+      "toNode": "n_apps_hackerminigames_service_hackerminigames_service",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_hackerminigames_kustomization_apps_kustomization",
+      "fromNode": "n_apps_hackerminigames_kustomization",
+      "toNode": "n_apps_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_hackerminigames_service_hackerminigames_service_ingress_hackerminigames_ingress_hackerminigames_ingress",
+      "fromNode": "n_apps_hackerminigames_service_hackerminigames_service",
+      "toNode": "n_ingress_hackerminigames_ingress_hackerminigames_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_healthcheck_deployment_cluster_healthcheck_apps_healthcheck_deployment_cluster_healthcheck_page",
+      "fromNode": "n_apps_healthcheck_deployment_cluster_healthcheck",
+      "toNode": "n_apps_healthcheck_deployment_cluster_healthcheck_page",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_healthcheck_deployment_cluster_healthcheck_apps_healthcheck_deployment_image_caddy",
+      "fromNode": "n_apps_healthcheck_deployment_cluster_healthcheck",
+      "toNode": "n_apps_healthcheck_deployment_image_caddy",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_healthcheck_deployment_cluster_healthcheck_apps_healthcheck_kustomization",
+      "fromNode": "n_apps_healthcheck_deployment_cluster_healthcheck",
+      "toNode": "n_apps_healthcheck_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_healthcheck_deployment_cluster_healthcheck_apps_healthcheck_service_cluster_healthcheck",
+      "fromNode": "n_apps_healthcheck_deployment_cluster_healthcheck",
+      "toNode": "n_apps_healthcheck_service_cluster_healthcheck",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_healthcheck_kustomization_apps_healthcheck_service_cluster_healthcheck",
+      "fromNode": "n_apps_healthcheck_kustomization",
+      "toNode": "n_apps_healthcheck_service_cluster_healthcheck",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_healthcheck_kustomization_apps_kustomization",
+      "fromNode": "n_apps_healthcheck_kustomization",
+      "toNode": "n_apps_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_healthcheck_service_cluster_healthcheck_ingress_healthcheck_ingress_healthcheck_ingress",
+      "fromNode": "n_apps_healthcheck_service_cluster_healthcheck",
+      "toNode": "n_ingress_healthcheck_ingress_healthcheck_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_spacetraders_configmap_spacetraders_config_apps_spacetraders_service_api_spacetraders_api_service",
+      "fromNode": "n_apps_spacetraders_configmap_spacetraders_config",
+      "toNode": "n_apps_spacetraders_service_api_spacetraders_api_service",
+      "label": "references [INFERRED]"
+    },
+    {
+      "id": "e_apps_spacetraders_configmap_spacetraders_config_apps_spacetraders_deployment_api_spacetraders_api",
+      "fromNode": "n_apps_spacetraders_configmap_spacetraders_config",
+      "toNode": "n_apps_spacetraders_deployment_api_spacetraders_api",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_spacetraders_configmap_spacetraders_config_apps_spacetraders_deployment_webui_spacetraders_webui",
+      "fromNode": "n_apps_spacetraders_configmap_spacetraders_config",
+      "toNode": "n_apps_spacetraders_deployment_webui_spacetraders_webui",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_spacetraders_configmap_spacetraders_config_apps_spacetraders_kustomization",
+      "fromNode": "n_apps_spacetraders_configmap_spacetraders_config",
+      "toNode": "n_apps_spacetraders_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_spacetraders_deployment_api_spacetraders_api_apps_spacetraders_deployment_api_image_spacetraders_api",
+      "fromNode": "n_apps_spacetraders_deployment_api_spacetraders_api",
+      "toNode": "n_apps_spacetraders_deployment_api_image_spacetraders_api",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_spacetraders_deployment_api_spacetraders_api_apps_spacetraders_ghcr_login_ghcr_login",
+      "fromNode": "n_apps_spacetraders_deployment_api_spacetraders_api",
+      "toNode": "n_apps_spacetraders_ghcr_login_ghcr_login",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_spacetraders_deployment_api_spacetraders_api_apps_spacetraders_kustomization",
+      "fromNode": "n_apps_spacetraders_deployment_api_spacetraders_api",
+      "toNode": "n_apps_spacetraders_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_spacetraders_deployment_api_spacetraders_api_apps_spacetraders_service_api_spacetraders_api_service",
+      "fromNode": "n_apps_spacetraders_deployment_api_spacetraders_api",
+      "toNode": "n_apps_spacetraders_service_api_spacetraders_api_service",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_spacetraders_deployment_webui_spacetraders_webui_apps_spacetraders_deployment_webui_image_spacetraders_webui",
+      "fromNode": "n_apps_spacetraders_deployment_webui_spacetraders_webui",
+      "toNode": "n_apps_spacetraders_deployment_webui_image_spacetraders_webui",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_spacetraders_deployment_webui_spacetraders_webui_apps_spacetraders_ghcr_login_ghcr_login",
+      "fromNode": "n_apps_spacetraders_deployment_webui_spacetraders_webui",
+      "toNode": "n_apps_spacetraders_ghcr_login_ghcr_login",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_spacetraders_deployment_webui_spacetraders_webui_apps_spacetraders_service_api_spacetraders_api_service",
+      "fromNode": "n_apps_spacetraders_deployment_webui_spacetraders_webui",
+      "toNode": "n_apps_spacetraders_service_api_spacetraders_api_service",
+      "label": "shares_data_with [INFERRED]"
+    },
+    {
+      "id": "e_apps_spacetraders_deployment_webui_spacetraders_webui_apps_spacetraders_kustomization",
+      "fromNode": "n_apps_spacetraders_deployment_webui_spacetraders_webui",
+      "toNode": "n_apps_spacetraders_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_spacetraders_deployment_webui_spacetraders_webui_apps_spacetraders_service_webui_spacetraders_webui_service",
+      "fromNode": "n_apps_spacetraders_deployment_webui_spacetraders_webui",
+      "toNode": "n_apps_spacetraders_service_webui_spacetraders_webui_service",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_spacetraders_ghcr_login_ghcr_login_apps_spacetraders_kustomization",
+      "fromNode": "n_apps_spacetraders_ghcr_login_ghcr_login",
+      "toNode": "n_apps_spacetraders_kustomization",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_spacetraders_kustomization_apps_spacetraders_service_api_spacetraders_api_service",
+      "fromNode": "n_apps_spacetraders_kustomization",
+      "toNode": "n_apps_spacetraders_service_api_spacetraders_api_service",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_spacetraders_kustomization_apps_spacetraders_service_webui_spacetraders_webui_service",
+      "fromNode": "n_apps_spacetraders_kustomization",
+      "toNode": "n_apps_spacetraders_service_webui_spacetraders_webui_service",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_spacetraders_service_api_spacetraders_api_service_ingress_spacetraders_ingress_spacetraders_ingress",
+      "fromNode": "n_apps_spacetraders_service_api_spacetraders_api_service",
+      "toNode": "n_ingress_spacetraders_ingress_spacetraders_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_spacetraders_service_webui_spacetraders_webui_service_ingress_spacetraders_ingress_spacetraders_ingress",
+      "fromNode": "n_apps_spacetraders_service_webui_spacetraders_webui_service",
+      "toNode": "n_ingress_spacetraders_ingress_spacetraders_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_apps_kustomization_apps_clusters_home_flux_system_gotk_sync_flux_system_gitrepository",
+      "fromNode": "n_clusters_home_apps_kustomization_apps",
+      "toNode": "n_clusters_home_flux_system_gotk_sync_flux_system_gitrepository",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_apps_kustomization_apps_clusters_home_infrastructure_kustomization_infrastructure",
+      "fromNode": "n_clusters_home_apps_kustomization_apps",
+      "toNode": "n_clusters_home_infrastructure_kustomization_infrastructure",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_apps_kustomization_apps_clusters_home_flux_system_gotk_sync_flux_system",
+      "fromNode": "n_clusters_home_apps_kustomization_apps",
+      "toNode": "n_clusters_home_flux_system_gotk_sync_flux_system",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_apps_kustomization_apps_clusters_home_ingress_kustomization_ingress",
+      "fromNode": "n_clusters_home_apps_kustomization_apps",
+      "toNode": "n_clusters_home_ingress_kustomization_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_configuration_kustomization_configuration_clusters_home_flux_system_gotk_sync_flux_system_gitrepository",
+      "fromNode": "n_clusters_home_configuration_kustomization_configuration",
+      "toNode": "n_clusters_home_flux_system_gotk_sync_flux_system_gitrepository",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_configuration_kustomization_configuration_clusters_home_infrastructure_kustomization_infrastructure",
+      "fromNode": "n_clusters_home_configuration_kustomization_configuration",
+      "toNode": "n_clusters_home_infrastructure_kustomization_infrastructure",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_configuration_kustomization_configuration_configuration_kustomization_overlay",
+      "fromNode": "n_clusters_home_configuration_kustomization_configuration",
+      "toNode": "n_configuration_kustomization_overlay",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_configuration_kustomization_configuration_clusters_home_flux_system_gotk_sync_flux_system",
+      "fromNode": "n_clusters_home_configuration_kustomization_configuration",
+      "toNode": "n_clusters_home_flux_system_gotk_sync_flux_system",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_infrastructure_kustomization_infrastructure_clusters_home_flux_system_gotk_sync_flux_system",
+      "fromNode": "n_clusters_home_infrastructure_kustomization_infrastructure",
+      "toNode": "n_clusters_home_flux_system_gotk_sync_flux_system",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_infrastructure_kustomization_infrastructure_clusters_home_flux_system_gotk_sync_flux_system_gitrepository",
+      "fromNode": "n_clusters_home_infrastructure_kustomization_infrastructure",
+      "toNode": "n_clusters_home_flux_system_gotk_sync_flux_system_gitrepository",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_infrastructure_kustomization_infrastructure_clusters_home_repos_kustomization_repos",
+      "fromNode": "n_clusters_home_infrastructure_kustomization_infrastructure",
+      "toNode": "n_clusters_home_repos_kustomization_repos",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_infrastructure_kustomization_infrastructure_clusters_home_ingress_kustomization_ingress",
+      "fromNode": "n_clusters_home_infrastructure_kustomization_infrastructure",
+      "toNode": "n_clusters_home_ingress_kustomization_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_infrastructure_kustomization_infrastructure_clusters_home_system_upgrade_plans_kustomization_system_upgrade_plans",
+      "fromNode": "n_clusters_home_infrastructure_kustomization_infrastructure",
+      "toNode": "n_clusters_home_system_upgrade_plans_kustomization_system_upgrade_plans",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_ingress_kustomization_ingress_clusters_home_flux_system_gotk_sync_flux_system",
+      "fromNode": "n_clusters_home_ingress_kustomization_ingress",
+      "toNode": "n_clusters_home_flux_system_gotk_sync_flux_system",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_ingress_kustomization_ingress_clusters_home_flux_system_gotk_sync_flux_system_gitrepository",
+      "fromNode": "n_clusters_home_ingress_kustomization_ingress",
+      "toNode": "n_clusters_home_flux_system_gotk_sync_flux_system_gitrepository",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_namespaces_kustomization_namespaces_clusters_home_flux_system_gotk_sync_flux_system",
+      "fromNode": "n_clusters_home_namespaces_kustomization_namespaces",
+      "toNode": "n_clusters_home_flux_system_gotk_sync_flux_system",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_namespaces_kustomization_namespaces_clusters_home_flux_system_gotk_sync_flux_system_gitrepository",
+      "fromNode": "n_clusters_home_namespaces_kustomization_namespaces",
+      "toNode": "n_clusters_home_flux_system_gotk_sync_flux_system_gitrepository",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_namespaces_kustomization_namespaces_clusters_home_repos_kustomization_repos",
+      "fromNode": "n_clusters_home_namespaces_kustomization_namespaces",
+      "toNode": "n_clusters_home_repos_kustomization_repos",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_repos_kustomization_repos_clusters_home_flux_system_gotk_sync_flux_system",
+      "fromNode": "n_clusters_home_repos_kustomization_repos",
+      "toNode": "n_clusters_home_flux_system_gotk_sync_flux_system",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_repos_kustomization_repos_clusters_home_flux_system_gotk_sync_flux_system_gitrepository",
+      "fromNode": "n_clusters_home_repos_kustomization_repos",
+      "toNode": "n_clusters_home_flux_system_gotk_sync_flux_system_gitrepository",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_system_upgrade_plans_kustomization_system_upgrade_plans_clusters_home_flux_system_gotk_sync_flux_system",
+      "fromNode": "n_clusters_home_system_upgrade_plans_kustomization_system_upgrade_plans",
+      "toNode": "n_clusters_home_flux_system_gotk_sync_flux_system",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_system_upgrade_plans_kustomization_system_upgrade_plans_clusters_home_flux_system_gotk_sync_flux_system_gitrepository",
+      "fromNode": "n_clusters_home_system_upgrade_plans_kustomization_system_upgrade_plans",
+      "toNode": "n_clusters_home_flux_system_gotk_sync_flux_system_gitrepository",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_flux_system_gotk_sync_flux_system_gitrepository_clusters_home_flux_system_gotk_sync_flux_system",
+      "fromNode": "n_clusters_home_flux_system_gotk_sync_flux_system_gitrepository",
+      "toNode": "n_clusters_home_flux_system_gotk_sync_flux_system",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_flux_system_gotk_sync_flux_system_gitrepository_clusters_home_flux_system_kustomization_overlay",
+      "fromNode": "n_clusters_home_flux_system_gotk_sync_flux_system_gitrepository",
+      "toNode": "n_clusters_home_flux_system_kustomization_overlay",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_flux_system_gotk_sync_flux_system_clusters_home_flux_system_kustomization_overlay",
+      "fromNode": "n_clusters_home_flux_system_gotk_sync_flux_system",
+      "toNode": "n_clusters_home_flux_system_kustomization_overlay",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_clusters_home_flux_system_gotk_components_bootstrap_clusters_home_flux_system_kustomization_overlay",
+      "fromNode": "n_clusters_home_flux_system_gotk_components_bootstrap",
+      "toNode": "n_clusters_home_flux_system_kustomization_overlay",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_sts2viewer_deployment_sts2viewer_apps_sts2viewer_ghcr_login_ghcr_login",
+      "fromNode": "n_apps_sts2viewer_deployment_sts2viewer",
+      "toNode": "n_apps_sts2viewer_ghcr_login_ghcr_login",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_sts2viewer_deployment_sts2viewer_apps_sts2viewer_kustomization_overlay",
+      "fromNode": "n_apps_sts2viewer_deployment_sts2viewer",
+      "toNode": "n_apps_sts2viewer_kustomization_overlay",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_sts2viewer_deployment_sts2viewer_apps_sts2viewer_service_sts2viewer_service",
+      "fromNode": "n_apps_sts2viewer_deployment_sts2viewer",
+      "toNode": "n_apps_sts2viewer_service_sts2viewer_service",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_sts2viewer_service_sts2viewer_service_apps_sts2viewer_kustomization_overlay",
+      "fromNode": "n_apps_sts2viewer_service_sts2viewer_service",
+      "toNode": "n_apps_sts2viewer_kustomization_overlay",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_sts2viewer_service_sts2viewer_service_ingress_sts2viewer_ingress_sts2viewer_ingress",
+      "fromNode": "n_apps_sts2viewer_service_sts2viewer_service",
+      "toNode": "n_ingress_sts2viewer_ingress_sts2viewer_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_sts2viewer_ghcr_login_ghcr_login_apps_sts2viewer_kustomization_overlay",
+      "fromNode": "n_apps_sts2viewer_ghcr_login_ghcr_login",
+      "toNode": "n_apps_sts2viewer_kustomization_overlay",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_vortexplotboek_deployment_vortexplotboek_apps_vortexplotboek_kustomization_overlay",
+      "fromNode": "n_apps_vortexplotboek_deployment_vortexplotboek",
+      "toNode": "n_apps_vortexplotboek_kustomization_overlay",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_vortexplotboek_deployment_vortexplotboek_apps_vortexplotboek_vortexplotboek_service_vortexplotboek_service",
+      "fromNode": "n_apps_vortexplotboek_deployment_vortexplotboek",
+      "toNode": "n_apps_vortexplotboek_vortexplotboek_service_vortexplotboek_service",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_vortexplotboek_vortexplotboek_service_vortexplotboek_service_apps_vortexplotboek_kustomization_overlay",
+      "fromNode": "n_apps_vortexplotboek_vortexplotboek_service_vortexplotboek_service",
+      "toNode": "n_apps_vortexplotboek_kustomization_overlay",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_vortexplotboek_vortexplotboek_service_vortexplotboek_service_apps_vortexplotboek_sync_cronjob_sync_google_drive",
+      "fromNode": "n_apps_vortexplotboek_vortexplotboek_service_vortexplotboek_service",
+      "toNode": "n_apps_vortexplotboek_sync_cronjob_sync_google_drive",
+      "label": "shares_data_with [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_vortexplotboek_vortexplotboek_service_vortexplotboek_service_ingress_vortexplotboek_ingress_vortexplotboek_ingress",
+      "fromNode": "n_apps_vortexplotboek_vortexplotboek_service_vortexplotboek_service",
+      "toNode": "n_ingress_vortexplotboek_ingress_vortexplotboek_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_apps_vortexplotboek_sync_cronjob_sync_google_drive_apps_vortexplotboek_kustomization_overlay",
+      "fromNode": "n_apps_vortexplotboek_sync_cronjob_sync_google_drive",
+      "toNode": "n_apps_vortexplotboek_kustomization_overlay",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_configuration_certissuer_letsencrypt_prod_configuration_kustomization_overlay",
+      "fromNode": "n_configuration_certissuer_letsencrypt_prod",
+      "toNode": "n_configuration_kustomization_overlay",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_configuration_certissuer_letsencrypt_prod_ingress_adventureengine_ingress_adventureengine_ingress",
+      "fromNode": "n_configuration_certissuer_letsencrypt_prod",
+      "toNode": "n_ingress_adventureengine_ingress_adventureengine_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_configuration_certissuer_letsencrypt_prod_ingress_cov_website_ingress_cov_website_ingress",
+      "fromNode": "n_configuration_certissuer_letsencrypt_prod",
+      "toNode": "n_ingress_cov_website_ingress_cov_website_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_configuration_certissuer_letsencrypt_prod_ingress_curatool_ingress_curatool_ingress",
+      "fromNode": "n_configuration_certissuer_letsencrypt_prod",
+      "toNode": "n_ingress_curatool_ingress_curatool_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_configuration_certissuer_letsencrypt_prod_ingress_ebi_cs_api_ingress_ebi_cs_api_ingress",
+      "fromNode": "n_configuration_certissuer_letsencrypt_prod",
+      "toNode": "n_ingress_ebi_cs_api_ingress_ebi_cs_api_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_configuration_certissuer_letsencrypt_prod_ingress_ebi_cs_frontend_ingress_ebi_cs_frontend_ingress",
+      "fromNode": "n_configuration_certissuer_letsencrypt_prod",
+      "toNode": "n_ingress_ebi_cs_frontend_ingress_ebi_cs_frontend_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_configuration_certissuer_letsencrypt_prod_ingress_fileserver_ingress_file_server_ingress",
+      "fromNode": "n_configuration_certissuer_letsencrypt_prod",
+      "toNode": "n_ingress_fileserver_ingress_file_server_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_configuration_certissuer_letsencrypt_prod_ingress_grafana_ingress_grafana",
+      "fromNode": "n_configuration_certissuer_letsencrypt_prod",
+      "toNode": "n_ingress_grafana_ingress_grafana",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_configuration_certissuer_letsencrypt_prod_ingress_hackerminigames_ingress_hackerminigames_ingress",
+      "fromNode": "n_configuration_certissuer_letsencrypt_prod",
+      "toNode": "n_ingress_hackerminigames_ingress_hackerminigames_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_configuration_certissuer_letsencrypt_prod_ingress_healthcheck_ingress_healthcheck_ingress",
+      "fromNode": "n_configuration_certissuer_letsencrypt_prod",
+      "toNode": "n_ingress_healthcheck_ingress_healthcheck_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_configuration_certissuer_letsencrypt_prod_ingress_spacetraders_assets_ingress_spacetraders_assets_ingress",
+      "fromNode": "n_configuration_certissuer_letsencrypt_prod",
+      "toNode": "n_ingress_spacetraders_assets_ingress_spacetraders_assets_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_configuration_certissuer_letsencrypt_prod_ingress_spacetraders_ingress_spacetraders_ingress",
+      "fromNode": "n_configuration_certissuer_letsencrypt_prod",
+      "toNode": "n_ingress_spacetraders_ingress_spacetraders_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_configuration_certissuer_letsencrypt_prod_ingress_sts2viewer_ingress_sts2viewer_ingress",
+      "fromNode": "n_configuration_certissuer_letsencrypt_prod",
+      "toNode": "n_ingress_sts2viewer_ingress_sts2viewer_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_configuration_certissuer_letsencrypt_prod_ingress_vortexplotboek_ingress_vortexplotboek_ingress",
+      "fromNode": "n_configuration_certissuer_letsencrypt_prod",
+      "toNode": "n_ingress_vortexplotboek_ingress_vortexplotboek_ingress",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_configuration_ipaddresspool_first_pool_configuration_ipaddresspool_l2lbadv",
+      "fromNode": "n_configuration_ipaddresspool_first_pool",
+      "toNode": "n_configuration_ipaddresspool_l2lbadv",
+      "label": "references [EXTRACTED]"
+    }
+  ]
+}
