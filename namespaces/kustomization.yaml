@@ -20,3 +20,4 @@ resources:
 - dockhand-namespace.yaml
 - hackerminigames-namespace.yaml
 - dungeontable-namespace.yaml
+- reflector-namespace.yaml

@@ -1,7 +1,0 @@
-apiVersion: onepassword.com/v1
-kind: OnePasswordItem
-metadata:
-  name: ghcr-login
-  namespace: dungeontable
-spec:
-  itemPath: "vaults/Gembercluster/items/ghcr-login"

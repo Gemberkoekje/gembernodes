@@ -1,0 +1,10 @@
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: ghcr-login
+  namespace: reflector
+  annotations:
+    reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+    reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
+spec:
+  itemPath: "vaults/Gembercluster/items/ghcr-login"
