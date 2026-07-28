@@ -16,4 +16,7 @@ spec:
   values:
     operator:
       create: true
+      # Lets OnePasswordItem annotations (e.g. Reflector's reflection-* keys) propagate onto
+      # the generated Secret -- off by default, so ghcr-login mirroring silently no-ops without it.
+      enableAnnotations: true
   # Make sure the Secret exists in the same namespace
