@@ -5,4 +5,4 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1h
-  url: https://emberstack.github.io/kubernetes-reflector
+  url: https://emberstack.github.io/helm-charts

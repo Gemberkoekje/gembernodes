@@ -12,7 +12,7 @@ spec:
         kind: HelmRepository
         name: reflector
         namespace: flux-system
-      version: "9.x"
+      version: "10.x"
   interval: 1h0m0s
   install:
     remediation:
