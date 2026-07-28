@@ -6,5 +6,10 @@ metadata:
   annotations:
     reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
     reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
+# Without this, the operator defaults to Opaque and dumps the item's raw fields verbatim --
+# kubelet silently ignores Opaque secrets as imagePullSecrets, which is the actual reason
+# every fresh image pull has 401'd. The 1Password item must carry a field literally labeled
+# ".dockerconfigjson" holding the full auth JSON for this to produce a usable secret.
+type: kubernetes.io/dockerconfigjson
 spec:
   itemPath: "vaults/Gembercluster/items/ghcr-login"
