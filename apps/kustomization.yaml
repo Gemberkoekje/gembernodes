@@ -14,3 +14,4 @@ resources:
   - fileserver
   - sts2viewer
   - dockhand
+  - dungeontable

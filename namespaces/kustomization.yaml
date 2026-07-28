@@ -19,3 +19,4 @@ resources:
 - curatool-namespace.yaml
 - dockhand-namespace.yaml
 - hackerminigames-namespace.yaml
+- dungeontable-namespace.yaml

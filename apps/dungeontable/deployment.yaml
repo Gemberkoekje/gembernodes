@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dungeontable
+  namespace: dungeontable
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dungeontable
+  template:
+    metadata:
+      labels:
+        app: dungeontable
+    spec:
+      imagePullSecrets:
+        - name: ghcr-login
+      containers:
+        - name: dungeontable
+          image: ghcr.io/gemberkoekje/dungeontable:0.1.0-1
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - containerPort: 8080
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            failureThreshold: 18
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            periodSeconds: 20
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          env:
+            - name: DOTNET_ENVIRONMENT
+              value: "Production"
