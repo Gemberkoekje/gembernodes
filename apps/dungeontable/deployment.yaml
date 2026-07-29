@@ -60,4 +60,4 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: dungeontable-secrets
-                  key: connectionstring
+                  key: ConnectionStrings__Postgres
