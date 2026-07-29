@@ -51,3 +51,13 @@ spec:
           env:
             - name: DOTNET_ENVIRONMENT
               value: "Production"
+            - name: Auth__Passphrase
+              valueFrom:
+                secretKeyRef:
+                  name: dungeontable-secrets
+                  key: Auth__Passphrase
+            - name: ConnectionStrings__Postgres
+              valueFrom:
+                secretKeyRef:
+                  name: dungeontable-secrets
+                  key: connectionstring
