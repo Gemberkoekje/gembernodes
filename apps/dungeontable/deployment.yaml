@@ -17,7 +17,7 @@ spec:
         - name: ghcr-login
       containers:
         - name: dungeontable
-          image: ghcr.io/gemberkoekje/dungeontable:0.1.0-12
+          image: ghcr.io/gemberkoekje/dungeontable:0.1.0-13
           imagePullPolicy: Always
           securityContext:
             allowPrivilegeEscalation: false
@@ -51,6 +51,12 @@ spec:
           env:
             - name: DOTNET_ENVIRONMENT
               value: "Production"
+            # Maps/ is baked into the image and read-only here: the *.regions.json the Room Editor
+            # writes are authored content, committed to the repo so a newly authored level reaches
+            # every environment. Telling the app so makes /editor say a save is not durable instead
+            # of reporting success and losing the work on the next restart.
+            - name: Maps__Durable
+              value: "false"
             - name: Auth__Passphrase
               valueFrom:
                 secretKeyRef:
@@ -61,3 +67,14 @@ spec:
                 secretKeyRef:
                   name: dungeontable-secrets
                   key: ConnectionStrings__Postgres
+          volumeMounts:
+            # The pictures the DM uploads on the Art tab (data/art/uploads/). ONLY this
+            # subdirectory is mounted: everything else under /app/data - the dossiers, stat
+            # blocks and curated book art - is baked into the image, and mounting /app/data
+            # would shadow all of it.
+            - name: uploads
+              mountPath: /app/data/art/uploads
+      volumes:
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: dungeontable-uploads-qnap

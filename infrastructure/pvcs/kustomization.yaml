@@ -1,6 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+- dungeontable.yaml
 - fileserver.yaml
 - grafana.yaml
 - loki.yaml
