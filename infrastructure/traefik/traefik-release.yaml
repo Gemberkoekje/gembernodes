@@ -1,0 +1,95 @@
+# Traefik, replacing the retired ingress-nginx (docs/ingress-nginx-migration-plan.md).
+# It serves the existing Ingress objects (class nginx-public) through its Ingress NGINX
+# provider, which understands the nginx.ingress.kubernetes.io annotations in ingress/. Until the
+# cutover it runs next to ingress-nginx on its own MetalLB IP (192.168.1.231); the router still
+# sends public traffic to ingress-nginx on 192.168.1.230.
+# Value keys checked against the chart's values.yaml for v41.6.0.
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: traefik
+  namespace: traefik
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: traefik
+      version: "41.x"
+      sourceRef:
+        kind: HelmRepository
+        name: traefik
+        namespace: flux-system
+  # The chart ships its CRDs in crds/, which Helm only creates when missing. CreateReplace keeps
+  # them current, and replaces the stale ones k3s's disabled bundled Traefik left behind.
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  values:
+    global:
+      checkNewVersion: false
+    deployment:
+      replicas: 2
+      # Scraped by the existing Prometheus (kubernetes-pods job); 9100 is the metrics entrypoint.
+      podAnnotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9100"
+        prometheus.io/path: /metrics
+    podDisruptionBudget:
+      enabled: true
+      maxUnavailable: 1
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: traefik
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        memory: 512Mi
+    service:
+      annotations:
+        metallb.io/loadBalancerIPs: 192.168.1.231
+      spec:
+        # Keep client IPs, so the LAN-only allowlist on grafana-internal keeps working.
+        externalTrafficPolicy: Local
+    # The chart would otherwise create a "traefik" IngressClass and make it the cluster default.
+    ingressClass:
+      enabled: false
+    providers:
+      # The Ingress NGINX provider serves the Ingresses; the standard provider would build a
+      # second, annotation-unaware set of routers for the same objects.
+      kubernetesIngress:
+        enabled: false
+      # Needed for the HSTS Middleware (configuration/traefik-hsts.yaml).
+      kubernetesCRD:
+        enabled: true
+      kubernetesIngressNGINX:
+        enabled: true
+        ingressClass: nginx-public
+        controllerClass: k8s.io/ingress-nginx
+        # Mirror the ingress-nginx settings in infrastructure/nginx/nginx-release.yaml.
+        strictValidatePathType: false
+        allowSnippetAnnotations: false
+        # publishService stays off while ingress-nginx still runs: both controllers would keep
+        # overwriting the Ingress status. Turn it on when ingress-nginx is removed (phase 4).
+    ports:
+      websecure:
+        transport:
+          respondingTimeouts:
+            # Traefik v3 limits reading a whole request to 60s by default, which would cut off
+            # large fileserver uploads (up to 200m) on a slow connection.
+            readTimeout: 600s
+        http:
+          middlewares:
+            - traefik-hsts@kubernetescrd
+    accessLog:
+      enabled: true

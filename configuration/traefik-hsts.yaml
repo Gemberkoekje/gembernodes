@@ -1,0 +1,14 @@
+# HSTS on every HTTPS response, attached to Traefik's websecure entrypoint in
+# infrastructure/traefik/traefik-release.yaml. ingress-nginx sends this by default (about six
+# months, includeSubDomains); Traefik doesn't, so it is recreated here. It lives in
+# `configuration` because that Kustomization runs after `infrastructure`, which installs the
+# Middleware CRD with the chart.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: hsts
+  namespace: traefik
+spec:
+  headers:
+    stsSeconds: 15724800
+    stsIncludeSubdomains: true

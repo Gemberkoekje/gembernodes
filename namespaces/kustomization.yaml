@@ -18,3 +18,4 @@ resources:
 - hackerminigames-namespace.yaml
 - dungeontable-namespace.yaml
 - reflector-namespace.yaml
+- traefik-namespace.yaml

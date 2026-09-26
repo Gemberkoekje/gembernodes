@@ -11,3 +11,4 @@ resources:
   - kured-repo.yaml
   - csi-driver-nfs-repo.yaml
   - reflector-repo.yaml
+  - traefik-repo.yaml
