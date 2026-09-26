@@ -1,3 +1,4 @@
+# OCIRepository is only served as v1 from Flux 2.6 on; keep v1beta2 until Flux is upgraded.
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: OCIRepository
 metadata:
