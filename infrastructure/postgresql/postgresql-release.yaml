@@ -11,8 +11,8 @@ spec:
   install:
     remediation:
       retries: 3
-  # No `force`: a forced upgrade replaces whole objects, which would strip the prune-disabled
-  # annotation Flux put on the Service (see postgresql-loadbalancer.yaml).
+  # No `force`: a forced upgrade replaces whole objects instead of patching them, dropping
+  # anything other controllers set on them.
   upgrade:
     remediation:
       retries: 3
@@ -71,9 +71,9 @@ spec:
         checkpoint_completion_target = 0.9
         wal_compression = on
       # Reachable on the LAN at 192.168.1.232 through MetalLB. In-cluster clients should use
-      # postgresql.flux-system.svc.cluster.local instead. This sets spec.loadBalancerIP, the
-      # same field postgresql-loadbalancer.yaml sets; MetalLB rejects a Service that has both
-      # that field and the metallb.io/loadBalancerIPs annotation.
+      # postgresql.flux-system.svc.cluster.local instead. This sets spec.loadBalancerIP; to
+      # switch to the metallb.io/loadBalancerIPs annotation, remove this field in the same
+      # change, because MetalLB rejects a Service that has both.
       service:
         type: LoadBalancer
         loadBalancerIP: 192.168.1.232
