@@ -192,6 +192,37 @@ data:
             for: 10m
             annotations:
               summary: 'Node {{ $labels.node }} has not been Ready for 10 minutes'
+          # The kubelet only removes unused images from 85% and evicts pods below 10% free, and old
+          # images alone filled gembernode-01 to 74% (see NOTES.md for the prune command).
+          - uid: node-disk-filling
+            title: Node disk filling up
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 600
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  refId: A
+                  expr: 'max by (node) ((1 - node_filesystem_avail_bytes{mountpoint="/", fstype!="rootfs"} / node_filesystem_size_bytes{mountpoint="/", fstype!="rootfs"}) * 100)'
+                  instant: true
+              - refId: C
+                datasourceUid: "__expr__"
+                model:
+                  refId: C
+                  type: threshold
+                  expression: A
+                  conditions:
+                    - evaluator:
+                        type: gt
+                        params:
+                          - 85
+            noDataState: OK
+            execErrState: Error
+            for: 30m
+            annotations:
+              summary: 'Root disk on {{ $labels.node }} has been over 85% full for 30 minutes'
           # cert-manager renews 30 days before expiry, so under 14 days left means renewal is failing.
           - uid: certificate-expiring
             title: Certificate expiring

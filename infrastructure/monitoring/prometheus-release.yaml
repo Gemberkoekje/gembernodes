@@ -19,6 +19,10 @@ spec:
     prometheus-pushgateway:
       enabled: false
     server:
+      # Merged into the chart's pod securityContext (fsGroup 65534): only re-apply the group to
+      # the TSDB on NFS when the volume root doesn't match, instead of to every file on each start.
+      securityContext:
+        fsGroupChangePolicy: OnRootMismatch
       persistentVolume:
         enabled: true
         storageClass: qnap-nfs

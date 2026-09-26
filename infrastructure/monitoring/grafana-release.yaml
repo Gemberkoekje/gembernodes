@@ -16,6 +16,10 @@ spec:
   interval: 6m
   values:
     replicaCount: 1
+    # Merged into the chart's pod securityContext (fsGroup 472): only re-apply the group to the
+    # NFS volume when its root doesn't match, instead of to every file on each start.
+    securityContext:
+      fsGroupChangePolicy: OnRootMismatch
     admin:
       existingSecret: grafana-secret
       userKey: user
