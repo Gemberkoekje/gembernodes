@@ -74,7 +74,14 @@ spec:
             # would shadow all of it.
             - name: uploads
               mountPath: /app/data/art/uploads
+            # ASP.NET Core Data Protection keys (auth cookies, antiforgery). Without a volume they
+            # were regenerated on every restart, which logged everyone out.
+            - name: dataprotection-keys
+              mountPath: /root/.aspnet/DataProtection-Keys
       volumes:
         - name: uploads
           persistentVolumeClaim:
             claimName: dungeontable-uploads-qnap
+        - name: dataprotection-keys
+          persistentVolumeClaim:
+            claimName: dungeontable-dataprotection-qnap

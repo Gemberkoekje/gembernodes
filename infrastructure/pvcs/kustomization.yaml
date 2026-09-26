@@ -6,3 +6,4 @@ resources:
 - grafana.yaml
 - prometheus.yaml
 - adventureengine.yaml
+- vortexplotboek.yaml

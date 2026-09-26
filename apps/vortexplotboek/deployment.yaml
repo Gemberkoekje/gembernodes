@@ -103,3 +103,13 @@ spec:
                 secretKeyRef:
                   name: gemini-secret
                   key: apikey
+          volumeMounts:
+            # ASP.NET Core Data Protection keys (auth cookies, OIDC correlation, antiforgery). The app
+            # keeps them in $HOME/.aspnet; without a volume they were regenerated on every restart,
+            # which logged everyone out.
+            - name: dataprotection-keys
+              mountPath: /root/.aspnet/DataProtection-Keys
+      volumes:
+        - name: dataprotection-keys
+          persistentVolumeClaim:
+            claimName: vortexplotboek-dataprotection-qnap
