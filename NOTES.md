@@ -29,7 +29,7 @@ To understand this phase, start by reading this file top to bottom, then
 
 ### Key decisions
 
-- **Loki on NFS via the chart's volumeClaimTemplate.** The chart cannot use a pre-made claim, so `loki-qnap` is unused (remove it, see "Deletions left to do"). Retention is 31 days; without compactor retention Loki keeps logs forever.
+- **Loki on NFS via the chart's volumeClaimTemplate.** The chart cannot use a pre-made claim, so the old `loki-qnap` claim was removed. Retention is 31 days; without compactor retention Loki keeps logs forever.
 - **Promtail kept for now.** It is deprecated in favour of Grafana Alloy, but switching agents while also fixing Loki doubles the unknowns. Moving to Alloy is in the version-update list.
 - **Postgres image pinned by digest, not tag.** Bitnami's free catalog only publishes `latest`, so a digest is the only stable reference. Bump it deliberately. Long-term: move off the Bitnami chart (CloudNativePG).
 - **Postgres Service moves to Helm in two commits.** Removing `postgresql-loadbalancer.yaml` in the same commit would let Flux prune the Service Helm also owns. The Flux copy now carries `kustomize.toolkit.fluxcd.io/prune: disabled`; delete the file only after this phase has reconciled. `upgrade.force` was dropped from the Postgres HelmRelease because a forced (replace) upgrade strips that annotation.
@@ -45,7 +45,7 @@ To understand this phase, start by reading this file top to bottom, then
 - **mcp-k8s is read-only** and `list-k8s-resources` returns only names (Deployments aside): use `get-k8s-resource` with a `go_template` per object.
 - **Renaming a TLS secret re-issues the certificate.** For a minute or two nginx serves its default certificate for that host.
 - **kured `period` is the check interval**, not a delay between nodes. `lockReleaseDelay` is the delay.
-- **`fsGroup` on NFS volumes is slow with the default `fsGroupChangePolicy: Always`.** The kubelet re-applies group ownership to every file on each mount; for the PostgreSQL data directory that took about 4 minutes per pod start (it was also why Postgres took 4+ minutes to return after every reboot). Postgres now uses `OnRootMismatch`. Grafana (fsGroup 472) and Prometheus (65534) still use `Always`; same one-line fix if their restarts get slow.
+- **`fsGroup` on NFS volumes is slow with the default `fsGroupChangePolicy: Always`.** The kubelet re-applies group ownership to every file on each mount; for the PostgreSQL data directory that took about 4 minutes per pod start (it was also why Postgres took 4+ minutes to return after every reboot). Postgres, Grafana and Prometheus now use `OnRootMismatch`; Loki's chart sets it by default.
 - **HelmRelease `timeout` defaults to 5m, and a timed-out upgrade is remediated by a rollback**, which restarts the pods again. Stateful releases with slow starts need a longer `spec.timeout` (Postgres: 15m).
 - **Old container images pile up on the nodes.** Every deploy with a new tag leaves the previous image behind, and the kubelet only garbage-collects them above 85% disk use; by September they took ~27 GB on gembernode-01. `crictl rmi --prune` needs `--timeout 120s`: with the default 2s most deletions fail with `DeadlineExceeded` (harmless, but nothing gets freed).
 
@@ -67,9 +67,9 @@ To understand this phase, start by reading this file top to bottom, then
 
 ### Runbook (cluster-side steps, in order)
 
-Status 2026-09-26: steps 1–6 are done (Loki runs on `qnap-nfs`, Longhorn is gone from the cluster
+Status 2026-09-26: all steps are done (Loki runs on `qnap-nfs`, Longhorn is gone from the cluster
 and the node disks, ServiceLB is disabled on all three servers, CoreDNS runs 2 replicas, the old
-TLS secrets are deleted). Still open: step 7 (1Password).
+TLS secrets are deleted, every app reaches Postgres by its DNS name).
 
 Node disks, same day: after removing `/var/lib/longhorn` (8.6 GB on gembernode-02, empty elsewhere)
 and pruning unused container images (`sudo k3s crictl --timeout 120s rmi --prune` on each node,
@@ -164,17 +164,15 @@ done
 ```bash
 kubectl -n armabotcs rollout restart deployment armabotcs   # etc. for each changed app
 ```
+Status 2026-09-26: done. All seven apps connect to `postgresql.flux-system.svc.cluster.local`
+and were restarted. The 1Password operator syncs every 10 minutes (`POLLING_INTERVAL=600`) and
+doesn't restart pods (`AUTO_RESTART=false`), so after changing an item, wait for the next sync
+(its log says `Updating kubernetes secret '<name>'`) and then restart the deployment.
 
 ### Follow-ups
 
 - **Postgres Service step 2: done** (2026-09-26). `postgresql-loadbalancer.yaml` is removed; the live Service kept its `kustomize.toolkit.fluxcd.io/prune: disabled` annotation, so Flux left it in place and Helm is now its only owner. To move Postgres' IP to the `metallb.io/loadBalancerIPs` annotation later, drop `primary.service.loadBalancerIP` in the same change.
-- **Deletions left to do** (the session wasn't allowed to delete these):
-  - `infrastructure/pvcs/loki.yaml` and its line in `infrastructure/pvcs/kustomization.yaml` (unused `loki-qnap` claim; Flux then deletes the empty NFS volume)
-  - `infrastructure/monitoring/kube-state-metrics-release.yaml` (never referenced; the prometheus chart bundles kube-state-metrics)
-  - `ingress/grafana-ingress.yaml` (never referenced; was a public Grafana ingress)
-  - `dashboards/` (superseded by `infrastructure/monitoring/dashboards/`)
-- **A node-disk alert** (root filesystem above 85% for 30 minutes) would give warning before the kubelet starts evicting pods at 90%; the cluster-health dashboard already shows the trend.
-- **DataProtection keys** for vortexplotboek and dungeontable: same warning as adventureengine (keys in `/root/.aspnet/DataProtection-Keys`). vortexplotboek has Google/OIDC login, so restarts log users out. Same fix, or persist keys in-app.
+- **Done 2026-09-26:** unused manifests deleted (`infrastructure/pvcs/loki.yaml`, `infrastructure/monitoring/kube-state-metrics-release.yaml`, `ingress/grafana-ingress.yaml`, `dashboards/`); "Node disk filling up" alert (root filesystem over 85% for 30 minutes); `fsGroupChangePolicy: OnRootMismatch` for Grafana and Prometheus (Loki's chart already sets it); DataProtection keys persisted for vortexplotboek and dungeontable (`infrastructure/pvcs/{vortexplotboek,dungeontable}.yaml`), as for adventureengine.
 - **Version updates** (through this repo; mcp-k8s can't change anything and Flux would revert out-of-band changes):
   1. Flux 2.5 → current: regenerate `clusters/home/flux-system/gotk-components.yaml` with the flux CLI (not installed on this machine), then move OCIRepository to `v1`.
   2. ingress-nginx → Traefik: `docs/ingress-nginx-migration-plan.md`.
