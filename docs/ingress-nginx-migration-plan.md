@@ -1,7 +1,7 @@
 # Plan: replace ingress-nginx with Traefik
 
-Status (2026-09-26): phases 0 and 1 are done and phase 2's automated comparison passed (see the
-progress log at the end). Next: the browser checks in phase 2, then the cutover.
+Status (2026-09-26): phases 0–3 are done, and public traffic goes through Traefik (see the
+progress log at the end). Next: phase 4, removing ingress-nginx, after a few quiet days.
 
 To understand this, start by reading the 2026-09-26 section of [NOTES.md](../NOTES.md), then
 [infrastructure/nginx/nginx-release.yaml](../infrastructure/nginx/nginx-release.yaml),
@@ -229,9 +229,20 @@ and `.231` with `curl --resolve`, gave the same status codes, the same redirect 
 Response sizes matched to within a few bytes (per-request tokens). `/grafana` works on both from
 the LAN.
 
-Still to check by hand, with a browser pointed at `.231` through a hosts-file entry: the
-vortexplotboek Google/Microsoft sign-in, a large and slow fileserver upload, and dungeontable's
-live connection.
+The browser checks through a hosts-file entry pointing at `.231` also passed: the vortexplotboek
+sign-in, a large fileserver upload and dungeontable.
+
+**2026-09-26, phase 3:** at about 13:50Z the router's 80/443 port-forward was moved from
+`192.168.1.230` to `192.168.1.231`. A phone on mobile data loads the sites normally. Traefik's
+access log shows the external clients (client IPs are preserved) and no errors, and
+ingress-nginx's external traffic dropped to nothing. Rollback is pointing the router back at
+`.230`; ingress-nginx still serves every Ingress until phase 4.
+
+Before phase 4, let a certificate renewal run through Traefik (the ebi-cs-api certificates renew
+on 2026-09-26 around 16:02Z; check `kubectl get certificate -A`) and a night's kured reboot
+cycle. Decision for phase 4: Traefik keeps `192.168.1.231`, since the router already points there,
+so ingress-nginx's `.230` is simply released. That means `grafana.ini.server.domain` and Grafana
+bookmarks move to `.231`.
 
 ## Sources
 
