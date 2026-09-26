@@ -85,6 +85,19 @@ data, but a node whose data is wiped would start a new cluster instead of rejoin
 Disabling ServiceLB needed no special ordering: each server was restarted one at a time with no
 critical-config error, and k3s deleted the `svclb-*` DaemonSets itself after the last one.
 
+OS updates on the nodes (2026-09-26): Ubuntu's `unattended-upgrades` only installs security
+updates by default, so ~60 regular updates had piled up on each node. Each node now has
+`/etc/apt/apt.conf.d/51unattended-upgrades-updates`, which adds the
+`"${distro_id}:${distro_codename}-updates"` origin, and all three were caught up (24.04.5).
+Updates now install daily. When one needs a reboot, Ubuntu creates `/var/run/reboot-required`
+(the login banner then says "System restart required") and kured reboots the node in its window.
+kured only checks for that file between 02:00 and 05:00 UTC and logs nothing outside the
+window, so its logs can't show whether a reboot is pending. Firmware: the OptiPlex 9020's BIOS
+can't be updated through fwupd, but its Secure Boot `db` (Microsoft UEFI CA 2023) and `dbx`
+updates can. Those were applied on gembernode-01 first. They take effect at the next boot, which
+is done through kured with `sudo touch /var/run/reboot-required`; nodes 02 and 03 follow after
+that works.
+
 Commands are bash (Git Bash works). kubectl uses the `default` context.
 
 **0. Before disabling ServiceLB (step 4), check:**
