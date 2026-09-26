@@ -12,6 +12,5 @@ resources:
   - curatool
   - healthcheck
   - fileserver
-  - sts2viewer
   - dockhand
   - dungeontable

@@ -8,9 +8,6 @@ resources:
   - cov-website-ingress.yaml
   - healthcheck-ingress.yaml
   - fileserver-ingress.yaml
-  - sts2viewer-ingress.yaml
-  - spacetraders-ingress.yaml
-  - spacetraders-assets-ingress.yaml
   - curatool-ingress.yaml
   - hackerminigames-ingress.yaml
   - dungeontable-ingress.yaml

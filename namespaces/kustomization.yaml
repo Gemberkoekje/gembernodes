@@ -1,7 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-- aiusagemonitor-namespace.yaml
 - adventureengine-namespace.yaml
 - armabotcs-namespace.yaml
 - bot-on-the-clocktower-namespace.yaml
@@ -14,8 +13,6 @@ resources:
 - cov-website-namespace.yaml
 - cluster-healthcheck-namespace.yaml
 - fileserver-namespace.yaml
-- sts2viewer-namespace.yaml
-- spacetraders-namespace.yaml
 - curatool-namespace.yaml
 - dockhand-namespace.yaml
 - hackerminigames-namespace.yaml
