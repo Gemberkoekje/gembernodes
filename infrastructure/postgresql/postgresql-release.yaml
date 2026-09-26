@@ -8,8 +8,9 @@ spec:
   install:
     remediation:
       retries: 3
+  # No `force`: a forced upgrade replaces whole objects, which would strip the prune-disabled
+  # annotation Flux put on the Service (see postgresql-loadbalancer.yaml).
   upgrade:
-    force: true
     remediation:
       retries: 3
   chartRef:
@@ -22,6 +23,12 @@ spec:
       valuesKey: postgresPassword
       targetPath: global.postgresql.auth.postgresPassword
   values:
+    # Bitnami's free images are only published as `latest`, which the chart uses by default.
+    # That tag moves (it already went from the chart's 18.3 to 18.4), and a pull after it moves
+    # to a new major would start PostgreSQL against an incompatible data directory. Pin the
+    # exact image; bump the digest deliberately after reading the release notes.
+    image:
+      digest: sha256:ac855a024049fc14d6b73e38ae3b53cf2d93ae69bf7c6174eda550a5de6f5227
     primary:
       resourcesPreset: "none"
       resources:
@@ -31,6 +38,18 @@ spec:
         limits:
           cpu: "1000m"
           memory: "1Gi"
+      # SIGTERM makes PostgreSQL do a "smart" shutdown, which waits for every client to
+      # disconnect. The apps hold pooled connections, so it never finishes and the kubelet
+      # SIGKILLs it (crash recovery on the next start). A fast shutdown disconnects clients
+      # and checkpoints cleanly well within the grace period.
+      terminationGracePeriodSeconds: 60
+      lifecycleHooks:
+        preStop:
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - /opt/bitnami/postgresql/bin/pg_ctl stop -D /bitnami/postgresql/data -m fast -w -t 50
       # Keep PostgreSQL memory usage bounded for small clusters.
       extendedConfiguration: |
         shared_buffers = 256MB
@@ -43,8 +62,13 @@ spec:
         checkpoint_timeout = 10min
         checkpoint_completion_target = 0.9
         wal_compression = on
+      # Reachable on the LAN at 192.168.1.232 through MetalLB. In-cluster clients should use
+      # postgresql.flux-system.svc.cluster.local instead. This sets spec.loadBalancerIP, the
+      # same field postgresql-loadbalancer.yaml sets; MetalLB rejects a Service that has both
+      # that field and the metallb.io/loadBalancerIPs annotation.
       service:
-        type: ClusterIP
+        type: LoadBalancer
+        loadBalancerIP: 192.168.1.232
       persistence:
         enabled: true
         existingClaim: postgresql-data-qnap
