@@ -68,8 +68,9 @@ data:
             annotations:
               summary: Error logs detected
       # The failures that went unnoticed for months (Loki stuck Pending, Flux HelmRelease failed)
-      # would each have tripped one of these. Every query returns one series per broken object,
-      # so each object alerts on its own.
+      # would each have tripped one of these. Every query aggregates to one series per object,
+      # keeping only the labels that identify it: each object alerts on its own, and the raw
+      # scrape labels (chart, instance, ...) stay out of the email subject.
       - orgId: 1
         name: cluster-health
         folder: Alerts
@@ -86,7 +87,7 @@ data:
                 datasourceUid: prometheus
                 model:
                   refId: A
-                  expr: 'gotk_resource_info{ready="False"}'
+                  expr: 'max by (customresource_kind, exported_namespace, name) (gotk_resource_info{ready="False"})'
                   instant: true
               - refId: C
                 datasourceUid: "__expr__"
@@ -173,7 +174,7 @@ data:
                 datasourceUid: prometheus
                 model:
                   refId: A
-                  expr: 'kube_node_status_condition{condition="Ready", status!="true"} > 0'
+                  expr: 'max by (node) (kube_node_status_condition{condition="Ready", status!="true"})'
                   instant: true
               - refId: C
                 datasourceUid: "__expr__"
@@ -203,7 +204,7 @@ data:
                 datasourceUid: prometheus
                 model:
                   refId: A
-                  expr: '(certmanager_certificate_expiration_timestamp_seconds - time()) / 86400'
+                  expr: 'min by (namespace, name) ((certmanager_certificate_expiration_timestamp_seconds - time()) / 86400)'
                   instant: true
               - refId: C
                 datasourceUid: "__expr__"
