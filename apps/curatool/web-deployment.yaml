@@ -15,6 +15,26 @@ spec:
     spec:
       imagePullSecrets:
         - name: ghcr-login
+      # The app runs EF migrations at startup and exits with an unhandled exception when
+      # PostgreSQL is unreachable, which after a node reboot meant a crash loop. Wait for it.
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:17-alpine
+          command:
+            - sh
+            - -c
+            - until pg_isready -h postgresql.flux-system.svc.cluster.local -p 5432 -t 2; do echo "waiting for postgres"; sleep 2; done
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "16Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
       containers:
         - name: curatool
           image: ghcr.io/gemberkoekje/thecuratool:361abcd322ecddea73bcd7c9ce40638180303d59

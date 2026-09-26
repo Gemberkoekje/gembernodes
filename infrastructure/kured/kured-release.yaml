@@ -15,11 +15,20 @@ spec:
         namespace: flux-system
   values:
     configuration:
-      # Only reboot between 02:00 and 05:00 to avoid disrupting daytime usage
+      # Only reboot between 02:00 and 05:00 (UTC) to avoid disrupting daytime usage
       startTime: "2"
       endTime: "5"
-      # Wait 5 minutes between rebooting each node so the cluster stabilises
+      # How often each node checks whether it needs a reboot (this is not a delay between nodes)
       period: 5m
+      # Keep the reboot lock for 15 minutes after a node is back, so its workloads (PostgreSQL
+      # in particular) have settled before the next node is drained. Without it all three nodes
+      # rebooted within ~8 minutes and pods were moved twice.
+      lockReleaseDelay: 15m
+      # Taint nodes that still have to reboot so drained pods prefer already-rebooted nodes
+      # instead of landing on a node that is drained next.
+      preferNoScheduleTaint: weave.works/kured-node-reboot
+      # Give up on a hung drain instead of holding the lock forever; kured retries next period.
+      drainTimeout: 30m
     tolerations:
       - key: node-role.kubernetes.io/control-plane
         operator: Exists

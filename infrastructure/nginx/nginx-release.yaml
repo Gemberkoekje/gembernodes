@@ -19,9 +19,26 @@ spec:
         name: nginx-public
         enabled: true
       ingressClass: nginx-public
+      # Two replicas on different nodes so a kured drain never takes ingress down. With more
+      # than one replica the chart also creates a PodDisruptionBudget (minAvailable: 1).
+      replicaCount: 2
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+              app.kubernetes.io/instance: nginx-ingress-public
+              app.kubernetes.io/component: controller
       service:
         type: LoadBalancer
         loadBalancerIP: 192.168.1.230
+        # Preserve client source IPs. With the default (Cluster) every request reached nginx
+        # from a node or pod IP, so the LAN-only allowlist on grafana-internal matched
+        # everyone, internet included. MetalLB then announces the VIP from a node that runs
+        # a controller pod.
+        externalTrafficPolicy: Local
       config:
         strict-validate-path-type: "false"
         strict-validate: "false"
