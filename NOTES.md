@@ -66,9 +66,20 @@ To understand this phase, start by reading this file top to bottom, then
 
 ### Runbook (cluster-side steps, in order)
 
-Status 2026-09-26: steps 1, 2, 5 and 6 and the kubectl part of step 3 are done (Loki runs on
-`qnap-nfs`, Longhorn is gone from the cluster, CoreDNS runs 2 replicas, the old TLS secrets are
-deleted). Still open: step 3's node-disk cleanup, step 4 (both over SSH) and step 7 (1Password).
+Status 2026-09-26: steps 1, 2, 4, 5 and 6 and the kubectl part of step 3 are done (Loki runs on
+`qnap-nfs`, Longhorn is gone from the cluster, ServiceLB is disabled on all three servers, CoreDNS
+runs 2 replicas, the old TLS secrets are deleted). Still open: step 3's node-disk cleanup and
+step 7 (1Password).
+
+How k3s is configured on these nodes (found while doing step 4): there is no `config.yaml`. Each
+node's flags come from `/etc/systemd/system/k3s.service.d/override.conf`, identical on all three:
+`ExecStart=/usr/local/bin/k3s server --disable traefik --disable servicelb`. That override replaces
+the base unit's command line, which had `--cluster-init` (gembernode-01) or
+`--server https://192.168.1.201:6443` (02 and 03). This is harmless while each node keeps its etcd
+data, but a node whose data is wiped would start a new cluster instead of rejoining; restore the
+`--server` flag on 02/03 (separately, it changes how the node starts) before ever doing that.
+Disabling ServiceLB needed no special ordering: each server was restarted one at a time with no
+critical-config error, and k3s deleted the `svclb-*` DaemonSets itself after the last one.
 
 Commands are bash (Git Bash works). kubectl uses the `default` context.
 
@@ -118,14 +129,12 @@ done
 ssh <user>@192.168.1.201 'sudo du -sh /var/lib/longhorn; sudo rm -rf /var/lib/longhorn'   # repeat for .202 and .203
 ```
 
-**4. Disable k3s ServiceLB** so MetalLB is the only load balancer. One server at a time:
+**4. Disable k3s ServiceLB** so MetalLB is the only load balancer (done 2026-09-26). On each server, one at a time:
 ```bash
-ssh <user>@192.168.1.201
-sudo cat /etc/rancher/k3s/config.yaml   # add `servicelb` to the `disable:` list (traefik is probably already there)
-                                        # (if k3s flags live in the systemd unit instead, add --disable servicelb there and daemon-reload)
+sudo sed -i 's|^ExecStart=/usr/local/bin/k3s server --disable traefik$|ExecStart=/usr/local/bin/k3s server --disable traefik --disable servicelb|' /etc/systemd/system/k3s.service.d/override.conf
+sudo systemctl daemon-reload
 sudo systemctl restart k3s
-exit
-kubectl get nodes                       # wait for Ready, then do .202 and .203
+sudo k3s kubectl get nodes              # wait for Ready before the next server
 ```
 Afterwards:
 ```bash
