@@ -66,6 +66,10 @@ To understand this phase, start by reading this file top to bottom, then
 
 ### Runbook (cluster-side steps, in order)
 
+Status 2026-09-26: steps 1, 2, 5 and 6 and the kubectl part of step 3 are done (Loki runs on
+`qnap-nfs`, Longhorn is gone from the cluster, CoreDNS runs 2 replicas, the old TLS secrets are
+deleted). Still open: step 3's node-disk cleanup, step 4 (both over SSH) and step 7 (1Password).
+
 Commands are bash (Git Bash works). kubectl uses the `default` context.
 
 **0. Before disabling ServiceLB (step 4), check:**
@@ -150,11 +154,7 @@ kubectl -n armabotcs rollout restart deployment armabotcs   # etc. for each chan
 
 ### Follow-ups
 
-- **Postgres Service step 2** (after this phase has reconciled): check the annotation is on the live Service, then delete `infrastructure/postgresql/postgresql-loadbalancer.yaml` and its line in `infrastructure/postgresql/kustomization.yaml`, and push.
-  ```bash
-  kubectl -n flux-system get svc postgresql -o jsonpath='{.metadata.annotations.kustomize\.toolkit\.fluxcd\.io/prune}'; echo   # must print disabled
-  ```
-  After that, Postgres' IP can move from `loadBalancerIP` to the `metallb.io/loadBalancerIPs` annotation.
+- **Postgres Service step 2: done** (2026-09-26). `postgresql-loadbalancer.yaml` is removed; the live Service kept its `kustomize.toolkit.fluxcd.io/prune: disabled` annotation, so Flux left it in place and Helm is now its only owner. To move Postgres' IP to the `metallb.io/loadBalancerIPs` annotation later, drop `primary.service.loadBalancerIP` in the same change.
 - **Deletions left to do** (the session wasn't allowed to delete these):
   - `infrastructure/pvcs/loki.yaml` and its line in `infrastructure/pvcs/kustomization.yaml` (unused `loki-qnap` claim; Flux then deletes the empty NFS volume)
   - `infrastructure/monitoring/kube-state-metrics-release.yaml` (never referenced; the prometheus chart bundles kube-state-metrics)
@@ -172,7 +172,7 @@ kubectl -n armabotcs rollout restart deployment armabotcs   # etc. for each chan
 
 - Removed: `apps/{sts2viewer,spacetraders,aiusagemonitor}/`, `ingress/{sts2viewer,spacetraders,spacetraders-assets}-ingress.yaml`, `namespaces/{sts2viewer,spacetraders,aiusagemonitor}-namespace.yaml`; references dropped from `apps/`, `ingress/` and `namespaces/kustomization.yaml`.
 - Monitoring: `infrastructure/monitoring/{loki,grafana,promtail,prometheus}-release.yaml`, `grafana-alerting-provisioning.yaml` (5 new cluster-health alerts), `kustomization.yaml` (dashboards ConfigMap), `dashboards/*.json` (new).
-- PostgreSQL: `infrastructure/postgresql/postgresql-release.yaml`, `postgresql-loadbalancer.yaml`.
+- PostgreSQL: `infrastructure/postgresql/postgresql-release.yaml`; `postgresql-loadbalancer.yaml` removed in the follow-up.
 - Reboots: `infrastructure/kured/kured-release.yaml`, `infrastructure/nginx/nginx-release.yaml`, `apps/adventureengine/deployment.yaml`, `apps/armabotcs/deployment.yaml`, `apps/curatool/web-deployment.yaml`.
 - AdventureEngine keys: `infrastructure/pvcs/adventureengine.yaml` (+ kustomization), `apps/adventureengine/deployment.yaml`.
 - TLS: `ingress/*-ingress.yaml` (8 secret names).
