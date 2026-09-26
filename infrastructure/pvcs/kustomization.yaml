@@ -4,6 +4,5 @@ resources:
 - dungeontable.yaml
 - fileserver.yaml
 - grafana.yaml
-- loki.yaml
 - prometheus.yaml
 - adventureengine.yaml
