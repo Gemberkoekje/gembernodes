@@ -12,7 +12,7 @@ spec:
   - hosts:
     - gemberkoekje.nl
     - cov-website.gemberkoekje.nl
-    secretName: ebi-cs-api-tls
+    secretName: cov-website-tls
   rules:
   - host: gemberkoekje.nl
     http:
@@ -34,4 +34,3 @@ spec:
             name: cov-website-service
             port:
               number: 80
-              

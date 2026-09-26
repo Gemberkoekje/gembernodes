@@ -12,7 +12,7 @@ spec:
   - hosts:
     - gemberkoekje.nl
     - hackerminigames.gemberkoekje.nl
-    secretName: ebi-cs-api-tls
+    secretName: hackerminigames-tls
   rules:
   - host: gemberkoekje.nl
     http:

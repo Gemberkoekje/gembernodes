@@ -13,7 +13,7 @@ spec:
   - hosts:
     - gemberkoekje.nl
     - fileserver.gemberkoekje.nl
-    secretName: ebi-cs-api-tls
+    secretName: fileserver-tls
   rules:
   - host: gemberkoekje.nl
     http:
@@ -35,4 +35,3 @@ spec:
             name: file-server
             port:
               number: 80
-              

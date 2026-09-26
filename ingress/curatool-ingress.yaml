@@ -12,7 +12,7 @@ spec:
   - hosts:
     - gemberkoekje.nl
     - curatool.gemberkoekje.nl
-    secretName: ebi-cs-api-tls
+    secretName: curatool-tls
   rules:
   - host: gemberkoekje.nl
     http:

@@ -17,7 +17,7 @@ spec:
   - hosts:
     - gemberkoekje.nl
     - vortexplotboek.gemberkoekje.nl
-    secretName: ebi-cs-api-tls
+    secretName: vortexplotboek-tls
   rules:
   - host: gemberkoekje.nl
     http:
@@ -39,4 +39,3 @@ spec:
             name: vortexplotboek-service
             port:
               number: 80
-              
