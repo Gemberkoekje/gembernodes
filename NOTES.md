@@ -45,14 +45,24 @@ To understand this phase, start by reading this file top to bottom, then
 - **mcp-k8s is read-only** and `list-k8s-resources` returns only names (Deployments aside): use `get-k8s-resource` with a `go_template` per object.
 - **Renaming a TLS secret re-issues the certificate.** For a minute or two nginx serves its default certificate for that host.
 - **kured `period` is the check interval**, not a delay between nodes. `lockReleaseDelay` is the delay.
+- **`fsGroup` on NFS volumes is slow with the default `fsGroupChangePolicy: Always`.** The kubelet re-applies group ownership to every file on each mount; for the PostgreSQL data directory that took about 4 minutes per pod start (it was also why Postgres took 4+ minutes to return after every reboot). Postgres now uses `OnRootMismatch`. Grafana (fsGroup 472) and Prometheus (65534) still use `Always`; same one-line fix if their restarts get slow.
+- **HelmRelease `timeout` defaults to 5m, and a timed-out upgrade is remediated by a rollback**, which restarts the pods again. Stateful releases with slow starts need a longer `spec.timeout` (Postgres: 15m).
 
 ### What happens when this lands
 
-- PostgreSQL restarts once (new image reference + shutdown hook): about a minute of database downtime. armabotcs and curatool now wait for it instead of crash-looping.
+- PostgreSQL restarts (new image reference + shutdown hook). Planned as about a minute of downtime; it took ~20 minutes, see "Rollout log" below. armabotcs and curatool wait for it on start instead of crash-looping.
 - The 8 renamed sites briefly serve nginx's default certificate while their new certificates are issued.
 - ingress-nginx goes to 2 replicas and `externalTrafficPolicy: Local`; MetalLB moves the .230 announcement to a node running a controller pod (a blip of seconds).
 - Grafana restarts and loads the new dashboards (folder "Gembercluster") and alerts. Expect a "Pod stuck Pending" / "Flux resource not ready" email about Loki if runbook step 2 isn't done within 15 minutes.
 - The sts2viewer, spacetraders and aiusagemonitor namespaces are deleted with everything in them. Their 1Password items and any spacetraders database in Postgres are not touched.
+
+### Rollout log (2026-09-26)
+
+- ~10:05Z pushed `0814511`; all eight Kustomizations applied it within 73 seconds.
+- The PostgreSQL upgrade hit the 5m Helm timeout: the new pod spent ~4.5 minutes on the NFS ownership walk (see Gotchas), Flux rolled back, and the rollback pod did the walk again. That repeated once more before `d159e12` (`fsGroupChangePolicy: OnRootMismatch`, `timeout: 15m`) was picked up. The database was unavailable from about 10:07 to 10:27Z, apart from two short windows; the final upgrade (10:26–10:27Z) took about a minute. No data was affected: each stop was a crash-style stop recovered from WAL.
+- armabotcs and curatool passed their wait-for-postgres init step during one of those short windows, then crash-looped until the kubelet's backoff retried at 10:29Z. The init step only covers the first start.
+- Everything else rolled out cleanly: the removed namespaces are gone, all 10 certificates were re-issued under the new names, ingress-nginx runs 2 replicas with `externalTrafficPolicy: Local` on .230, kured has its new settings, kube-state-metrics exports `gotk_resource_info`, and Grafana loaded the dashboards and alert rules.
+- Loki still needs runbook step 2. Until then Grafana sends alert emails for it (DatasourceError from the error-log rule, then "Pod stuck Pending" and "Flux resource not ready").
 
 ### Runbook (cluster-side steps, in order)
 
