@@ -1,12 +1,17 @@
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: grafana-loki
   namespace: monitoring
 spec:
   interval: 5m
+  install:
+    remediation:
+      retries: 3
   upgrade:
     force: true
+    remediation:
+      retries: 3
   chart:
     spec:
       version: "6.x"
@@ -26,6 +31,10 @@ spec:
       enabled: false
     test:
       enabled: false
+    # Grafana and Promtail talk to the single-binary Service on :3100 directly, so the
+    # nginx gateway the chart puts in front of it is unused.
+    gateway:
+      enabled: false
     loki:
       auth_enabled: false
       commonConfig:
@@ -41,16 +50,26 @@ spec:
             period: 24h
           object_store: filesystem
           schema: v13
+      # Keep 31 days of logs. Without retention enabled Loki never deletes anything and the
+      # NFS share grows forever.
+      compactor:
+        retention_enabled: true
+        delete_request_store: filesystem
       limits_config:
         allow_structured_metadata: true
         max_structured_metadata_size: 32MB
+        retention_period: 744h
       ingester:
         chunk_encoding: zstd
     singleBinary:
       replicas: 1
+      # The chart has no existingClaim option: it always creates its own claim from a
+      # volumeClaimTemplate, so the storage class must be set here. Left empty it falls back
+      # to the cluster default class (which was the removed longhorn class).
       persistence:
         enabled: true
-        existingClaim: loki-qnap
+        storageClass: qnap-nfs
+        size: 10Gi
     read:
       replicas: 0
     backend:

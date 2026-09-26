@@ -67,3 +67,157 @@ data:
             for: 5m
             annotations:
               summary: Error logs detected
+      # The failures that went unnoticed for months (Loki stuck Pending, Flux HelmRelease failed)
+      # would each have tripped one of these. Every query returns one series per broken object,
+      # so each object alerts on its own.
+      - orgId: 1
+        name: cluster-health
+        folder: Alerts
+        interval: 1m
+        rules:
+          - uid: flux-resource-not-ready
+            title: Flux resource not ready
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 600
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  refId: A
+                  expr: 'gotk_resource_info{ready="False"}'
+                  instant: true
+              - refId: C
+                datasourceUid: "__expr__"
+                model:
+                  refId: C
+                  type: threshold
+                  expression: A
+                  conditions:
+                    - evaluator:
+                        type: gt
+                        params:
+                          - 0
+            noDataState: OK
+            execErrState: Error
+            for: 15m
+            annotations:
+              summary: '{{ $labels.customresource_kind }} {{ $labels.exported_namespace }}/{{ $labels.name }} has not been Ready for 15 minutes'
+          - uid: pod-stuck-pending
+            title: Pod stuck Pending
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 600
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  refId: A
+                  expr: 'sum by (namespace, pod) (kube_pod_status_phase{phase="Pending"}) > 0'
+                  instant: true
+              - refId: C
+                datasourceUid: "__expr__"
+                model:
+                  refId: C
+                  type: threshold
+                  expression: A
+                  conditions:
+                    - evaluator:
+                        type: gt
+                        params:
+                          - 0
+            noDataState: OK
+            execErrState: Error
+            for: 15m
+            annotations:
+              summary: 'Pod {{ $labels.namespace }}/{{ $labels.pod }} has been Pending for 15 minutes'
+          - uid: container-failing
+            title: Container crash-looping or failing to start
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 600
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  refId: A
+                  expr: 'sum by (namespace, pod, container, reason) (kube_pod_container_status_waiting_reason{reason=~"CrashLoopBackOff|ImagePullBackOff|ErrImagePull|CreateContainerConfigError|CreateContainerError"}) > 0'
+                  instant: true
+              - refId: C
+                datasourceUid: "__expr__"
+                model:
+                  refId: C
+                  type: threshold
+                  expression: A
+                  conditions:
+                    - evaluator:
+                        type: gt
+                        params:
+                          - 0
+            noDataState: OK
+            execErrState: Error
+            for: 15m
+            annotations:
+              summary: '{{ $labels.namespace }}/{{ $labels.pod }} container {{ $labels.container }} has been in {{ $labels.reason }} for 15 minutes'
+          - uid: node-not-ready
+            title: Node not ready
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 600
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  refId: A
+                  expr: 'kube_node_status_condition{condition="Ready", status!="true"} > 0'
+                  instant: true
+              - refId: C
+                datasourceUid: "__expr__"
+                model:
+                  refId: C
+                  type: threshold
+                  expression: A
+                  conditions:
+                    - evaluator:
+                        type: gt
+                        params:
+                          - 0
+            noDataState: OK
+            execErrState: Error
+            for: 10m
+            annotations:
+              summary: 'Node {{ $labels.node }} has not been Ready for 10 minutes'
+          # cert-manager renews 30 days before expiry, so under 14 days left means renewal is failing.
+          - uid: certificate-expiring
+            title: Certificate expiring
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 600
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  refId: A
+                  expr: '(certmanager_certificate_expiration_timestamp_seconds - time()) / 86400'
+                  instant: true
+              - refId: C
+                datasourceUid: "__expr__"
+                model:
+                  refId: C
+                  type: threshold
+                  expression: A
+                  conditions:
+                    - evaluator:
+                        type: lt
+                        params:
+                          - 14
+            noDataState: OK
+            execErrState: Error
+            for: 1h
+            annotations:
+              summary: 'Certificate {{ $labels.namespace }}/{{ $labels.name }} expires in less than 14 days; renewal is failing'

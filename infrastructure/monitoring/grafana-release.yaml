@@ -15,7 +15,7 @@ spec:
       version: "8.x"
   interval: 6m
   values:
-    replicaCount: 1   # <-- Add this line
+    replicaCount: 1
     admin:
       existingSecret: grafana-secret
       userKey: user
@@ -33,6 +33,9 @@ spec:
       existingClaim: grafana-qnap
     grafana.ini:
       server:
+        # Grafana is reached on the LAN through the ingress-nginx VIP (grafana-internal-ingress.yaml).
+        # root_url is built from this, and so are the links in alert emails.
+        domain: 192.168.1.230
         root_url: "%(protocol)s://%(domain)s/grafana/"
         serve_from_sub_path: true
       smtp:
@@ -59,8 +62,22 @@ spec:
             access: proxy
             url: http://grafana-loki.monitoring.svc.cluster.local:3100
             isDefault: false
-    plugins:
-      - grafana-piechart-panel
+    # Dashboards live as JSON in ./dashboards; kustomization.yaml generates them into the
+    # grafana-dashboards ConfigMap, which the chart mounts at the provider path below.
+    dashboardProviders:
+      dashboardproviders.yaml:
+        apiVersion: 1
+        providers:
+          - name: default
+            orgId: 1
+            folder: Gembercluster
+            type: file
+            disableDeletion: false
+            editable: true
+            options:
+              path: /var/lib/grafana/dashboards/default
+    dashboardsConfigMaps:
+      default: grafana-dashboards
     initChownData:
       enabled: false
     extraConfigmapMounts:

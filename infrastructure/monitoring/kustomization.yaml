@@ -9,3 +9,14 @@ resources:
   - loki-release.yaml
   - promtail-release.yaml
   - grafana-internal-ingress.yaml
+# Provisioned into Grafana by grafana-release.yaml (dashboardsConfigMaps). The name must stay
+# fixed because the HelmRelease references it, hence no hash suffix.
+configMapGenerator:
+  - name: grafana-dashboards
+    namespace: monitoring
+    files:
+      - dashboards/all-logs-dashboard.json
+      - dashboards/cluster-health-dashboard.json
+      - dashboards/flux-dashboard.json
+generatorOptions:
+  disableNameSuffixHash: true

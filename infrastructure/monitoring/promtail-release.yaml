@@ -14,43 +14,12 @@ spec:
       version: "6.x"
   interval: 5m
   values:
+    # The chart's default kubernetes-pods job ships every container log with namespace, pod,
+    # container and app labels. Loki 3 detects log levels on ingest and stores them as the
+    # detected_level structured metadata, so no custom pipeline is needed for level filtering.
     config:
       clients:
         - url: http://grafana-loki.monitoring.svc.cluster.local:3100/loki/api/v1/push
-    serviceMonitor:
-      enabled: true
-    extraScrapeConfigs:
-      - job_name: kubernetes-pods-default
-        kubernetes_sd_configs:
-          - role: pod
-        relabel_configs:
-          - source_labels: [__meta_kubernetes_namespace]
-            regex: default
-            action: keep
-      - job_name: kubernetes-pods-other-namespaces-warn-error
-        kubernetes_sd_configs:
-          - role: pod
-        relabel_configs:
-          - source_labels: [__meta_kubernetes_namespace]
-            regex: default
-            action: drop
-          - source_labels: [__meta_kubernetes_pod_container_name, __meta_kubernetes_namespace, __meta_kubernetes_pod_name, __meta_kubernetes_pod_label_app]
-            action: replace
-            target_label: job
-            replacement: "$1"
-        pipeline_stages:
-          - json:
-              expressions:
-                detected_level
-          - labels:
-              detected_level: detected_level
-          - match:
-              selector: '{namespace!~"default"}'
-              stages:
-                - regex:
-                    expression: '(?i)(info|warn|error|debug|trace)'
-                - labels:
-                    level: "$1"
     resources:
       limits:
         cpu: 200m
