@@ -1,6 +1,7 @@
 # Plan: replace ingress-nginx with Traefik
 
-Status: proposed, 2026-09-26. Nothing in here has been applied yet.
+Status (2026-09-26): phases 0 and 1 are done and phase 2's automated comparison passed (see the
+progress log at the end). Next: the browser checks in phase 2, then the cutover.
 
 To understand this, start by reading the 2026-09-26 section of [NOTES.md](../NOTES.md), then
 [infrastructure/nginx/nginx-release.yaml](../infrastructure/nginx/nginx-release.yaml),
@@ -199,6 +200,38 @@ That covers StripPrefix for ebi-frontend, IPAllowList for grafana-internal and a
 ## Effort
 
 Phases 0–2 take an evening. Phase 3 takes ten minutes plus a few days of watching. Phase 4 takes half an hour.
+
+## Progress log
+
+**2026-09-26, phases 0–1** (`a07ec39`):
+
+- Phase 0 done: ServiceLB was disabled earlier the same day, and the dead ClusterRoleBindings
+  `helm-kube-system-traefik(-crd)` were deleted.
+- Traefik chart 41.6.0 (Traefik v3.7.13), in `infrastructure/traefik/traefik-release.yaml`, with
+  the HSTS Middleware in `configuration/traefik-hsts.yaml`. It runs 2 pods (gembernode-01 and 03)
+  on `192.168.1.231` with `externalTrafficPolicy: Local`. It doesn't write Ingress status; every
+  Ingress still shows `.230`.
+- Differences from the values sketched in phase 1, found while checking them against the chart's
+  `values.yaml`:
+  - access logs are `accessLog.enabled`;
+  - `ingressClass` defaults to `enabled: true, isDefaultClass: true`, so it is turned off to keep
+    Traefik from becoming the cluster's default class;
+  - `providers.kubernetesIngress` is on by default, so it is turned off explicitly;
+  - the websecure `readTimeout` is `600s` rather than unlimited;
+  - `global.checkNewVersion: false`. Anonymous usage reporting is already off by default in this
+    chart version.
+- Traefik logs one warning, "SafeNaming is not explicitly set". It is informational: the
+  `traefik-hsts@kubernetescrd` reference relies on the legacy naming, so it stays unset.
+
+**Phase 2, automated comparison:** every host and apex path in `ingress/`, fetched through `.230`
+and `.231` with `curl --resolve`, gave the same status codes, the same redirect targets
+(trailing-slash, login and HTTP→HTTPS 308 redirects), valid certificates and the HSTS header.
+Response sizes matched to within a few bytes (per-request tokens). `/grafana` works on both from
+the LAN.
+
+Still to check by hand, with a browser pointed at `.231` through a hosts-file entry: the
+vortexplotboek Google/Microsoft sign-in, a large and slow fileserver upload, and dungeontable's
+live connection.
 
 ## Sources
 
