@@ -25,9 +25,12 @@ spec:
               drop: ["ALL"]
           ports:
             - containerPort: 8080
+          # Startup and liveness only check that the process is listening. /healthz includes the
+          # PostgreSQL check, so using it here made the kubelet restart a healthy app whenever the
+          # database was briefly away (e.g. during a node reboot). Readiness keeps /healthz so the
+          # pod stops receiving traffic while the database is unreachable.
           startupProbe:
-            httpGet:
-              path: /healthz
+            tcpSocket:
               port: 8080
             failureThreshold: 18
             periodSeconds: 5
@@ -37,8 +40,7 @@ spec:
               port: 8080
             periodSeconds: 10
           livenessProbe:
-            httpGet:
-              path: /healthz
+            tcpSocket:
               port: 8080
             periodSeconds: 20
           resources:
@@ -61,3 +63,13 @@ spec:
                 secretKeyRef:
                   name: adventureengine-secrets
                   key: anthropic_api_key
+          volumeMounts:
+            # ASP.NET Core Data Protection keys (auth cookies, antiforgery tokens). The app keeps
+            # them in $HOME/.aspnet; without a volume they were regenerated on every restart,
+            # which logged everyone out.
+            - name: dataprotection-keys
+              mountPath: /root/.aspnet/DataProtection-Keys
+      volumes:
+        - name: dataprotection-keys
+          persistentVolumeClaim:
+            claimName: adventureengine-dataprotection-qnap

@@ -6,3 +6,4 @@ resources:
 - grafana.yaml
 - loki.yaml
 - prometheus.yaml
+- adventureengine.yaml
