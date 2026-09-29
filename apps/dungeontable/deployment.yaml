@@ -17,7 +17,7 @@ spec:
         - name: ghcr-login
       containers:
         - name: dungeontable
-          image: ghcr.io/gemberkoekje/dungeontable:1.0.0-c18
+          image: ghcr.io/gemberkoekje/dungeontable:1.0.0-c24
           imagePullPolicy: Always
           securityContext:
             allowPrivilegeEscalation: false
