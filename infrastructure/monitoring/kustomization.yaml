@@ -18,5 +18,6 @@ configMapGenerator:
       - dashboards/all-logs-dashboard.json
       - dashboards/cluster-health-dashboard.json
       - dashboards/flux-dashboard.json
+      - dashboards/spacetraders-dashboard.json
 generatorOptions:
   disableNameSuffixHash: true
