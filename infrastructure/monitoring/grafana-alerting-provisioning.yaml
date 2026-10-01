@@ -42,7 +42,7 @@ data:
                   to: 0
                 datasourceUid: grafana-loki
                 model:
-                  expr: 'sum(count_over_time({namespace=~"armabotcs|ebi-cs-api|vortexplotboek|cov-website|file-server"} |~ `(?i)error` [5m]))'
+                  expr: 'sum(count_over_time({namespace=~"armabotcs|ebi-cs-api|vortexplotboek|cov-website|file-server|spacetraders"} |~ `(?i)error` [5m]))'
                   queryType: range
                   refId: A
               - refId: B
@@ -253,3 +253,140 @@ data:
             for: 1h
             annotations:
               summary: 'Certificate {{ $labels.namespace }}/{{ $labels.name }} expires in less than 14 days; renewal is failing'
+      # The SpaceTraders bot (Gemberkoekje/projects, SpaceTraders/PLAN.md slice 2.5). Its metrics
+      # come from the pod's port 9090, its log lines from Loki. The bot is off the cluster until
+      # its slice 4.2, and "bot is down" would fire from the start, so that rule is paused: unpause
+      # it once the bot is back (slice 4.3). The others need the bot's data before they can fire.
+      - orgId: 1
+        name: spacetraders
+        folder: Alerts
+        interval: 1m
+        rules:
+          - uid: spacetraders-down
+            title: SpaceTraders bot is down
+            isPaused: true
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 600
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  refId: A
+                  expr: 'max(max_over_time(up{namespace="spacetraders"}[10m]))'
+                  instant: true
+              - refId: C
+                datasourceUid: "__expr__"
+                model:
+                  refId: C
+                  type: threshold
+                  expression: A
+                  conditions:
+                    - evaluator:
+                        type: lt
+                        params:
+                          - 1
+            # No series at all means no pod to scrape: that is down too.
+            noDataState: Alerting
+            execErrState: Error
+            for: 1m
+            annotations:
+              summary: 'Prometheus has not scraped the SpaceTraders bot for 10 minutes'
+          # The database size limits have a rule of their own below.
+          - uid: spacetraders-anomaly
+            title: SpaceTraders anomaly active
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 600
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  refId: A
+                  expr: 'max by (rule, subject) (spacetraders_anomaly_active{namespace="spacetraders", rule!~"DbSize.*"})'
+                  instant: true
+              - refId: C
+                datasourceUid: "__expr__"
+                model:
+                  refId: C
+                  type: threshold
+                  expression: A
+                  conditions:
+                    - evaluator:
+                        type: gt
+                        params:
+                          - 0
+            noDataState: OK
+            execErrState: Error
+            for: 15m
+            annotations:
+              summary: 'SpaceTraders anomaly {{ $labels.rule }} on {{ $labels.subject }} has been active for 15 minutes'
+          # The database shares the Postgres volume with every app: over the soft limit (the
+          # Database.SoftLimitMegabytes setting, 1 GB by default) warns; over the hard limit
+          # (3 GB) the bot switches its automation off.
+          - uid: spacetraders-db-soft-limit
+            title: SpaceTraders database over its soft limit
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 600
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  refId: A
+                  expr: 'max(spacetraders_anomaly_active{namespace="spacetraders", rule="DbSizeSoftLimit"})'
+                  instant: true
+              - refId: C
+                datasourceUid: "__expr__"
+                model:
+                  refId: C
+                  type: threshold
+                  expression: A
+                  conditions:
+                    - evaluator:
+                        type: gt
+                        params:
+                          - 0
+            noDataState: OK
+            execErrState: Error
+            for: 5m
+            annotations:
+              summary: 'The SpaceTraders database is over its soft limit; over the hard limit the bot switches its automation off'
+      # Loki keeps 31 days on 10Gi, shared with every app: the bot's budget is 50,000 lines a day.
+      - orgId: 1
+        name: spacetraders-logs
+        folder: Alerts
+        interval: 10m
+        rules:
+          - uid: spacetraders-log-volume
+            title: SpaceTraders log volume over budget
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 600
+                  to: 0
+                datasourceUid: grafana-loki
+                model:
+                  refId: A
+                  expr: 'sum(count_over_time({namespace="spacetraders"}[24h]))'
+                  queryType: instant
+              - refId: C
+                datasourceUid: "__expr__"
+                model:
+                  refId: C
+                  type: threshold
+                  expression: A
+                  conditions:
+                    - evaluator:
+                        type: gt
+                        params:
+                          - 50000
+            noDataState: OK
+            execErrState: Error
+            for: 0s
+            annotations:
+              summary: 'SpaceTraders logged more than 50,000 lines in the last 24 hours, its budget'
