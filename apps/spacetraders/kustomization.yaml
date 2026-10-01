@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - spacetraders-secrets.yaml
+  - deployment-api.yaml
+  - deployment-webui.yaml
+  - service-api.yaml
+  - service-webui.yaml
+configMapGenerator:
+  - name: spacetraders-api-config
+    namespace: spacetraders
+    envs:
+      - api.env

@@ -1,0 +1,32 @@
+# The SpaceTraders dashboard and its internal API, on the LAN only (SpaceTraders PLAN.md D11, B22):
+# the dashboard hands the internal API key to every browser that opens it, so it must not be
+# reachable from the internet. Modelled on infrastructure/monitoring/grafana-internal-ingress.yaml:
+# no host, no certificate, and only LAN addresses. On the LAN:
+#   http://192.168.1.231/spacetraders/dashboard/   (Traefik; .230 too while ingress-nginx runs)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: spacetraders-internal
+  namespace: spacetraders
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/whitelist-source-range: "192.168.0.0/16,10.0.0.0/8"
+spec:
+  ingressClassName: nginx-public
+  rules:
+    - http:
+        paths:
+          - path: /spacetraders/api
+            pathType: Prefix
+            backend:
+              service:
+                name: spacetraders-api-service
+                port:
+                  number: 80
+          - path: /spacetraders/dashboard
+            pathType: Prefix
+            backend:
+              service:
+                name: spacetraders-webui-service
+                port:
+                  number: 80

@@ -1,0 +1,116 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spacetraders-api
+  namespace: spacetraders
+spec:
+  replicas: 1
+  # Never two pods at once: the SpaceTraders rate limit is per account, and startup sync and
+  # recovery call the API before the leader lease decides which pod runs the tick. Recreate stops
+  # the old pod before it starts the new one.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: spacetraders-api
+  template:
+    metadata:
+      labels:
+        app: spacetraders-api
+      # /metrics has a port of its own that needs no API key; the Service and the ingress don't
+      # route it, so only Prometheus scrapes it (SpaceTraders PLAN.md B11, slice 2.1).
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: /metrics
+    spec:
+      imagePullSecrets:
+        - name: ghcr-login
+      # The app gives itself 60 seconds to shut down (HostOptions.ShutdownTimeout).
+      terminationGracePeriodSeconds: 60
+      # A startup that can't reach PostgreSQL stops the host, so after a node reboot the pod would
+      # crash-loop until the database is back. Wait for it, like armabotcs and curatool.
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:17-alpine
+          command:
+            - sh
+            - -c
+            - until pg_isready -h postgresql.flux-system.svc.cluster.local -p 5432 -t 2; do echo "waiting for postgres"; sleep 2; done
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "16Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
+      containers:
+        - name: spacetraders-api
+          image: ghcr.io/gemberkoekje/spacetraders-api:12443acb20ef513708bc43366c535f3f41a041d2
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: metrics
+              containerPort: 9090
+          envFrom:
+            - configMapRef:
+                name: spacetraders-api-config
+          # The fields of the 1Password item; secret.yaml.template describes each.
+          env:
+            - name: ConnectionStrings__DefaultConnection
+              valueFrom:
+                secretKeyRef:
+                  name: spacetraders-secrets
+                  key: ConnectionStrings__DefaultConnection
+            - name: SpaceTraders__AccountToken
+              valueFrom:
+                secretKeyRef:
+                  name: spacetraders-secrets
+                  key: SpaceTraders__AccountToken
+            - name: SpaceTraders__AgentName
+              valueFrom:
+                secretKeyRef:
+                  name: spacetraders-secrets
+                  key: SpaceTraders__AgentName
+            - name: SPACETRADERS_INTERNAL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: spacetraders-secrets
+                  key: SPACETRADERS_INTERNAL_API_KEY
+          # The startup chain (database, agent, sync, recovery, then the tick) runs once the HTTP
+          # server is up. /health/startup answers 200 only when it has completed, and a chain that
+          # fails stops the process (PLAN.md B23, B39). Ten minutes leaves room for 429 back-offs.
+          startupProbe:
+            httpGet:
+              path: /health/startup
+              port: http
+            periodSeconds: 10
+            failureThreshold: 60
+          # Liveness only checks that the process answers. Readiness adds the database, so the
+          # dashboard's API calls stop while PostgreSQL is away, without restarting the bot.
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"

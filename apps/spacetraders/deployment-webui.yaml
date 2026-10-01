@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spacetraders-webui
+  namespace: spacetraders
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spacetraders-webui
+  template:
+    metadata:
+      labels:
+        app: spacetraders-webui
+    spec:
+      imagePullSecrets:
+        - name: ghcr-login
+      containers:
+        - name: spacetraders-webui
+          image: ghcr.io/gemberkoekje/spacetraders-webui:12443acb20ef513708bc43366c535f3f41a041d2
+          imagePullPolicy: Always
+          # nginx starts as root and hands its workers to the nginx user, which needs the default
+          # capabilities, so they aren't dropped here.
+          securityContext:
+            allowPrivilegeEscalation: false
+          ports:
+            - name: http
+              containerPort: 80
+          # The dashboard only needs the API key: it sends it as X-Api-Key. The image writes it into
+          # config.js, which every browser that opens the dashboard can read, hence the LAN-only
+          # ingress (SpaceTraders PLAN.md B22, D11).
+          env:
+            - name: SPACETRADERS_INTERNAL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: spacetraders-secrets
+                  key: SPACETRADERS_INTERNAL_API_KEY
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"

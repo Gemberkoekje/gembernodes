@@ -254,9 +254,8 @@ data:
             annotations:
               summary: 'Certificate {{ $labels.namespace }}/{{ $labels.name }} expires in less than 14 days; renewal is failing'
       # The SpaceTraders bot (Gemberkoekje/projects, SpaceTraders/PLAN.md slice 2.5). Its metrics
-      # come from the pod's port 9090, its log lines from Loki. The bot is off the cluster until
-      # its slice 4.2, and "bot is down" would fire from the start, so that rule is paused: unpause
-      # it once the bot is back (slice 4.3). The others need the bot's data before they can fire.
+      # come from the pod's port 9090, its log lines from Loki. "Bot is down" was paused while the
+      # bot was off the cluster; it came back with apps/spacetraders (slices 4.2 and 4.3).
       - orgId: 1
         name: spacetraders
         folder: Alerts
@@ -264,7 +263,6 @@ data:
         rules:
           - uid: spacetraders-down
             title: SpaceTraders bot is down
-            isPaused: true
             condition: C
             data:
               - refId: A
