@@ -1,7 +1,7 @@
 {
   "uid": "spacetraders",
   "title": "SpaceTraders",
-  "description": "What the SpaceTraders bot does and why: credits, fleet, contracts, the API, health and the journal. See SpaceTraders/PLAN.md slice 2.4 in Gemberkoekje/projects.",
+  "description": "What the SpaceTraders bot does and why: credits, fleet, surveys, contracts, the API, health and the journal. See SpaceTraders/PLAN.md slice 2.4 in Gemberkoekje/projects.",
   "tags": [
     "spacetraders"
   ],
@@ -883,7 +883,7 @@
           "legendFormat": "{{ship}} {{good}} jettisoned"
         }
       ],
-      "description": "Units extracted per ship and good in the hour before each point, and the units of it jettisoned (goods the contract doesn't need).",
+      "description": "Units extracted per ship and good in the hour before each point, and the units of it jettisoned (goods the trip or the contract doesn't mine for).",
       "fieldConfig": {
         "defaults": {
           "decimals": 0,
@@ -960,6 +960,377 @@
       }
     },
     {
+      "id": 26,
+      "type": "stat",
+      "title": "Surveys taken (24h)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 37
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(spacetraders_surveys_taken_total{namespace=\"spacetraders\"}[24h]))",
+          "instant": true
+        }
+      ],
+      "description": "Surveys our ships took in the last 24 hours (SpaceTraders/PLAN.md slice 6.4).",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "none",
+        "graphMode": "none",
+        "textMode": "value"
+      }
+    },
+    {
+      "id": 27,
+      "type": "stat",
+      "title": "Ended surveys never used (24h)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 37
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(spacetraders_surveys_ended_total{namespace=\"spacetraders\",used=\"false\"}[24h])) / sum(increase(spacetraders_surveys_ended_total{namespace=\"spacetraders\"}[24h]))",
+          "instant": true
+        }
+      ],
+      "description": "Of the surveys that ended in the last 24 hours (expired, exhausted or refused), the share no extraction used. High: surveying runs ahead of the miners, too many surveys.",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "none",
+        "graphMode": "none",
+        "textMode": "value"
+      }
+    },
+    {
+      "id": 28,
+      "type": "stat",
+      "title": "Extractions with a survey (24h)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 37
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(spacetraders_extractions_total{namespace=\"spacetraders\",surveyed=\"true\"}[24h])) / sum(increase(spacetraders_extractions_total{namespace=\"spacetraders\"}[24h]))",
+          "instant": true
+        }
+      ],
+      "description": "Of the extractions in the last 24 hours, the share made with a survey. Low while a surveyor works: too few surveys.",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "none",
+        "graphMode": "none",
+        "textMode": "value"
+      }
+    },
+    {
+      "id": 29,
+      "type": "stat",
+      "title": "Usable surveys now",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 37
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(max by (waypoint, used) (spacetraders_surveys_active{namespace=\"spacetraders\"}))",
+          "instant": true
+        }
+      ],
+      "description": "Surveys in the cache that haven't expired or run out, used yet or not.",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "none",
+        "graphMode": "none",
+        "textMode": "value"
+      }
+    },
+    {
+      "id": 30,
+      "type": "timeseries",
+      "title": "Surveys taken and ended per hour",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 41
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(spacetraders_surveys_taken_total{namespace=\"spacetraders\"}[1h]))",
+          "legendFormat": "taken"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (reason, used) (increase(spacetraders_surveys_ended_total{namespace=\"spacetraders\"}[1h]))",
+          "legendFormat": "ended: {{reason}}, used {{used}}"
+        }
+      ],
+      "description": "Surveys taken in the hour before each point, and those that ended: expired, exhausted (used up) or not_verified (refused), and whether any extraction used them.",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "min": 0,
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 31,
+      "type": "timeseries",
+      "title": "Usable surveys, by asteroid",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 41
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (waypoint, used) (max by (waypoint, used) (spacetraders_surveys_active{namespace=\"spacetraders\"}))",
+          "legendFormat": "{{waypoint}}, used {{used}}"
+        }
+      ],
+      "description": "Surveys in the cache per asteroid, used yet or not. A pile of unused ones means the miners can't keep up with the surveyor.",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "min": 0,
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 32,
+      "type": "timeseries",
+      "title": "Extractions per hour, with and without a survey",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 41
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (surveyed) (increase(spacetraders_extractions_total{namespace=\"spacetraders\"}[1h]))",
+          "legendFormat": "with a survey: {{surveyed}}"
+        }
+      ],
+      "description": "Extractions in the hour before each point, with a survey (true) or without one (false).",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "min": 0,
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 33,
+      "type": "logs",
+      "title": "Survey journal",
+      "datasource": {
+        "type": "loki",
+        "uid": "grafana-loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 49
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "grafana-loki"
+          },
+          "expr": "{namespace=\"spacetraders\"} | json EventKind, message=\"[\\\"@m\\\"]\" | EventKind=~\"Surveyed|SurveyEnded\" | line_format \"{{.message}}\""
+        }
+      ],
+      "description": "Every survey taken (deposits, size, expiry) and every survey that ended, why, and after how many extractions. Open a line for its properties: Signature, WaypointSymbol, Extractions.",
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending"
+      }
+    },
+    {
       "id": 13,
       "type": "table",
       "title": "Contracts",
@@ -971,7 +1342,7 @@
         "h": 7,
         "w": 14,
         "x": 0,
-        "y": 37
+        "y": 59
       },
       "targets": [
         {
@@ -1056,7 +1427,7 @@
         "h": 7,
         "w": 10,
         "x": 14,
-        "y": 37
+        "y": 59
       },
       "targets": [
         {
@@ -1116,7 +1487,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 44
+        "y": 66
       },
       "targets": [
         {
@@ -1170,7 +1541,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 44
+        "y": 66
       },
       "targets": [
         {
@@ -1255,7 +1626,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 52
+        "y": 74
       },
       "targets": [
         {
@@ -1309,7 +1680,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 52
+        "y": 74
       },
       "targets": [
         {
@@ -1368,7 +1739,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 60
+        "y": 82
       },
       "targets": [
         {
@@ -1438,7 +1809,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 60
+        "y": 82
       },
       "targets": [
         {
@@ -1477,7 +1848,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 68
+        "y": 90
       },
       "targets": [
         {
@@ -1543,7 +1914,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 76
+        "y": 98
       },
       "targets": [
         {
@@ -1579,7 +1950,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 90
+        "y": 112
       },
       "targets": [
         {

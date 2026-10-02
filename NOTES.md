@@ -372,3 +372,22 @@ cached them, plus the game's production chains (Gemberkoekje/projects `SpaceTrad
   expected rows, the other system left out) and `scripts/validate.py` without kubeconform and the
   HelmRelease rendering: no errors. Until the bot runs an image with PR #118 the dashboard is
   empty. Dashboards reload without a Grafana restart.
+
+## 2026-10-02 — SpaceTraders survey section
+
+The SpaceTraders dashboard gains a survey section under the mining panels, asked for to see whether
+the bot surveys too much or too little (Gemberkoekje/projects `SpaceTraders/PLAN.md` slice 6.4, its
+PR #122, which adds the metrics and journal lines). The panels below it moved down by its height.
+
+- Stats over the last 24 hours: surveys taken; the share of ended surveys no extraction used (high:
+  too many surveys); the share of extractions made with a survey (low while a surveyor works: too
+  few); and the usable surveys now.
+- Per hour: surveys taken and ended (expired, exhausted, not_verified; used or not); usable surveys
+  per asteroid, used or not; extractions with and without a survey.
+- "Survey journal": the bot's `Surveyed` and `SurveyEnded` lines from Loki, every survey with its
+  deposits and expiry, and how it ended after how many extractions.
+- Tested with `promtool test rules` (`prom/prometheus`) against synthetic series, every query taken
+  verbatim from the JSON: each gives the expected value (1,440 taken, 25% ended unused, 75% of
+  extractions surveyed, 7 usable). `scripts/validate.py`'s syntax check: no errors (no flux,
+  kubeconform or helm on this PC; CI runs the rest). Until the bot runs an image with PR #122 the
+  section is empty. Dashboards reload without a Grafana restart.
