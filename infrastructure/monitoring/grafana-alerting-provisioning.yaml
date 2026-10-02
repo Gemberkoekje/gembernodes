@@ -32,9 +32,18 @@ data:
         folder: Alerts
         interval: 5m
         rules:
+          # One alert per namespace, so the email names the app. A counts the lines containing
+          # "error"; B quotes the most frequent of them in its "line" label (cut at 300 characters).
+          # B has more labels than A, which Grafana still matches to A's alert as $values.B, so a
+          # new message doesn't become an alert of its own.
+          # If any query returns nothing, Grafana treats the whole rule as NoData (OK: silent), so B
+          # must never fail where A succeeds. Sharded, B hits Loki's 500-series limit once more than
+          # 500 different lines match; min_sharding_lookback in loki-release.yaml prevents that.
+          # The email's View dashboard/View panel buttons open dashboards/error-logs-dashboard.json
+          # from an hour before the alert started; keep its namespace list in step with this one.
           - uid: loki-error-logs
             title: Error logs detected
-            condition: B
+            condition: C
             data:
               - refId: A
                 relativeTimeRange:
@@ -42,31 +51,39 @@ data:
                   to: 0
                 datasourceUid: grafana-loki
                 model:
-                  expr: 'sum(count_over_time({namespace=~"armabotcs|ebi-cs-api|vortexplotboek|cov-website|file-server|spacetraders"} |~ `(?i)error` [5m]))'
-                  queryType: range
                   refId: A
+                  expr: 'sum by (namespace) (count_over_time({namespace=~"armabotcs|ebi-cs-api|vortexplotboek|cov-website|file-server|spacetraders"} |~ `(?i)error` [5m]))'
+                  queryType: instant
               - refId: B
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: grafana-loki
+                model:
+                  refId: B
+                  expr: 'topk by (namespace) (1, sum by (namespace, line) (count_over_time({namespace=~"armabotcs|ebi-cs-api|vortexplotboek|cov-website|file-server|spacetraders"} |~ `(?i)error` | label_format line=`{{ regexReplaceAll "(?s)^(.{300}).+$" __line__ "${1}…" }}` [5m])))'
+                  queryType: instant
+              - refId: C
                 datasourceUid: "__expr__"
                 model:
-                  type: classic_conditions
-                  refId: B
+                  refId: C
+                  type: threshold
+                  expression: A
                   conditions:
                     - evaluator:
                         type: gt
                         params:
                           - 0
-                      operator:
-                        type: and
-                      query:
-                        params:
-                          - A
-                      reducer:
-                        type: last
             noDataState: OK
             execErrState: Error
             for: 5m
             annotations:
-              summary: Error logs detected
+              summary: '{{ $labels.namespace }} logged {{ $values.A }} lines containing "error" in the last 5 minutes'
+              description: |-
+                {{ with $values.B }}Most frequent line ({{ . }} of {{ $values.A }}):
+                {{ .Labels.line }}{{ end }}
+              __dashboardUid__: error-logs
+              __panelId__: "2"
       # The failures that went unnoticed for months (Loki stuck Pending, Flux HelmRelease failed)
       # would each have tripped one of these. Every query aggregates to one series per object,
       # keeping only the labels that identify it: each object alerts on its own, and the raw

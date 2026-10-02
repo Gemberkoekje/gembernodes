@@ -203,3 +203,93 @@ doesn't restart pods (`AUTO_RESTART=false`), so after changing an item, wait for
 - TLS: `ingress/*-ingress.yaml` (8 secret names).
 - APIs/pins: `repos/*.yaml`, `infrastructure/certmanager/certmanager-helmrelease.yaml`, `infrastructure/system-upgrade/kustomization.yaml`.
 - Docs: `NOTES.md`, `docs/ingress-nginx-migration-plan.md`.
+
+## 2026-10-02 — error-log alert emails say what failed
+
+The "Error logs detected" email only said `B0=1`: the rule added every matching line into one
+number without labels (a classic condition), so it could not say which app or which line.
+
+The rule (`loki-error-logs` in `infrastructure/monitoring/grafana-alerting-provisioning.yaml`) now:
+
+- alerts per namespace, and the subject names it: `[FIRING:1] Error logs detected armabotcs (Alerts)`;
+- says in the summary how many lines contained "error" in the last 5 minutes, and quotes the most
+  frequent of those lines in the description (cut at 300 characters);
+- adds View dashboard / View panel buttons that open the new "Error logs" dashboard
+  (`dashboards/error-logs-dashboard.json`) from an hour before the alert started until the email
+  was sent.
+
+It still needs errors in two consecutive 5-minute evaluations to fire, now per namespace.
+`loki-release.yaml` gained `min_sharding_lookback: 15m` (see Gotchas).
+
+### Gotchas
+
+- **A Grafana rule is NoData as soon as any of its queries returns nothing**, an error included,
+  and NoData is OK (silent) for this rule. So the query that quotes the line must never fail where
+  the count succeeds.
+- **Loki applies `max_query_series` (500) to each shard's result, before `topk`.** The quote query
+  groups by line, so once more than 500 different lines matched in 5 minutes it failed, which muted
+  the alert while an app was flooding errors. With `min_sharding_lookback: 15m`, queries (and the
+  15-minute splits of longer ones) that end in the last 15 minutes run unsharded, and only the
+  final result (one line per namespace) counts.
+- **`$values` also matches query series with more labels than the alert:** the quote query's
+  `{namespace, line}` series attaches to the `{namespace}` alert without becoming an alert of its
+  own. When several match, the last one wins, hence `topk by (namespace) (1, ...)`.
+- **Loki's `trunc` cuts bytes**, which breaks accented characters (`�`); the rule cuts with
+  `regexReplaceAll`, which counts characters.
+- **Grafana's default email shows `summary` and `description` as text**, other annotations as a
+  plain-text table, `runbook_url` as a button, and View dashboard / View panel buttons for
+  `__dashboardUid__` / `__panelId__`.
+
+### How it was tested
+
+Locally, not on the cluster: Grafana 11.6.1 and Loki 3.6.7 (what the `8.x` / `6.x` chart ranges
+resolve to), Loki running the config chart 6.55.0 renders from `loki-release.yaml`, Grafana
+provisioned with this repo's alerting ConfigMap and dashboards, fake pod logs pushed into Loki, and
+the emails caught by a local SMTP server and rendered in Chromium. The current rule's email came out
+identical to the real one. Cases: two namespaces erroring, 1,200 different lines in 5 minutes (the
+quote query failed on it before the Loki change), a 2,000-character line, an accented line, HTML in a
+line (escaped), and errors in a namespace the rule doesn't watch (ignored). The upgrade was replayed
+too: old rule firing, then Grafana restarted on the new provisioning.
+
+### Rollout
+
+1. Merge and let Flux apply it. Loki restarts by itself (its config changed); Grafana only reads
+   alert provisioning at startup, so restart it:
+   ```bash
+   kubectl -n monitoring rollout restart deployment grafana
+   ```
+2. If the old alert is firing at that moment, a `[RESOLVED] Error logs detected (Alerts)` email
+   follows: it has no namespace, and the per-namespace alerts replace it.
+
+## 2026-10-02 — CI: the repository is checked the way Flux reads it
+
+`.github/workflows/validate.yaml` runs `scripts/validate.py` on every pull request and every push to
+`main` (and on demand from the Actions tab). Problems show up as annotations on the files in the pull
+request. It checks:
+
+- every YAML/JSON file parses, without duplicate keys (YAML otherwise keeps the last one silently);
+- every Flux Kustomization builds with `flux build kustomization`, as kustomize-controller does;
+- the result passes kubeconform in strict mode, so a misspelled field fails: Kubernetes 1.36
+  schemas, Flux's schemas for the installed Flux version, and the CRD catalog for cert-manager,
+  MetalLB, 1Password, Traefik and system-upgrade-controller;
+- Flux references resolve: Kustomization `sourceRef`/`dependsOn`, HelmRelease chart sources,
+  `dependsOn` and `valuesFrom` (a OnePasswordItem counts as the Secret of the same name);
+- YAML/JSON inside ConfigMaps parses, and Grafana's alert rules use data sources, dashboards and
+  panels that exist, and its policies use contact points that exist;
+- every HelmRelease renders with its real chart and values (`helm template`) and the result passes
+  kubeconform.
+
+Three findings are warnings that don't fail the run: a file no Kustomization applies (commenting an
+app out of a kustomization is allowed), a top-level HelmRelease value the chart doesn't have (the
+first run found Grafana's `replicaCount`; the chart's value is `replicas`), and a chart registry
+that stays busy after two retries. Shared CI runners hit Docker Hub's limit for anonymous pulls
+(the Bitnami PostgreSQL chart) now and then; that chart just goes unchecked for that run.
+
+To run it locally: `python3 scripts/validate.py` (needs PyYAML, and `flux`, `kubeconform` and `helm`
+on PATH). Versions: the flux CLI follows the `# Flux Version` line in `gotk-components.yaml`; Helm
+is pinned in the workflow to what helm-controller uses, so bump it with Flux; `KUBERNETES_VERSION`
+and the CRD catalog commit are at the top of the script.
+
+What it can't see: chart values below the top level that the chart ignores (charts document many
+only as comments), the contents of secrets (`valuesFrom` gets placeholders), and anything that needs
+the cluster: CRDs being installed, admission webhooks, resources already owned by something else.

@@ -56,6 +56,11 @@ spec:
         retention_enabled: true
         delete_request_store: filesystem
       limits_config:
+        # Queries (and the 15-minute splits of longer ones) that end in the last 15 minutes run
+        # unsharded. Sharded, each shard's result counts against max_query_series (500) before
+        # any topk: the "Error logs detected" alert's quote query failed on that, and a failed
+        # query mutes that alert (see grafana-alerting-provisioning.yaml).
+        min_sharding_lookback: 15m
         allow_structured_metadata: true
         max_structured_metadata_size: 32MB
         retention_period: 744h
