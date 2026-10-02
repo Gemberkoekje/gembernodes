@@ -616,7 +616,7 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 16,
+        "w": 24,
         "x": 0,
         "y": 20
       },
@@ -630,26 +630,94 @@
           "expr": "max by (ship, role, state, goal, reason) (time() - spacetraders_ship_status_since_timestamp_seconds{namespace=\"spacetraders\"})",
           "instant": true,
           "format": "table"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (ship, location, activity) (spacetraders_ship_info{namespace=\"spacetraders\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (ship) (spacetraders_ship_arrival_timestamp_seconds{namespace=\"spacetraders\"}) - time()",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "D",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (ship) (spacetraders_ship_cargo_units{namespace=\"spacetraders\"}) or 0 * max by (ship) (spacetraders_ship_cargo_capacity_units{namespace=\"spacetraders\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "E",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (ship) (spacetraders_ship_cargo_capacity_units{namespace=\"spacetraders\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "F",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "round(sum by (ship) (increase(spacetraders_extracted_units_total{namespace=\"spacetraders\"}[$__range])))",
+          "instant": true,
+          "format": "table"
         }
       ],
-      "description": "Goal is the goal's kind, else the assignment (Contract), else None. Reason says why a goal is blocked. Time in state counts from the bot's start at the latest.",
+      "description": "Where: the waypoint and its type; while travelling, an arrow and where the ship goes. Doing: what the bot has it do: its goal in a few words, else its contract work (mining at the contract's source, delivering at its destination, on the way between them), else idle, or blocked with the reason. Arrives in: while travelling. Cargo and capacity: units in the hold and what it takes. Mined: units extracted in the dashboard's time range. Goal is the goal's kind, else the assignment (Contract), else None. Time in state counts from the bot's start at the latest.",
       "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
         {
           "id": "organize",
           "options": {
             "excludeByName": {
-              "Time": true
+              "Time": true,
+              "Value #B": true,
+              "reason": true
             },
             "indexByName": {
               "ship": 0,
               "role": 1,
-              "state": 2,
-              "goal": 3,
-              "Value": 4,
-              "reason": 5
+              "location": 2,
+              "activity": 3,
+              "state": 4,
+              "Value #C": 5,
+              "Value #D": 6,
+              "Value #E": 7,
+              "Value #F": 8,
+              "goal": 9,
+              "Value #A": 10
             },
             "renameByName": {
-              "Value": "time in state"
+              "role": "type",
+              "location": "where",
+              "activity": "doing",
+              "Value #C": "arrives in",
+              "Value #D": "cargo",
+              "Value #E": "capacity",
+              "Value #F": "mined",
+              "Value #A": "time in state"
             }
           }
         },
@@ -678,8 +746,164 @@
                 "value": "dtdurations"
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "arrives in"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cargo"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "capacity"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mined"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
           }
         ]
+      }
+    },
+    {
+      "id": 24,
+      "type": "bargauge",
+      "title": "Holds",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 29
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (ship, good) (spacetraders_ship_cargo_units{namespace=\"spacetraders\"})",
+          "instant": true,
+          "legendFormat": "{{ship}} {{good}}"
+        }
+      ],
+      "description": "Units of each good in each ship's hold, now.",
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "min": 0,
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 25,
+      "type": "timeseries",
+      "title": "Mined and jettisoned per hour",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 29
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (ship, good) (increase(spacetraders_extracted_units_total{namespace=\"spacetraders\"}[1h]))",
+          "legendFormat": "{{ship}} {{good}} mined"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (ship, good) (increase(spacetraders_jettisoned_units_total{namespace=\"spacetraders\"}[1h]))",
+          "legendFormat": "{{ship}} {{good}} jettisoned"
+        }
+      ],
+      "description": "Units extracted per ship and good in the hour before each point, and the units of it jettisoned (goods the contract doesn't need).",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "min": 0,
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       }
     },
     {
@@ -691,10 +915,10 @@
         "uid": "prometheus"
       },
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 8,
         "x": 16,
-        "y": 20
+        "y": 29
       },
       "targets": [
         {
@@ -747,7 +971,7 @@
         "h": 7,
         "w": 14,
         "x": 0,
-        "y": 29
+        "y": 37
       },
       "targets": [
         {
@@ -832,7 +1056,7 @@
         "h": 7,
         "w": 10,
         "x": 14,
-        "y": 29
+        "y": 37
       },
       "targets": [
         {
@@ -892,7 +1116,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 36
+        "y": 44
       },
       "targets": [
         {
@@ -946,7 +1170,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 36
+        "y": 44
       },
       "targets": [
         {
@@ -1031,7 +1255,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 44
+        "y": 52
       },
       "targets": [
         {
@@ -1085,7 +1309,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 44
+        "y": 52
       },
       "targets": [
         {
@@ -1144,7 +1368,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 52
+        "y": 60
       },
       "targets": [
         {
@@ -1214,7 +1438,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 52
+        "y": 60
       },
       "targets": [
         {
@@ -1253,7 +1477,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 60
+        "y": 68
       },
       "targets": [
         {
@@ -1319,7 +1543,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 68
+        "y": 76
       },
       "targets": [
         {
@@ -1355,7 +1579,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 82
+        "y": 90
       },
       "targets": [
         {
