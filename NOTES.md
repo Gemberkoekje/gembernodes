@@ -293,3 +293,43 @@ and the CRD catalog commit are at the top of the script.
 What it can't see: chart values below the top level that the chart ignores (charts document many
 only as comments), the contents of secrets (`valuesFrom` gets placeholders), and anything that needs
 the cluster: CRDs being installed, admission webhooks, resources already owned by something else.
+
+## 2026-10-02 — SpaceTraders errors by log level
+
+The SpaceTraders bot came back on 2026-10-02 (PR #11), and five minutes later "Error logs detected
+spacetraders" fired on a healthy start. The shared rule counts lines containing "error", and the
+bot logs Serilog's compact JSON, whose ordinary lines contain the word: the startup settings dump
+(`Health.Errors.MaxRepeatsIn10Minutes`), a library's note at Warning ("…this is an error",
+Wolverine) and the bot's own `RepeatingError` anomaly. Gemberkoekje/projects `SpaceTraders/PLAN.md`
+has it as B44.
+
+- `spacetraders` left the shared rule (`loki-error-logs`) and the "Error logs" dashboard's
+  namespace list.
+- A rule of its own, `spacetraders-error-logs` ("SpaceTraders logged errors"), in the same group
+  and with the same timing (errors in two consecutive 5-minute evaluations), counts the bot's JSON
+  lines whose level (`"@l"`) is `Error` or `Fatal`, and the lines that aren't JSON (nginx, the
+  init container) containing "error". Its email quotes the most frequent line, like the shared
+  rule's, and opens the new Errors panel of the SpaceTraders dashboard.
+
+### How it was tested
+
+- Against the cluster's Loki, read-only: over the bot's first two hours the shared rule's filter
+  matched 14 of its lines, all ordinary, and the new one none. Its plain-text branch matches in
+  other namespaces, so Loki takes the filter.
+- Against a throwaway Loki 3.4.2 holding nine lines shaped like the bot's: the rule's count (A) was
+  3 (an Error line, a Fatal line, an nginx `[error]`) and its quote (B) one of them; the settings
+  dump, the Wolverine note, the anomaly line, nginx's notice and access lines and the init
+  container's line didn't count. The old filter counted 5 of the 9: three false alarms, and it
+  missed the Fatal line. The Errors panel showed the JSON lines by their message, the nginx line as
+  it is.
+- `scripts/validate.py` without kubeconform and the HelmRelease rendering (not installed on that
+  PC; CI runs them): syntax, Flux builds, references, and the Grafana checks, which find the rule's
+  dashboard and panel.
+
+### Rollout
+
+1. Merge and let Flux apply it. Grafana only reads alert provisioning at startup, so restart it:
+   ```bash
+   kubectl -n monitoring rollout restart deployment grafana
+   ```
+2. If the shared rule's alert for spacetraders is firing then, a resolved email follows.
