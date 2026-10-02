@@ -11,3 +11,4 @@ resources:
   - curatool-ingress.yaml
   - hackerminigames-ingress.yaml
   - dungeontable-ingress.yaml
+  - spacetraders-ingress.yaml

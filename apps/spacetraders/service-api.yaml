@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: spacetraders-api-service
+  namespace: spacetraders
+spec:
+  type: ClusterIP
+  selector:
+    app: spacetraders-api
+  # Not the metrics port (9090): Prometheus scrapes the pod, and /metrics needs no API key.
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

@@ -17,5 +17,6 @@ resources:
 - dockhand-namespace.yaml
 - hackerminigames-namespace.yaml
 - dungeontable-namespace.yaml
+- spacetraders-namespace.yaml
 - reflector-namespace.yaml
 - traefik-namespace.yaml
