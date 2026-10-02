@@ -391,3 +391,22 @@ PR #122, which adds the metrics and journal lines). The panels below it moved do
   extractions surveyed, 7 usable). `scripts/validate.py`'s syntax check: no errors (no flux,
   kubeconform or helm on this PC; CI runs the rest). Until the bot runs an image with PR #122 the
   section is empty. Dashboards reload without a Grafana restart.
+
+## 2026-10-02 — SpaceTraders settings table
+
+The SpaceTraders dashboard gains a "Settings" table under the database size and the anomalies, asked
+for to see which settings exist and which are on (Gemberkoekje/projects `SpaceTraders/PLAN.md` slice
+2.9, branch `ccr-212dac2b-p2ent0`, which adds the metric `spacetraders_setting_info`). The panels
+below it moved down by its height.
+
+- One row per setting: its value and what it does. The switches (values `true` or `false`) come
+  first, on in green and off in plain text, then the other settings by name. The bot's `Runtime.*`
+  status flags are left out; a value that may hold a secret shows `(hidden)`, an empty one `(empty)`.
+- One instant query: `label_replace` gives each row a sort key (`1 <setting>` for a switch,
+  `2 <setting>` for the rest), the table sorts on it and hides it. Grafana's sort transformation
+  takes one field only.
+- Until the bot runs an image with the metric, the table says "No data".
+- Tested against a local Prometheus (`prom/prometheus` v2.53.0) scraping the metric as the bot writes
+  it, with the seed's settings as test data, and Grafana 11.6.1 (what the chart's newest 8.x ships),
+  in a browser: 34 rows, the 9 switches first, the empty webhook URL as `(empty)`, no `Runtime.*`.
+  `scripts/validate.py` with flux, kubeconform and helm: no errors, no warnings.
