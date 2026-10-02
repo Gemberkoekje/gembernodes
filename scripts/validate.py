@@ -14,17 +14,20 @@ Needs PyYAML, and flux, kubeconform and helm on PATH (.github/workflows/validate
 5. YAML/JSON embedded in ConfigMaps parses, and Grafana's provisioning fits together: alert rules
    use data sources and dashboards that exist, and policies use contact points that exist.
 6. Every HelmRelease renders with its chart and values (`helm template`), as helm-controller does,
-   and the result passes kubeconform. Top-level values the chart doesn't have are a warning.
+   and the result passes kubeconform. Top-level values the chart doesn't have are a warning, and so
+   is a chart registry that stays busy (rate limit, server error), since that is not this repo's fault.
 """
 
 import io
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tarfile
 import tempfile
+import time
 import urllib.request
 
 import yaml
@@ -101,7 +104,10 @@ def check_syntax(files):
             continue
         try:
             with open(f, encoding="utf-8") as fh:
-                json.load(fh) if f.endswith(".json") else yaml_docs(fh.read())
+                if f.endswith(".json"):
+                    json.load(fh)
+                else:
+                    yaml_docs(fh.read())
         except (yaml.YAMLError, json.JSONDecodeError) as exc:
             message, line = parse_error(exc)
             report("error", message, f, line)
@@ -212,10 +218,13 @@ def applied_files(kustomizations):
         with open(kfile, encoding="utf-8") as fh:
             k = yaml.safe_load(fh) or {}
         for ref in (k.get("resources") or []) + (k.get("components") or []):
-            path = os.path.normpath(os.path.join(directory, ref))
             if "://" in ref:
-                continue
-            walk(path) if os.path.isdir(path) else used.add(path)
+                continue  # remote resource
+            path = os.path.normpath(os.path.join(directory, ref))
+            if os.path.isdir(path):
+                walk(path)
+            else:
+                used.add(path)
         inputs = [p["path"] for p in k.get("patches") or [] if isinstance(p, dict) and "path" in p]
         for gen in (k.get("configMapGenerator") or []) + (k.get("secretGenerator") or []):
             inputs += [f.split("=", 1)[-1] for f in (gen.get("files") or []) + (gen.get("envs") or [])]
@@ -267,7 +276,7 @@ def check_embedded_and_grafana(objects, origin):
         uid, panel = annotations.get("__dashboardUid__"), annotations.get("__panelId__")
         if uid and uid not in dashboards:
             report("error", f"alert rule {title!r}: dashboard {uid!r} does not exist", file)
-        elif uid and panel and int(panel) not in dashboards[uid]:
+        elif uid and panel is not None and (not str(panel).isdigit() or int(panel) not in dashboards[uid]):
             report("error", f"alert rule {title!r}: dashboard {uid!r} has no panel {panel}", file)
     print(f"  {len(rules)} alert rules, {len(dashboards)} dashboards, {len(datasources) - 1} data sources, "
           f"{len(contact_points)} contact points, {len(routes)} notification policies")
@@ -282,6 +291,25 @@ def panels(dashboard):
     for panel in dashboard.get("panels") or []:
         yield panel
         yield from panels(panel)  # rows hold their own panels
+
+
+# Registry answers that mean "try again later" rather than "this chart doesn't exist". Shared CI
+# runners hit Docker Hub's per-address limit for anonymous pulls now and then.
+BUSY = re.compile(r"\b(429|50[0-4])\b|too many requests|timeout|timed out|connection reset|unexpected EOF", re.I)
+
+
+def pull_chart(source_args, directory):
+    """Downloads a chart once (`helm pull`), retrying a busy registry. Returns (chart directory, error)."""
+    for delay in (0, 15, 45):
+        time.sleep(delay)
+        shutil.rmtree(directory, ignore_errors=True)
+        result = run(["helm", "pull", *source_args, "--untar", "--untardir", directory])
+        if result.returncode == 0:  # helm may also leave an empty directory named after the archive
+            chart = next((e.path for e in os.scandir(directory) if os.path.isfile(os.path.join(e.path, "Chart.yaml"))), None)
+            return (chart, None) if chart else (None, "the download contains no Chart.yaml")
+        if not BUSY.search(result.stderr):
+            break
+    return None, result.stderr.strip()
 
 
 def render_helmreleases(objects, origin, flux_location, cache, workdir):
@@ -307,20 +335,33 @@ def render_helmreleases(objects, origin, flux_location, cache, workdir):
             continue
         version = chart.get("version") if chart else (source["spec"].get("ref") or {}).get("tag")
         args += ["--version", version] if version else []
-        chart_label = f"{chart['chart'] if chart else url} {version or 'latest'}"
+
+        chart_dir, failure = pull_chart(args, os.path.join(workdir, "charts", f"{meta['namespace']}-{meta['name']}"))
+        if chart_dir is None:
+            if BUSY.search(failure):  # a registry having a bad moment says nothing about this repository
+                report("warning", f"{label}: could not download its chart, so it is not checked this run:\n{failure}", file)
+            else:
+                report("error", f"{label}: cannot get its chart:\n{failure}", file)
+            continue
+        with open(os.path.join(chart_dir, "Chart.yaml"), encoding="utf-8") as fh:
+            pulled = yaml.safe_load(fh)
+        chart_label = f"{pulled['name']} {pulled['version']}" + (f" for {version}" if version and version != pulled["version"] else "")
 
         # Helm ignores values a chart doesn't use; that is how Loki and Promtail broke unnoticed. Deeper
         # keys are left alone: charts document many only as comments, and some sections are free-form.
-        defaults = run(["helm", "show", "values", *args])
-        if defaults.returncode == 0:
-            unknown = sorted(set(spec.get("values") or {}) - set(yaml.safe_load(defaults.stdout) or {}))
-            if unknown:
-                report("warning", f"{label}: {chart_label} has no top-level value {', '.join(unknown)} "
-                                  "in its values.yaml; Helm ignores values a chart doesn't use", file)
+        defaults = {}
+        if os.path.isfile(os.path.join(chart_dir, "values.yaml")):
+            with open(os.path.join(chart_dir, "values.yaml"), encoding="utf-8") as fh:
+                defaults = yaml.safe_load(fh) or {}
+        unknown = sorted(set(spec.get("values") or {}) - set(defaults))
+        if unknown:
+            report("warning", f"{label}: {chart_label} has no top-level value {', '.join(unknown)} "
+                              "in its values.yaml; Helm ignores values a chart doesn't use", file)
 
+        set_values = []
         for values in spec.get("valuesFrom") or []:
             if values.get("targetPath"):  # the real value lives in the cluster
-                args += ["--set-string", f"{values['targetPath']}=from-{values['kind']}-{values['name']}"]
+                set_values += ["--set-string", f"{values['targetPath']}=from-{values['kind']}-{values['name']}"]
             else:
                 report("warning", f"{label}: valuesFrom {values['name']} without targetPath is left out", file)
         values_file = os.path.join(workdir, f"{meta['namespace']}-{meta['name']}-values.yaml")
@@ -328,8 +369,8 @@ def render_helmreleases(objects, origin, flux_location, cache, workdir):
             yaml.safe_dump(spec.get("values") or {}, fh)
         namespace = spec.get("targetNamespace") or meta["namespace"]
         release = spec.get("releaseName") or (f"{namespace}-{meta['name']}" if spec.get("targetNamespace") else meta["name"])
-        result = run(["helm", "template", release, *args, "--namespace", namespace, "--values", values_file,
-                      "--kube-version", KUBERNETES_VERSION, "--include-crds"])
+        result = run(["helm", "template", release, chart_dir, "--namespace", namespace, "--values", values_file,
+                      *set_values, "--kube-version", KUBERNETES_VERSION, "--include-crds"])
         if result.returncode:
             report("error", f"{label} does not render:\n{result.stderr.strip()}", file)
             continue

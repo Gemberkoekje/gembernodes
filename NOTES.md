@@ -279,9 +279,11 @@ request. It checks:
 - every HelmRelease renders with its real chart and values (`helm template`) and the result passes
   kubeconform.
 
-Two findings are warnings that don't fail the run: a file no Kustomization applies (commenting an
-app out of a kustomization is allowed), and a top-level HelmRelease value the chart doesn't have.
-The first run found one: Grafana's `replicaCount`, which the chart doesn't have (it's `replicas`).
+Three findings are warnings that don't fail the run: a file no Kustomization applies (commenting an
+app out of a kustomization is allowed), a top-level HelmRelease value the chart doesn't have (the
+first run found Grafana's `replicaCount`; the chart's value is `replicas`), and a chart registry
+that stays busy after two retries. Shared CI runners hit Docker Hub's limit for anonymous pulls
+(the Bitnami PostgreSQL chart) now and then; that chart just goes unchecked for that run.
 
 To run it locally: `python3 scripts/validate.py` (needs PyYAML, and `flux`, `kubeconform` and `helm`
 on PATH). Versions: the flux CLI follows the `# Flux Version` line in `gotk-components.yaml`; Helm
