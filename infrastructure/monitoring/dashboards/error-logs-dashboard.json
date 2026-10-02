@@ -14,7 +14,7 @@
         "name": "namespace",
         "label": "Namespace",
         "type": "custom",
-        "query": "armabotcs,ebi-cs-api,vortexplotboek,cov-website,file-server,spacetraders",
+        "query": "armabotcs,ebi-cs-api,vortexplotboek,cov-website,file-server",
         "multi": true,
         "includeAll": true,
         "current": { "selected": true, "text": ["All"], "value": ["$__all"] }

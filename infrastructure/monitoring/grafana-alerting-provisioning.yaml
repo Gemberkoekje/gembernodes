@@ -41,6 +41,7 @@ data:
           # 500 different lines match; min_sharding_lookback in loki-release.yaml prevents that.
           # The email's View dashboard/View panel buttons open dashboards/error-logs-dashboard.json
           # from an hour before the alert started; keep its namespace list in step with this one.
+          # The SpaceTraders bot has a rule of its own, below.
           - uid: loki-error-logs
             title: Error logs detected
             condition: C
@@ -52,7 +53,7 @@ data:
                 datasourceUid: grafana-loki
                 model:
                   refId: A
-                  expr: 'sum by (namespace) (count_over_time({namespace=~"armabotcs|ebi-cs-api|vortexplotboek|cov-website|file-server|spacetraders"} |~ `(?i)error` [5m]))'
+                  expr: 'sum by (namespace) (count_over_time({namespace=~"armabotcs|ebi-cs-api|vortexplotboek|cov-website|file-server"} |~ `(?i)error` [5m]))'
                   queryType: instant
               - refId: B
                 relativeTimeRange:
@@ -61,7 +62,7 @@ data:
                 datasourceUid: grafana-loki
                 model:
                   refId: B
-                  expr: 'topk by (namespace) (1, sum by (namespace, line) (count_over_time({namespace=~"armabotcs|ebi-cs-api|vortexplotboek|cov-website|file-server|spacetraders"} |~ `(?i)error` | label_format line=`{{ regexReplaceAll "(?s)^(.{300}).+$" __line__ "${1}…" }}` [5m])))'
+                  expr: 'topk by (namespace) (1, sum by (namespace, line) (count_over_time({namespace=~"armabotcs|ebi-cs-api|vortexplotboek|cov-website|file-server"} |~ `(?i)error` | label_format line=`{{ regexReplaceAll "(?s)^(.{300}).+$" __line__ "${1}…" }}` [5m])))'
                   queryType: instant
               - refId: C
                 datasourceUid: "__expr__"
@@ -84,6 +85,55 @@ data:
                 {{ .Labels.line }}{{ end }}
               __dashboardUid__: error-logs
               __panelId__: "2"
+          # The SpaceTraders bot (Gemberkoekje/projects, SpaceTraders/PLAN.md B44) logs Serilog's
+          # compact JSON, whose ordinary lines contain "error" without being errors: setting names
+          # (Health.Errors.*), library notes, its own RepeatingError anomaly. Its errors are the JSON
+          # lines whose level ("@l") is Error or Fatal (Information has no "@l"), and the lines
+          # that aren't JSON (nginx, the init container) containing "error", as above. Otherwise
+          # the same as the rule above; the email opens the Errors panel of the bot's dashboard.
+          - uid: spacetraders-error-logs
+            title: SpaceTraders logged errors
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: grafana-loki
+                model:
+                  refId: A
+                  expr: 'sum by (namespace) (count_over_time({namespace="spacetraders"} |~ `"@l":"(?:Error|Fatal)"|^[^{].*(?i:error)` [5m]))'
+                  queryType: instant
+              - refId: B
+                relativeTimeRange:
+                  from: 300
+                  to: 0
+                datasourceUid: grafana-loki
+                model:
+                  refId: B
+                  expr: 'topk by (namespace) (1, sum by (namespace, line) (count_over_time({namespace="spacetraders"} |~ `"@l":"(?:Error|Fatal)"|^[^{].*(?i:error)` | label_format line=`{{ regexReplaceAll "(?s)^(.{300}).+$" __line__ "${1}…" }}` [5m])))'
+                  queryType: instant
+              - refId: C
+                datasourceUid: "__expr__"
+                model:
+                  refId: C
+                  type: threshold
+                  expression: A
+                  conditions:
+                    - evaluator:
+                        type: gt
+                        params:
+                          - 0
+            noDataState: OK
+            execErrState: Error
+            for: 5m
+            annotations:
+              summary: 'SpaceTraders logged {{ $values.A }} error lines in the last 5 minutes'
+              description: |-
+                {{ with $values.B }}Most frequent line ({{ . }} of {{ $values.A }}):
+                {{ .Labels.line }}{{ end }}
+              __dashboardUid__: spacetraders
+              __panelId__: "23"
       # The failures that went unnoticed for months (Loki stuck Pending, Flux HelmRelease failed)
       # would each have tripped one of these. Every query aggregates to one series per object,
       # keeping only the labels that identify it: each object alerts on its own, and the raw

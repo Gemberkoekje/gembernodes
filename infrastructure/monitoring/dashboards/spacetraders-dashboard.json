@@ -1342,6 +1342,42 @@
         "dedupStrategy": "none",
         "sortOrder": "Descending"
       }
+    },
+    {
+      "id": 23,
+      "type": "logs",
+      "title": "Errors",
+      "datasource": {
+        "type": "loki",
+        "uid": "grafana-loki"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 82
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "grafana-loki"
+          },
+          "expr": "{namespace=\"spacetraders\"} |~ `\"@l\":\"(?:Error|Fatal)\"|^[^{].*(?i:error)` | json message=\"[\\\"@m\\\"]\" | line_format `{{ if .message }}{{ .message }}{{ else }}{{ __line__ }}{{ end }}`"
+        }
+      ],
+      "description": "What the \"SpaceTraders logged errors\" alert counts: the bot's lines at level Error or Fatal, and lines from nginx or the init container containing \"error\". Warnings that repeat raise the RepeatingError anomaly instead. Open a line for its properties.",
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending"
+      }
     }
   ]
 }
