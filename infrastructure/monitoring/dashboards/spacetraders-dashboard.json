@@ -1,7 +1,7 @@
 {
   "uid": "spacetraders",
   "title": "SpaceTraders",
-  "description": "What the SpaceTraders bot does and why: credits, fleet, surveys, contracts, the API, health and the journal. See SpaceTraders/PLAN.md slice 2.4 in Gemberkoekje/projects.",
+  "description": "What the SpaceTraders bot does and why: credits, fleet, surveys, contracts, the API, health, settings and the journal. See SpaceTraders/PLAN.md slice 2.4 in Gemberkoekje/projects.",
   "tags": [
     "spacetraders"
   ],
@@ -1913,6 +1913,153 @@
       ]
     },
     {
+      "id": 35,
+      "type": "table",
+      "title": "Settings",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 20,
+        "w": 24,
+        "x": 0,
+        "y": 98
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "label_replace(max by (setting, current, description) (spacetraders_setting_info{namespace=\"spacetraders\", setting!~\"Runtime[.].*\", current=~\"true|false\"}), \"order\", \"1 $1\", \"setting\", \"(.*)\") or label_replace(max by (setting, current, description) (spacetraders_setting_info{namespace=\"spacetraders\", setting!~\"Runtime[.].*\", current!~\"true|false\"}), \"order\", \"2 $1\", \"setting\", \"(.*)\")",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "Every setting the bot has, with its value now and what it does. The switches (true or false) come first, on in green; then the other settings by name. A value that may hold a secret shows (hidden), as in the journal. Left out: the Runtime.* status flags, which aren't settings to tune. What a setting does is what the running version says. Change a setting on the bot's own dashboard (Settings) or with PUT /settings/{key}; the blue \"Setting changes\" annotations mark when each changed. The bot samples its settings every 10 seconds, and Prometheus scrapes it every minute.",
+      "transformations": [
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "order"
+              }
+            ]
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true,
+              "order": true
+            },
+            "indexByName": {
+              "setting": 0,
+              "current": 1,
+              "description": 2
+            },
+            "renameByName": {
+              "current": "value",
+              "description": "what it does"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "setting"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 380
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "value"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 300
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "text"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "true": {
+                        "text": "on",
+                        "color": "green",
+                        "index": 0
+                      },
+                      "false": {
+                        "text": "off",
+                        "color": "text",
+                        "index": 1
+                      }
+                    }
+                  },
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "empty",
+                      "result": {
+                        "text": "(empty)",
+                        "index": 2
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false,
+          "fields": ""
+        }
+      }
+    },
+    {
       "id": 21,
       "type": "timeseries",
       "title": "Log lines per hour",
@@ -1924,7 +2071,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 98
+        "y": 118
       },
       "targets": [
         {
@@ -1990,7 +2137,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 106
+        "y": 126
       },
       "targets": [
         {
@@ -2026,7 +2173,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 120
+        "y": 140
       },
       "targets": [
         {
