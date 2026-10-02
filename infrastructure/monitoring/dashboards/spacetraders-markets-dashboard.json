@@ -1,0 +1,1041 @@
+{
+  "uid": "spacetraders-markets",
+  "title": "SpaceTraders markets",
+  "description": "The markets and shipyards the SpaceTraders bot has cached, per system, and the game's production chains (Gemberkoekje/projects SpaceTraders/PLAN.md 2.8).",
+  "tags": [
+    "spacetraders"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "graphTooltip": 1,
+  "refresh": "1m",
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "links": [
+    {
+      "title": "SpaceTraders",
+      "type": "link",
+      "url": "/grafana/d/spacetraders",
+      "icon": "dashboard"
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "system",
+        "label": "System",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "query": "label_values({__name__=~\"spacetraders_(market|shipyard)_observed_timestamp_seconds\", namespace=\"spacetraders\"}, system)",
+        "definition": "label_values({__name__=~\"spacetraders_(market|shipyard)_observed_timestamp_seconds\", namespace=\"spacetraders\"}, system)",
+        "refresh": 2,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "options": [],
+        "current": {}
+      },
+      {
+        "name": "waypoint",
+        "label": "Waypoint",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "query": "label_values({__name__=~\"spacetraders_(market|shipyard)_observed_timestamp_seconds\", namespace=\"spacetraders\", system=\"$system\"}, waypoint)",
+        "definition": "label_values({__name__=~\"spacetraders_(market|shipyard)_observed_timestamp_seconds\", namespace=\"spacetraders\", system=\"$system\"}, waypoint)",
+        "refresh": 2,
+        "sort": 1,
+        "multi": true,
+        "includeAll": true,
+        "options": [],
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        }
+      },
+      {
+        "name": "good",
+        "label": "Good (price graph)",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "query": "label_values(spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\"}, good)",
+        "definition": "label_values(spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\"}, good)",
+        "refresh": 2,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "options": [],
+        "current": {}
+      }
+    ]
+  },
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Markets",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "count(spacetraders_market_observed_timestamp_seconds{namespace=\"spacetraders\", system=\"$system\"})",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "Markets the bot knows in this system.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value"
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Markets with prices",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "count(count by (waypoint) (spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\"}))",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "Markets a ship has been at, so their prices are known.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value"
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Shipyards",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "count(spacetraders_shipyard_observed_timestamp_seconds{namespace=\"spacetraders\", system=\"$system\"})",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "Shipyards the bot knows in this system.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value"
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Oldest market data",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "time() - min(spacetraders_market_observed_timestamp_seconds{namespace=\"spacetraders\", system=\"$system\"})",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "How long ago the least recently refreshed market in this system was refreshed. Prices are as last seen.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          },
+          "unit": "dtdurations"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value"
+      }
+    },
+    {
+      "id": 5,
+      "type": "table",
+      "title": "Places",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (waypoint, waypoint_type) (time() - spacetraders_market_observed_timestamp_seconds{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (waypoint, waypoint_type) (time() - spacetraders_shipyard_observed_timestamp_seconds{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "count by (waypoint) (spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "The markets and shipyards in this system: the waypoint's type, how long ago the bot refreshed each, and how many goods have prices (none until a ship has been there).",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "waypoint": 0,
+              "waypoint_type": 1,
+              "Value #C": 2,
+              "Value #A": 3,
+              "Value #B": 4
+            },
+            "renameByName": {
+              "waypoint_type": "type",
+              "Value #C": "goods priced",
+              "Value #A": "market data age",
+              "Value #B": "shipyard data age"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "waypoint"
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "market data age"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "shipyard data age"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "goods priced"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 6,
+      "type": "table",
+      "title": "Shipyards",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (waypoint, ship_type) (spacetraders_shipyard_ship_type{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (waypoint, ship_type) (spacetraders_shipyard_ship_price{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (waypoint, ship_type) (spacetraders_shipyard_ship_supply{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "Ship types per shipyard, with price and supply as last seen (empty until a ship has been there).",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value #A": true
+            },
+            "indexByName": {
+              "waypoint": 0,
+              "ship_type": 1,
+              "Value #B": 2,
+              "Value #C": 3
+            },
+            "renameByName": {
+              "ship_type": "ship type",
+              "Value #B": "price",
+              "Value #C": "supply"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "waypoint"
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "price"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "supply"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "1": {
+                        "text": "SCARCE",
+                        "color": "red",
+                        "index": 0
+                      },
+                      "2": {
+                        "text": "LIMITED",
+                        "color": "orange",
+                        "index": 1
+                      },
+                      "3": {
+                        "text": "MODERATE",
+                        "color": "yellow",
+                        "index": 2
+                      },
+                      "4": {
+                        "text": "HIGH",
+                        "color": "green",
+                        "index": 3
+                      },
+                      "5": {
+                        "text": "ABUNDANT",
+                        "color": "dark-green",
+                        "index": 4
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "Trade goods",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (waypoint, good, kind) (spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (waypoint, good, kind) (spacetraders_market_sell_price{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (waypoint, good, kind) (spacetraders_market_trade_volume{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "D",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (waypoint, good, kind) (spacetraders_market_supply{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "E",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (waypoint, good, kind) (spacetraders_market_activity{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "Every good at every market in this system, as last seen. Buy price: what the market charges you; sell price: what it pays you. Kind: EXPORT (the market makes it), IMPORT (it consumes it), EXCHANGE (it only trades it). Volume: units per transaction before the price moves. Sorted by good, so the markets for one good are together.",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "good": 0,
+              "waypoint": 1,
+              "kind": 2,
+              "Value #A": 3,
+              "Value #B": 4,
+              "Value #C": 5,
+              "Value #D": 6,
+              "Value #E": 7
+            },
+            "renameByName": {
+              "Value #A": "buy price",
+              "Value #B": "sell price",
+              "Value #C": "volume",
+              "Value #D": "supply",
+              "Value #E": "activity"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "good"
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "buy price"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sell price"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "volume"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "supply"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "1": {
+                        "text": "SCARCE",
+                        "color": "red",
+                        "index": 0
+                      },
+                      "2": {
+                        "text": "LIMITED",
+                        "color": "orange",
+                        "index": 1
+                      },
+                      "3": {
+                        "text": "MODERATE",
+                        "color": "yellow",
+                        "index": 2
+                      },
+                      "4": {
+                        "text": "HIGH",
+                        "color": "green",
+                        "index": 3
+                      },
+                      "5": {
+                        "text": "ABUNDANT",
+                        "color": "dark-green",
+                        "index": 4
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "activity"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "text": "RESTRICTED",
+                        "color": "purple",
+                        "index": 0
+                      },
+                      "1": {
+                        "text": "WEAK",
+                        "color": "orange",
+                        "index": 1
+                      },
+                      "2": {
+                        "text": "GROWING",
+                        "color": "yellow",
+                        "index": 2
+                      },
+                      "3": {
+                        "text": "STRONG",
+                        "color": "green",
+                        "index": 3
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Prices of $good",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 27
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (waypoint) (spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\", good=\"$good\"})",
+          "range": true,
+          "legendFormat": "{{waypoint}} buy"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (waypoint) (spacetraders_market_sell_price{namespace=\"spacetraders\", system=\"$system\", good=\"$good\"})",
+          "range": true,
+          "legendFormat": "{{waypoint}} sell"
+        }
+      ],
+      "description": "The chosen good's buy and sell price at each market in this system over time. A price only changes when a ship refreshes the market, so the lines move in steps.",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "custom": {
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 1
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": "table",
+      "title": "Market tree: goods traded in $system",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 35
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (good, made_from, used_for) (spacetraders_good_supply_chain{namespace=\"spacetraders\"}) * on (good) group_left () (max by (good) (spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\"}) * 0 + 1)",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "The game's production chains for every good with a price in this system: what it is made from, and what is made from it. Raw goods are made from nothing (the game lists MACHINERY for some extracted goods).",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true
+            },
+            "indexByName": {
+              "good": 0,
+              "made_from": 1,
+              "used_for": 2
+            },
+            "renameByName": {
+              "made_from": "made from",
+              "used_for": "used for"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "good"
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 10,
+      "type": "row",
+      "title": "Market tree: all goods",
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 47
+      },
+      "panels": [
+        {
+          "id": 11,
+          "type": "table",
+          "title": "Market tree: all goods",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "gridPos": {
+            "h": 16,
+            "w": 24,
+            "x": 0,
+            "y": 48
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+              },
+              "expr": "max by (good, made_from, used_for) (spacetraders_good_supply_chain{namespace=\"spacetraders\"})",
+              "instant": true,
+              "format": "table"
+            }
+          ],
+          "description": "Every good in the game's production chains: what it is made from, and what is made from it.",
+          "transformations": [
+            {
+              "id": "merge",
+              "options": {}
+            },
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true,
+                  "Value": true
+                },
+                "indexByName": {
+                  "good": 0,
+                  "made_from": 1,
+                  "used_for": 2
+                },
+                "renameByName": {
+                  "made_from": "made from",
+                  "used_for": "used for"
+                }
+              }
+            },
+            {
+              "id": "sortBy",
+              "options": {
+                "sort": [
+                  {
+                    "field": "good"
+                  }
+                ]
+              }
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "options": {
+            "showHeader": true,
+            "cellHeight": "sm"
+          }
+        }
+      ]
+    }
+  ]
+}
