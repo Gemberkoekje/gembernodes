@@ -260,3 +260,34 @@ too: old rule firing, then Grafana restarted on the new provisioning.
    ```
 2. If the old alert is firing at that moment, a `[RESOLVED] Error logs detected (Alerts)` email
    follows: it has no namespace, and the per-namespace alerts replace it.
+
+## 2026-10-02 — CI: the repository is checked the way Flux reads it
+
+`.github/workflows/validate.yaml` runs `scripts/validate.py` on every pull request and every push to
+`main` (and on demand from the Actions tab). Problems show up as annotations on the files in the pull
+request. It checks:
+
+- every YAML/JSON file parses, without duplicate keys (YAML otherwise keeps the last one silently);
+- every Flux Kustomization builds with `flux build kustomization`, as kustomize-controller does;
+- the result passes kubeconform in strict mode, so a misspelled field fails: Kubernetes 1.36
+  schemas, Flux's schemas for the installed Flux version, and the CRD catalog for cert-manager,
+  MetalLB, 1Password, Traefik and system-upgrade-controller;
+- Flux references resolve: Kustomization `sourceRef`/`dependsOn`, HelmRelease chart sources,
+  `dependsOn` and `valuesFrom` (a OnePasswordItem counts as the Secret of the same name);
+- YAML/JSON inside ConfigMaps parses, and Grafana's alert rules use data sources, dashboards and
+  panels that exist, and its policies use contact points that exist;
+- every HelmRelease renders with its real chart and values (`helm template`) and the result passes
+  kubeconform.
+
+Two findings are warnings that don't fail the run: a file no Kustomization applies (commenting an
+app out of a kustomization is allowed), and a top-level HelmRelease value the chart doesn't have.
+The first run found one: Grafana's `replicaCount`, which the chart doesn't have (it's `replicas`).
+
+To run it locally: `python3 scripts/validate.py` (needs PyYAML, and `flux`, `kubeconform` and `helm`
+on PATH). Versions: the flux CLI follows the `# Flux Version` line in `gotk-components.yaml`; Helm
+is pinned in the workflow to what helm-controller uses, so bump it with Flux; `KUBERNETES_VERSION`
+and the CRD catalog commit are at the top of the script.
+
+What it can't see: chart values below the top level that the chart ignores (charts document many
+only as comments), the contents of secrets (`valuesFrom` gets placeholders), and anything that needs
+the cluster: CRDs being installed, admission webhooks, resources already owned by something else.
