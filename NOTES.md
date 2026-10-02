@@ -333,3 +333,20 @@ has it as B44.
    kubectl -n monitoring rollout restart deployment grafana
    ```
 2. If the shared rule's alert for spacetraders is firing then, a resolved email follows.
+
+## 2026-10-02 — SpaceTraders fleet table: where, doing, cargo, mined
+
+The SpaceTraders dashboard's fleet table showed each ship's role, state, goal and time in state;
+the contract's drone was mining at its asteroid and nothing showed it. With the bot's new metrics
+(Gemberkoekje/projects `SpaceTraders/PLAN.md` slice 2.7, its PR #117) the table is full width and
+also shows where each ship is (the waypoint and its type, or an arrow and where it goes), what it
+does, when it arrives, its cargo and capacity, and the units it mined in the dashboard's time range.
+A new row under it has "Holds" (units per ship and good) and "Mined and jettisoned per hour", next
+to "Ships by role and state", which moved there; the panels below moved down by that row.
+
+- The table merges six instant queries on `ship` (Grafana's Merge transformation). An empty hold has
+  no series per good, so the cargo query adds 0 for every ship with a hold (`or 0 * ...`).
+- Until the bot runs an image with PR #117, the new columns and panels stay empty.
+- Tested with `promtool test rules` (`prom/prometheus` v2.55.1) against synthetic series: each query
+  gives the expected value, an empty hold 0 included. `scripts/validate.py` without kubeconform and
+  the HelmRelease rendering: no errors.
