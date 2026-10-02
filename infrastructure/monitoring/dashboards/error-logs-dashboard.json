@@ -1,0 +1,73 @@
+{
+  "uid": "error-logs",
+  "title": "Error logs",
+  "description": "The lines the 'Error logs detected' alert counts. Its emails link here (View dashboard / View panel) with the time range of the alert.",
+  "tags": ["logs", "loki", "alerts"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "namespace",
+        "label": "Namespace",
+        "type": "custom",
+        "query": "armabotcs,ebi-cs-api,vortexplotboek,cov-website,file-server,spacetraders",
+        "multi": true,
+        "includeAll": true,
+        "current": { "selected": true, "text": ["All"], "value": ["$__all"] }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Lines containing \"error\" per namespace",
+      "datasource": { "type": "loki", "uid": "grafana-loki" },
+      "gridPos": { "h": 7, "w": 24, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "loki", "uid": "grafana-loki" },
+          "expr": "sum by (namespace) (count_over_time({namespace=~\"$namespace\"} |~ `(?i)error` [$__auto]))",
+          "legendFormat": "{{namespace}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "bars", "fillOpacity": 70, "stacking": { "mode": "normal" } },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } }
+    },
+    {
+      "id": 2,
+      "type": "logs",
+      "title": "Lines containing \"error\"",
+      "datasource": { "type": "loki", "uid": "grafana-loki" },
+      "gridPos": { "h": 20, "w": 24, "x": 0, "y": 7 },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "loki", "uid": "grafana-loki" },
+          "expr": "{namespace=~\"$namespace\"} |~ `(?i)error` | line_format `{{.namespace}}: {{__line__}}`"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending"
+      }
+    }
+  ]
+}
