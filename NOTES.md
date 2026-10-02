@@ -350,3 +350,25 @@ to "Ships by role and state", which moved there; the panels below moved down by 
 - Tested with `promtool test rules` (`prom/prometheus` v2.55.1) against synthetic series: each query
   gives the expected value, an empty hold 0 included. `scripts/validate.py` without kubeconform and
   the HelmRelease rendering: no errors.
+
+## 2026-10-02 — SpaceTraders markets dashboard
+
+A second SpaceTraders dashboard, "SpaceTraders markets" (`dashboards/spacetraders-markets-dashboard.json`,
+uid `spacetraders-markets`): pick a system, and see its markets and shipyards as the bot has
+cached them, plus the game's production chains (Gemberkoekje/projects `SpaceTraders/PLAN.md` slice
+2.8, its PR #118, which adds the metrics).
+
+- Variables: `system` (every system with a cached market or shipyard), `waypoint` (all by default)
+  and `good` (for the price graph).
+- Panels: counts and the age of the oldest market data; "Places" (each market and shipyard with
+  its waypoint type, data age and goods priced); "Shipyards" (ship types with price and supply);
+  "Trade goods" (each good at each market: buy and sell price, volume, supply and activity as
+  words); "Prices of $good" over time; the market tree for the goods traded in the system, and in a
+  collapsed row for all goods.
+- Supply and activity arrive as numbers (1 SCARCE to 5 ABUNDANT; 0 RESTRICTED to 3 STRONG) and the
+  tables map them back to words.
+- An empty label is no label in Prometheus: a raw good has no `made_from`, an empty cell.
+- Tested with `promtool test rules` against synthetic series in two systems (each query gives the
+  expected rows, the other system left out) and `scripts/validate.py` without kubeconform and the
+  HelmRelease rendering: no errors. Until the bot runs an image with PR #118 the dashboard is
+  empty. Dashboards reload without a Grafana restart.

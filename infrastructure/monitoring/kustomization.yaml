@@ -20,5 +20,6 @@ configMapGenerator:
       - dashboards/error-logs-dashboard.json
       - dashboards/flux-dashboard.json
       - dashboards/spacetraders-dashboard.json
+      - dashboards/spacetraders-markets-dashboard.json
 generatorOptions:
   disableNameSuffixHash: true
