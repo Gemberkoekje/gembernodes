@@ -907,9 +907,39 @@
           "expr": "max by (good, made_from, used_for) (spacetraders_good_supply_chain{namespace=\"spacetraders\"}) * on (good) group_left () (max by (good) (spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\"}) * 0 + 1)",
           "instant": true,
           "format": "table"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (good, buy_at) (label_replace(bottomk by (good) (1, spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\"} > 0), \"buy_at\", \"$1\", \"waypoint\", \"(.*)\"))",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (good, sell_at) (label_replace(topk by (good) (1, spacetraders_market_sell_price{namespace=\"spacetraders\", system=\"$system\"} > 0), \"sell_at\", \"$1\", \"waypoint\", \"(.*)\"))",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "D",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (good) (spacetraders_market_sell_price{namespace=\"spacetraders\", system=\"$system\"} > 0) - min by (good) (spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\"} > 0)",
+          "instant": true,
+          "format": "table"
         }
       ],
-      "description": "The game's production chains for every good with a price in this system: what it is made from, and what is made from it. Raw goods are made from nothing (the game lists MACHINERY for some extracted goods).",
+      "description": "The game's production chains for every good with a price in this system: what it is made from, and what is made from it. Raw goods are made from nothing (the game lists MACHINERY for some extracted goods). Then where it is cheapest to buy and where it sells best, at the prices last seen: the difference is what a unit earns before fuel; at 0 or below no market pays more than another charges.",
       "transformations": [
         {
           "id": "merge",
@@ -920,16 +950,27 @@
           "options": {
             "excludeByName": {
               "Time": true,
-              "Value": true
+              "Value": true,
+              "Value #A": true
             },
             "indexByName": {
               "good": 0,
               "made_from": 1,
-              "used_for": 2
+              "used_for": 2,
+              "buy_at": 3,
+              "Value #B": 4,
+              "sell_at": 5,
+              "Value #C": 6,
+              "Value #D": 7
             },
             "renameByName": {
               "made_from": "made from",
-              "used_for": "used for"
+              "used_for": "used for",
+              "buy_at": "buy at",
+              "Value #B": "buy for",
+              "sell_at": "sell at",
+              "Value #C": "sell for",
+              "Value #D": "difference"
             }
           }
         },
@@ -946,7 +987,38 @@
       ],
       "fieldConfig": {
         "defaults": {},
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "difference"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "green",
+                      "value": 1
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "showHeader": true,
