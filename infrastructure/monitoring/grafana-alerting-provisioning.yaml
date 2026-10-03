@@ -420,7 +420,11 @@ data:
             for: 5m
             annotations:
               summary: 'The SpaceTraders database is over its soft limit; over the hard limit the bot switches its automation off'
-      # Loki keeps 31 days on 10Gi, shared with every app: the bot's budget is 50,000 lines a day.
+      # Loki keeps 31 days on 10Gi, shared with every app. The bot's budget grows with its fleet: 5,000 lines a day
+      # per ship, about twice what a working ship logs (2,000 to 2,700 since SpaceTraders B53), so buying ships doesn't
+      # pass it and a loop still does. Ships are averaged over the same 24 hours as the lines, so a reset, when the
+      # fleet starts again from two ships, doesn't either. The bot logged about 12 MB of the cluster's 205 MB a day
+      # on 2026-10-03.
       - orgId: 1
         name: spacetraders-logs
         folder: Alerts
@@ -428,7 +432,7 @@ data:
         rules:
           - uid: spacetraders-log-volume
             title: SpaceTraders log volume over budget
-            condition: C
+            condition: D
             data:
               - refId: A
                 relativeTimeRange:
@@ -439,19 +443,36 @@ data:
                   refId: A
                   expr: 'sum(count_over_time({namespace="spacetraders"}[24h]))'
                   queryType: instant
+              # Ships, averaged over the last 24 hours: one spacetraders_ship_info series per ship, counted once
+              # while two pods overlap in a deploy; at least 1.
+              - refId: B
+                relativeTimeRange:
+                  from: 600
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  refId: B
+                  expr: 'clamp_min(avg_over_time(count(count by (ship) (spacetraders_ship_info{namespace="spacetraders"}))[24h:5m]), 1)'
+                  instant: true
               - refId: C
                 datasourceUid: "__expr__"
                 model:
                   refId: C
+                  type: math
+                  expression: '$A / $B'
+              - refId: D
+                datasourceUid: "__expr__"
+                model:
+                  refId: D
                   type: threshold
-                  expression: A
+                  expression: C
                   conditions:
                     - evaluator:
                         type: gt
                         params:
-                          - 50000
+                          - 5000
             noDataState: OK
             execErrState: Error
             for: 0s
             annotations:
-              summary: 'SpaceTraders logged more than 50,000 lines in the last 24 hours, its budget'
+              summary: 'SpaceTraders logged {{ $values.A }} lines in the last 24 hours with {{ $values.B }} ships on average: {{ $values.C }} a ship, over its budget of 5,000'

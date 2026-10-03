@@ -429,3 +429,36 @@ The panels below it moved down by its height.
   taken verbatim from the JSON: each gives the expected rows, another namespace's left out.
   `scripts/validate.py` with flux, kubeconform and helm: no errors, no warnings. Dashboards reload
   without a Grafana restart.
+
+## 2026-10-03 — SpaceTraders log budget per ship, and the panels of slice 6.10a
+
+After the bot's first day on the cluster (Gemberkoekje/projects `SpaceTraders/PLAN.md`: the health check's B53, and
+slice 6.10a with decisions D46, D49 and D50), the log budget follows the fleet and the dashboards show what each ship can
+do, what each kind of work earns, and what selling into a market does.
+
+- **Log budget, alert `spacetraders-log-volume`:** the lines of the last 24 hours divided by the ships averaged over the
+  same 24 hours (`count(count by (ship) (spacetraders_ship_info))`, at least 1), above 5,000 a ship. A working ship logs
+  2,000 to 2,700 lines a day since B53; it was 50,000 lines a day whatever the fleet. Grafana reads alert rules only at
+  startup, so the rule changes at its next restart; restart it once B53 has run a few hours (the rule read 4,619 a ship
+  on the day of the change, on the old logging). The "Log lines per hour" panel draws the budget as a dashed line,
+  ships × 5,000 / 24.
+- **Markets, "Market tree: goods traded in $system":** where each good is cheapest to buy and where it sells best, with
+  both prices and the difference per unit (green above 0), at the prices last seen.
+- **Markets, row "What we sell into a market, and what it makes"** (variable `market`): the units we sell into it per
+  hour (`spacetraders_goods_sold_units_total`), and the price, supply and trade volume of what it exports, side by side,
+  to read off how many units of an input make one of output, and how fast (D50).
+- **Fleet and Roles tables:** a "can do" column from `spacetraders_ship_capabilities_info` (Survey, Mine, Siphon,
+  Trade): drones of both kinds report the registration role EXCAVATOR as their type. The Roles table still says "No
+  data" while the role board is off.
+- **"Profit per hour by activity"** (stacked bars, under "Total value"; the panels below moved down by its height): what
+  trade, mining, siphoning, spare time and contracts earned per hour, booked when each trip ends (D46), from
+  `spacetraders_trip_profit_credits_total` minus `spacetraders_trip_loss_credits_total`.
+- **"Total value" no longer drops to 0 at a restart:** its ships and cargo queries turned "no data yet" into 0 for the
+  first scrape of a new pod; now ships have no fallback and cargo falls back to 0 only while the bot reports its
+  credits, so the panel's `spanNulls` bridges the restart.
+- Until the bot runs an image with slice 6.10a, the new columns and panels say "No data".
+- Tested: the alert's two queries against the live Loki and Prometheus; the seven new panel queries with `promtool test
+  rules` (`prom/prometheus` v2.55.1) against synthetic series, an activity with only a profit or only a loss series
+  included; the Total value queries replayed over the restart of 2026-10-03 08:17Z. `kubectl kustomize
+  infrastructure/monitoring` renders; `scripts/validate.py` wasn't run locally (no kubeconform here), the PR's
+  validate workflow runs it.
