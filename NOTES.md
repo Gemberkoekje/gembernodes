@@ -410,3 +410,22 @@ below it moved down by its height.
   it, with the seed's settings as test data, and Grafana 11.6.1 (what the chart's newest 8.x ships),
   in a browser: 34 rows, the 9 switches first, the empty webhook URL as `(empty)`, no `Runtime.*`.
   `scripts/validate.py` with flux, kubeconform and helm: no errors, no warnings.
+
+## 2026-10-02 — SpaceTraders roles table
+
+The SpaceTraders dashboard gains a "Roles" table under the fleet table, for the bot's new role board
+(Gemberkoekje/projects `SpaceTraders/PLAN.md` slice 6.9, branch `claude/ship-role-profitability-ghjzlb`,
+which adds the metrics `spacetraders_ship_role_info` and `spacetraders_ship_role_credits_per_hour`).
+The panels below it moved down by its height.
+
+- One row per ship: its role (Survey, Mine, Siphon, Trade or None), why it has it (`only_role`,
+  `survey_first`, `contract`, `most_profitable`, `no_work`, `no_role`), and what mining, siphoning and
+  trading would earn it per hour by the board's estimate. An empty cell: the ship can't take that role,
+  or its plan is off. Surveying has no estimate: it comes first.
+- Four instant queries, merged on `ship` (Grafana's Merge transformation), as in the fleet table.
+- The bot exports the roles only while the role board is on (`Automation.Plan.Roles.Enabled`, off by
+  default), so until it is switched on, on an image with slice 6.9, the table says "No data".
+- Tested with `promtool test rules` (`prom/prometheus` v2.55.1) against synthetic series, every query
+  taken verbatim from the JSON: each gives the expected rows, another namespace's left out.
+  `scripts/validate.py` with flux, kubeconform and helm: no errors, no warnings. Dashboards reload
+  without a Grafana restart.
