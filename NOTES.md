@@ -462,3 +462,19 @@ do, what each kind of work earns, and what selling into a market does.
   included; the Total value queries replayed over the restart of 2026-10-03 08:17Z. `kubectl kustomize
   infrastructure/monitoring` renders; `scripts/validate.py` wasn't run locally (no kubeconform here), the PR's
   validate workflow runs it.
+
+## 2026-10-03 — SpaceTraders purchase order and credit reserve (slice 6.10b)
+
+For the bot's slice 6.10b (Gemberkoekje/projects `SpaceTraders/PLAN.md`, decisions D43, D47, D48 and D51, branch
+`claude/spacetraders-purchase-order`): ships are bought in one order across the plans, and the credit reserve a ship
+purchase keeps grows with what the trading ships can carry.
+
+- **"Purchase order"** (a table under "Roles"; the panels below moved down by its height): what each plan that buys ships
+  would buy now, from `spacetraders_purchase_need_credits{plan,tier,position,ship_type,shipyard}`, with its price and the
+  credits needed, the price and the reserve. The lowest position is what the credits are saved up for.
+- **"Credits"** draws the reserve a ship purchase leaves, `spacetraders_credit_reserve`, next to the credits.
+- **"Roles"**: the description lists the new reason `coverage` (one drone per SCARCE or LIMITED mineral, D48).
+- Until the bot runs an image with slice 6.10b, the new table and line say "No data".
+- Tested: the panel queries with `promtool test rules` (`prom/prometheus` v2.55.1) against synthetic series, another
+  namespace left out; `kubectl kustomize infrastructure/monitoring` renders. `scripts/validate.py` wasn't run locally;
+  the PR's validate workflow runs it.
