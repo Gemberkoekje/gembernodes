@@ -575,6 +575,66 @@
       "description": "Stacked: the top line is the total value. Ships and equipment count at what was paid for them (starting ships at 0); cargo at the average sell price over the markets seen. A purchase moves value between bands and leaves the top line about level."
     },
     {
+      "id": 37,
+      "type": "timeseries",
+      "title": "Profit per hour by activity",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 20
+      },
+      "interval": "1h",
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "(sum by (activity) (increase(spacetraders_trip_profit_credits_total{namespace=\"spacetraders\"}[1h])) or (sum by (activity) (increase(spacetraders_trip_loss_credits_total{namespace=\"spacetraders\"}[1h])) * 0)) - (sum by (activity) (increase(spacetraders_trip_loss_credits_total{namespace=\"spacetraders\"}[1h])) or (sum by (activity) (increase(spacetraders_trip_profit_credits_total{namespace=\"spacetraders\"}[1h])) * 0))",
+          "interval": "1h",
+          "legendFormat": "{{activity}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "custom": {
+            "drawStyle": "bars",
+            "barAlignment": -1,
+            "fillOpacity": 70,
+            "lineWidth": 1,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "sum"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "description": "What each kind of work earned, booked when its trip ends: sales − purchases − fuel (trade, mining, siphoning, spare time); contracts: payments − the fuel of their trips. Negative when trips lost money."
+    },
+    {
       "id": 9,
       "type": "timeseries",
       "title": "Earned per hour, by source",
@@ -586,7 +646,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 20
+        "y": 28
       },
       "targets": [
         {
@@ -640,7 +700,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 20
+        "y": 28
       },
       "targets": [
         {
@@ -694,7 +754,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 28
+        "y": 36
       },
       "targets": [
         {
@@ -756,9 +816,19 @@
           "expr": "round(sum by (ship) (increase(spacetraders_extracted_units_total{namespace=\"spacetraders\"}[$__range])))",
           "instant": true,
           "format": "table"
+        },
+        {
+          "refId": "G",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (ship, can) (spacetraders_ship_capabilities_info{namespace=\"spacetraders\"})",
+          "instant": true,
+          "format": "table"
         }
       ],
-      "description": "Where: the waypoint and its type; while travelling, an arrow and where the ship goes. Doing: what the bot has it do: its goal in a few words, else its contract work (mining at the contract's source, delivering at its destination, on the way between them), else idle, or blocked with the reason. Arrives in: while travelling. Cargo and capacity: units in the hold and what it takes. Mined: units extracted in the dashboard's time range. Goal is the goal's kind, else the assignment (Contract), else None. Time in state counts from the bot's start at the latest.",
+      "description": "Type: the game's registration role (EXCAVATOR for mining and siphon drones alike). Can do: what its equipment allows. Where: the waypoint and its type; while travelling, an arrow and where the ship goes. Doing: what the bot has it do: its goal in a few words, else its contract work (mining at the contract's source, delivering at its destination, on the way between them), else idle, or blocked with the reason. Arrives in: while travelling. Cargo and capacity: units in the hold and what it takes. Mined: units extracted in the dashboard's time range. Goal is the goal's kind, else the assignment (Contract), else None. Time in state counts from the bot's start at the latest.",
       "transformations": [
         {
           "id": "merge",
@@ -770,23 +840,26 @@
             "excludeByName": {
               "Time": true,
               "Value #B": true,
+              "Value #G": true,
               "reason": true
             },
             "indexByName": {
               "ship": 0,
               "role": 1,
-              "location": 2,
-              "activity": 3,
-              "state": 4,
-              "Value #C": 5,
-              "Value #D": 6,
-              "Value #E": 7,
-              "Value #F": 8,
-              "goal": 9,
-              "Value #A": 10
+              "can": 2,
+              "location": 3,
+              "activity": 4,
+              "state": 5,
+              "Value #C": 6,
+              "Value #D": 7,
+              "Value #E": 8,
+              "Value #F": 9,
+              "goal": 10,
+              "Value #A": 11
             },
             "renameByName": {
               "role": "type",
+              "can": "can do",
               "location": "where",
               "activity": "doing",
               "Value #C": "arrives in",
@@ -886,7 +959,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 37
+        "y": 45
       },
       "targets": [
         {
@@ -928,9 +1001,19 @@
           "expr": "max by (ship) (spacetraders_ship_role_credits_per_hour{namespace=\"spacetraders\", role=\"Trade\"})",
           "instant": true,
           "format": "table"
+        },
+        {
+          "refId": "E",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (ship, can) (spacetraders_ship_capabilities_info{namespace=\"spacetraders\"})",
+          "instant": true,
+          "format": "table"
         }
       ],
-      "description": "The role board (SpaceTraders slice 6.9, switch Automation.Plan.Roles.Enabled): each ship's role, why it has it, and what each role it could take would earn it per hour by the board's estimate (its best trip, after fuel, with the production chains' share). Why: only_role (one role whose plan is on), survey_first (it surveys, as the ship with the least to lose), contract (the contract wants ore), most_profitable (what earns the fleet most per hour), no_work (none of its roles had a trip; it keeps its role), no_role. A new role takes effect when the ship's trip ends. An empty cell: the ship can't take that role, or its plan is off. With the board off, \"No data\": the bot exports the roles only while the plans follow them. Each change is a RoleChanged line in the journal.",
+      "description": "The role board (SpaceTraders slice 6.9, switch Automation.Plan.Roles.Enabled): each ship's role, what its equipment allows (can do), why it has the role, and what each role it could take would earn it per hour by the board's estimate (its best trip, after fuel, with the production chains' share). Why: only_role (one role whose plan is on), survey_first (it surveys, as the ship with the least to lose), contract (the contract wants ore), most_profitable (what earns the fleet most per hour), no_work (none of its roles had a trip; it keeps its role), no_role. A new role takes effect when the ship's trip ends. An empty cell: the ship can't take that role, or its plan is off. With the board off, only \"can do\" is filled: the bot exports the roles only while the plans follow them. Each change is a RoleChanged line in the journal.",
       "transformations": [
         {
           "id": "merge",
@@ -941,17 +1024,20 @@
           "options": {
             "excludeByName": {
               "Time": true,
-              "Value #A": true
+              "Value #A": true,
+              "Value #E": true
             },
             "indexByName": {
               "ship": 0,
               "role": 1,
-              "reason": 2,
-              "Value #B": 3,
-              "Value #C": 4,
-              "Value #D": 5
+              "can": 2,
+              "reason": 3,
+              "Value #B": 4,
+              "Value #C": 5,
+              "Value #D": 6
             },
             "renameByName": {
+              "can": "can do",
               "reason": "why",
               "Value #B": "mining / h",
               "Value #C": "siphoning / h",
@@ -1036,7 +1122,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 45
+        "y": 53
       },
       "targets": [
         {
@@ -1087,7 +1173,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 45
+        "y": 53
       },
       "targets": [
         {
@@ -1144,7 +1230,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 45
+        "y": 53
       },
       "targets": [
         {
@@ -1197,7 +1283,7 @@
         "h": 4,
         "w": 6,
         "x": 0,
-        "y": 53
+        "y": 61
       },
       "targets": [
         {
@@ -1242,7 +1328,7 @@
         "h": 4,
         "w": 6,
         "x": 6,
-        "y": 53
+        "y": 61
       },
       "targets": [
         {
@@ -1288,7 +1374,7 @@
         "h": 4,
         "w": 6,
         "x": 12,
-        "y": 53
+        "y": 61
       },
       "targets": [
         {
@@ -1334,7 +1420,7 @@
         "h": 4,
         "w": 6,
         "x": 18,
-        "y": 53
+        "y": 61
       },
       "targets": [
         {
@@ -1379,7 +1465,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 57
+        "y": 65
       },
       "targets": [
         {
@@ -1436,7 +1522,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 57
+        "y": 65
       },
       "targets": [
         {
@@ -1484,7 +1570,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 57
+        "y": 65
       },
       "targets": [
         {
@@ -1532,7 +1618,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 65
+        "y": 73
       },
       "targets": [
         {
@@ -1568,7 +1654,7 @@
         "h": 7,
         "w": 14,
         "x": 0,
-        "y": 75
+        "y": 83
       },
       "targets": [
         {
@@ -1653,7 +1739,7 @@
         "h": 7,
         "w": 10,
         "x": 14,
-        "y": 75
+        "y": 83
       },
       "targets": [
         {
@@ -1713,7 +1799,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 82
+        "y": 90
       },
       "targets": [
         {
@@ -1767,7 +1853,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 82
+        "y": 90
       },
       "targets": [
         {
@@ -1852,7 +1938,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 90
+        "y": 98
       },
       "targets": [
         {
@@ -1906,7 +1992,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 90
+        "y": 98
       },
       "targets": [
         {
@@ -1965,7 +2051,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 98
+        "y": 106
       },
       "targets": [
         {
@@ -2035,7 +2121,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 98
+        "y": 106
       },
       "targets": [
         {
@@ -2074,7 +2160,7 @@
         "h": 20,
         "w": 24,
         "x": 0,
-        "y": 106
+        "y": 114
       },
       "targets": [
         {
@@ -2221,7 +2307,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 126
+        "y": 134
       },
       "targets": [
         {
@@ -2310,7 +2396,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 134
+        "y": 142
       },
       "targets": [
         {
@@ -2346,7 +2432,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 148
+        "y": 156
       },
       "targets": [
         {
