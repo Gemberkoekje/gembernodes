@@ -478,3 +478,33 @@ purchase keeps grows with what the trading ships can carry.
 - Tested: the panel queries with `promtool test rules` (`prom/prometheus` v2.55.1) against synthetic series, another
   namespace left out; `kubectl kustomize infrastructure/monitoring` renders. `scripts/validate.py` wasn't run locally;
   the PR's validate workflow runs it.
+
+## 2026-10-03 — SpaceTraders API request rates, and legends as tables
+
+Asked on 2026-10-03: a graph of the bot's request rates like a screenshot of another dashboard's (requests initiated,
+executed and completed, and rate limited, per second, with each one's min, max, mean and last in a table), and table
+legends "where appropriate" (Gemberkoekje/projects `SpaceTraders/PLAN.md` slice 2.10, branch `ccr-ff72b415-uqqj4q`, which
+adds the metric `spacetraders_api_requests_initiated_total`).
+
+- **"API request rates"** (full width, above "API requests per minute, by endpoint"; the panels below moved down):
+  initiated (`spacetraders_api_requests_initiated_total`: each request once, as it starts, before the bot's budget and
+  the pause after a 502), executed (each request that went out, retries of a 429 included: `spacetraders_api_requests_total`),
+  completed (those that got an answer: `status!="error"`) and rate limited (`spacetraders_api_throttled_total`), per
+  second over 5 minutes, in green, yellow, blue and orange as in the screenshot. A new pod has no 429 series until its
+  first 429, so rate limited falls back to 0 while the bot makes requests (`or 0 * ...`). The graph joins gaps of up to
+  10 minutes (a restart), not longer ones.
+- **Table legends:** every graph with a list legend on both SpaceTraders dashboards. Mean, max and last for rates and
+  counts per minute or hour; min, max and last for levels (credits, ships, usable surveys, the database size, prices,
+  supply); total, mean and max for the hourly bars of "Units we sold into $market per hour". Graphs with many series
+  sort by mean (levels by last), so the biggest come first. The graphs that had tables already ("Total value", "Profit
+  per hour by activity", "Prices of $good") are unchanged.
+- Grafana gives a legend under a graph at most 35% of the panel, so the graphs with more series grew from 8 to 10 rows
+  (on the markets dashboard from 9 to 10): three or four table lines, the rest scrolls. On a phone, a table wider than
+  the panel scrolls sideways too: long names, such as the endpoints, push the numbers off to the right.
+- Until the bot runs an image with slice 2.10, "initiated" has no data; the other three lines work now.
+- Tested: the graph's four queries with `promtool test rules` (`prom/prometheus` v2.55.1) against synthetic series: a
+  run with retried 429s and a request that got no answer, a new pod without 429s (rate limited 0), an image without the
+  new metric (no initiated line), the bot down (no data, not 0), another namespace left out. Both dashboards in Grafana
+  11.6.1 against a local Prometheus holding a day of synthetic data, looked at in a browser at desktop and phone width.
+  `scripts/validate.py` with flux, kubeconform and helm: no errors, no warnings. Dashboards reload without a Grafana
+  restart.
