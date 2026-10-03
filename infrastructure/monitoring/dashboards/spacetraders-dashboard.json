@@ -422,6 +422,15 @@
           },
           "expr": "max(spacetraders_agent_credits{namespace=\"spacetraders\"})",
           "legendFormat": "credits"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max(spacetraders_credit_reserve{namespace=\"spacetraders\"})",
+          "legendFormat": "reserve a ship purchase leaves"
         }
       ],
       "fieldConfig": {
@@ -446,7 +455,8 @@
           "mode": "multi",
           "sort": "desc"
         }
-      }
+      },
+      "description": "The credits as cached, and the reserve a ship purchase must leave (D51): FleetExpansion.MinCreditReserve, and FleetExpansion.ReservePerTradingCargoUnit for every unit the ships that trade can carry (the cargo ships, the command ship, and ships the role board has trading). A ship is bought once the credits are its price above the reserve; what is next in line is in the Purchase order table."
     },
     {
       "id": 8,
@@ -1013,7 +1023,7 @@
           "format": "table"
         }
       ],
-      "description": "The role board (SpaceTraders slice 6.9, switch Automation.Plan.Roles.Enabled): each ship's role, what its equipment allows (can do), why it has the role, and what each role it could take would earn it per hour by the board's estimate (its best trip, after fuel, with the production chains' share). Why: only_role (one role whose plan is on), survey_first (it surveys, as the ship with the least to lose), contract (the contract wants ore), most_profitable (what earns the fleet most per hour), no_work (none of its roles had a trip; it keeps its role), no_role. A new role takes effect when the ship's trip ends. An empty cell: the ship can't take that role, or its plan is off. With the board off, the table says No data: the bot exports the roles only while the plans follow them (what each ship can do is in the fleet table). Each change is a RoleChanged line in the journal.",
+      "description": "The role board (SpaceTraders slice 6.9, switch Automation.Plan.Roles.Enabled): each ship's role, what its equipment allows (can do), why it has the role, and what each role it could take would earn it per hour by the board's estimate (its best trip, after fuel, with the production chains' share). Why: only_role (one role whose plan is on), survey_first (it surveys, as the ship with the least to lose), contract (the contract wants ore), coverage (it keeps gathering a SCARCE or LIMITED mineral, one drone each, D48), most_profitable (what earns the fleet most per hour), no_work (none of its roles had a trip; it keeps its role), no_role. A new role takes effect when the ship's trip ends. An empty cell: the ship can't take that role, or its plan is off. With the board off, the table says No data: the bot exports the roles only while the plans follow them (what each ship can do is in the fleet table). Each change is a RoleChanged line in the journal.",
       "transformations": [
         {
           "id": "merge",
@@ -1111,6 +1121,119 @@
       }
     },
     {
+      "id": 38,
+      "type": "table",
+      "title": "Purchase order",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 53
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (position, tier, plan, ship_type, shipyard) (spacetraders_purchase_need_credits{namespace=\"spacetraders\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (position, tier, plan, ship_type, shipyard) (spacetraders_purchase_need_credits{namespace=\"spacetraders\"}) + on () group_left () max(spacetraders_credit_reserve{namespace=\"spacetraders\"})",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "The order ships are bought in (SpaceTraders slice 6.10b, D43): what each plan that buys ships would buy now. The lowest position is first in line: the credits are saved up for it, and the purchases after it wait until it is bought or no longer needed (the ships still work). 1 Contract: the contract's drone. 2 Surveyor: a designated surveyor (D47). 3 Coverage: a drone per SCARCE or LIMITED mineral (D48). 4 CargoShips: the next ship of Trade.ShipPurchases, saved up for. 5 Probes: a probe per market (D29). 6 Alternating: drones and cargo ships in turn. credits needed is the price and the reserve a purchase leaves (D51). A plan that needs nothing has no row; No data: nothing to buy.",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "position": 0,
+              "tier": 1,
+              "plan": 2,
+              "ship_type": 3,
+              "shipyard": 4,
+              "Value #A": 5,
+              "Value #B": 6
+            },
+            "renameByName": {
+              "ship_type": "ship",
+              "Value #A": "price",
+              "Value #B": "credits needed"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "position"
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "price"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "credits needed"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "id": 24,
       "type": "bargauge",
       "title": "Holds",
@@ -1122,7 +1245,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 53
+        "y": 59
       },
       "targets": [
         {
@@ -1173,7 +1296,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 53
+        "y": 59
       },
       "targets": [
         {
@@ -1230,7 +1353,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 53
+        "y": 59
       },
       "targets": [
         {
@@ -1283,7 +1406,7 @@
         "h": 4,
         "w": 6,
         "x": 0,
-        "y": 61
+        "y": 67
       },
       "targets": [
         {
@@ -1328,7 +1451,7 @@
         "h": 4,
         "w": 6,
         "x": 6,
-        "y": 61
+        "y": 67
       },
       "targets": [
         {
@@ -1374,7 +1497,7 @@
         "h": 4,
         "w": 6,
         "x": 12,
-        "y": 61
+        "y": 67
       },
       "targets": [
         {
@@ -1420,7 +1543,7 @@
         "h": 4,
         "w": 6,
         "x": 18,
-        "y": 61
+        "y": 67
       },
       "targets": [
         {
@@ -1465,7 +1588,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 65
+        "y": 71
       },
       "targets": [
         {
@@ -1522,7 +1645,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 65
+        "y": 71
       },
       "targets": [
         {
@@ -1570,7 +1693,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 65
+        "y": 71
       },
       "targets": [
         {
@@ -1618,7 +1741,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 73
+        "y": 79
       },
       "targets": [
         {
@@ -1654,7 +1777,7 @@
         "h": 7,
         "w": 14,
         "x": 0,
-        "y": 83
+        "y": 89
       },
       "targets": [
         {
@@ -1739,7 +1862,7 @@
         "h": 7,
         "w": 10,
         "x": 14,
-        "y": 83
+        "y": 89
       },
       "targets": [
         {
@@ -1799,7 +1922,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 90
+        "y": 96
       },
       "targets": [
         {
@@ -1853,7 +1976,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 90
+        "y": 96
       },
       "targets": [
         {
@@ -1938,7 +2061,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 98
+        "y": 104
       },
       "targets": [
         {
@@ -1992,7 +2115,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 98
+        "y": 104
       },
       "targets": [
         {
@@ -2051,7 +2174,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 106
+        "y": 112
       },
       "targets": [
         {
@@ -2121,7 +2244,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 106
+        "y": 112
       },
       "targets": [
         {
@@ -2160,7 +2283,7 @@
         "h": 20,
         "w": 24,
         "x": 0,
-        "y": 114
+        "y": 120
       },
       "targets": [
         {
@@ -2307,7 +2430,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 134
+        "y": 140
       },
       "targets": [
         {
@@ -2396,7 +2519,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 142
+        "y": 148
       },
       "targets": [
         {
@@ -2432,7 +2555,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 156
+        "y": 162
       },
       "targets": [
         {
