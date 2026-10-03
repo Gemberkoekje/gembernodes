@@ -2214,8 +2214,8 @@
       "type": "timeseries",
       "title": "Log lines per hour",
       "datasource": {
-        "type": "loki",
-        "uid": "grafana-loki"
+        "type": "datasource",
+        "uid": "-- Mixed --"
       },
       "gridPos": {
         "h": 8,
@@ -2232,6 +2232,15 @@
           },
           "expr": "sum(count_over_time({namespace=\"spacetraders\"}[1h]))",
           "legendFormat": "lines per hour"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "count(count by (ship) (spacetraders_ship_info{namespace=\"spacetraders\"})) * 5000 / 24",
+          "legendFormat": "budget"
         }
       ],
       "fieldConfig": {
@@ -2241,26 +2250,40 @@
           "custom": {
             "drawStyle": "line",
             "fillOpacity": 10,
-            "spanNulls": true,
-            "thresholdsStyle": {
-              "mode": "line"
-            }
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
+            "spanNulls": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "budget"
+            },
+            "properties": [
               {
-                "color": "green",
-                "value": null
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
               },
               {
-                "color": "red",
-                "value": 2084
+                "id": "custom.fillOpacity",
+                "value": 0
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "fill": "dash",
+                  "dash": [
+                    10,
+                    10
+                  ]
+                }
               }
             ]
           }
-        },
-        "overrides": []
+        ]
       },
       "options": {
         "legend": {
@@ -2273,7 +2296,7 @@
           "sort": "desc"
         }
       },
-      "description": "Budget: 50,000 lines a day, about 2,100 an hour (Loki's 31 days on 10Gi are shared with every app)."
+      "description": "Budget: 5,000 lines a day per ship, the dashed line (about 208 an hour a ship). The alert compares the last 24 hours with the ships averaged over them. Loki's 31 days on 10Gi are shared with every app."
     },
     {
       "id": 22,
