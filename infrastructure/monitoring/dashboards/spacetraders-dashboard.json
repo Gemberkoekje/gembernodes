@@ -527,7 +527,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\"})) or vector(0)",
+          "expr": "sum(max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\"}))",
           "legendFormat": "ships and equipment"
         },
         {
@@ -536,7 +536,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(max by (ship, good) (spacetraders_ship_cargo_units{namespace=\"spacetraders\"}) * on (good) group_left () avg by (good) (spacetraders_market_sell_price{namespace=\"spacetraders\"})) or vector(0)",
+          "expr": "sum(max by (ship, good) (spacetraders_ship_cargo_units{namespace=\"spacetraders\"}) * on (good) group_left () avg by (good) (spacetraders_market_sell_price{namespace=\"spacetraders\"})) or (max(spacetraders_agent_credits{namespace=\"spacetraders\"}) * 0)",
           "legendFormat": "cargo"
         }
       ],
@@ -1008,12 +1008,12 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (ship, can) (spacetraders_ship_capabilities_info{namespace=\"spacetraders\"})",
+          "expr": "max by (ship, can) (spacetraders_ship_capabilities_info{namespace=\"spacetraders\"}) and on (ship) max by (ship) (spacetraders_ship_role_info{namespace=\"spacetraders\"})",
           "instant": true,
           "format": "table"
         }
       ],
-      "description": "The role board (SpaceTraders slice 6.9, switch Automation.Plan.Roles.Enabled): each ship's role, what its equipment allows (can do), why it has the role, and what each role it could take would earn it per hour by the board's estimate (its best trip, after fuel, with the production chains' share). Why: only_role (one role whose plan is on), survey_first (it surveys, as the ship with the least to lose), contract (the contract wants ore), most_profitable (what earns the fleet most per hour), no_work (none of its roles had a trip; it keeps its role), no_role. A new role takes effect when the ship's trip ends. An empty cell: the ship can't take that role, or its plan is off. With the board off, only \"can do\" is filled: the bot exports the roles only while the plans follow them. Each change is a RoleChanged line in the journal.",
+      "description": "The role board (SpaceTraders slice 6.9, switch Automation.Plan.Roles.Enabled): each ship's role, what its equipment allows (can do), why it has the role, and what each role it could take would earn it per hour by the board's estimate (its best trip, after fuel, with the production chains' share). Why: only_role (one role whose plan is on), survey_first (it surveys, as the ship with the least to lose), contract (the contract wants ore), most_profitable (what earns the fleet most per hour), no_work (none of its roles had a trip; it keeps its role), no_role. A new role takes effect when the ship's trip ends. An empty cell: the ship can't take that role, or its plan is off. With the board off, the table says No data: the bot exports the roles only while the plans follow them (what each ship can do is in the fleet table). Each change is a RoleChanged line in the journal.",
       "transformations": [
         {
           "id": "merge",
