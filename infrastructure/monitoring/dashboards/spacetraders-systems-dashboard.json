@@ -1579,10 +1579,10 @@
             "type": "loki",
             "uid": "grafana-loki"
           },
-          "expr": "{namespace=\"spacetraders\"} | json EventKind, Plan, Reason, ResetDate, message=\"[\\\"@m\\\"]\" | EventKind=~\"Jumped|SystemExplored\" or Plan=\"Explore\" or Reason=\"jump_refused\" | ResetDate=~\"$reset_date\" | line_format \"{{.message}}\""
+          "expr": "{namespace=\"spacetraders\"} | json EventKind, Plan, Reason, ResetDate, ShipName, message=\"[\\\"@m\\\"]\" | EventKind=~\"Jumped|SystemExplored\" or Plan=\"Explore\" or Reason=\"jump_refused\" | ResetDate=~\"$reset_date\" | line_format \"{{ if .ShipName }}[{{ .ShipName }}] {{ end }}{{ .message }}\""
         }
       ],
-      "description": "The explore plan's journal: jumps (with what the antimatter cost), systems explored, the plan taking the command ship and bringing it home, waits for credits, and jumps the API refused.",
+      "description": "The explore plan's journal: jumps (with what the antimatter cost), systems explored, the plan taking the command ship and bringing it home, waits for credits, and jumps the API refused. A line about a ship starts with the bot's own name for it, in brackets (slice 2.14).",
       "options": {
         "showTime": true,
         "showLabels": false,

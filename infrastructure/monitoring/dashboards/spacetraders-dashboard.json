@@ -876,9 +876,19 @@
           "expr": "max by (ship, can) (spacetraders_ship_capabilities_info{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
+        },
+        {
+          "refId": "H",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (ship, name) (spacetraders_ship_name_info{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
+          "instant": true,
+          "format": "table"
         }
       ],
-      "description": "Type: the game's registration role (EXCAVATOR for mining and siphon drones alike). Can do: what its equipment allows. Where: the waypoint and its type; while travelling, an arrow and where the ship goes. Doing: what the bot has it do: its goal in a few words, else its contract work (mining at the contract's source, delivering at its destination, on the way between them), else idle, or blocked with the reason. Arrives in: while travelling. Cargo and capacity: units in the hold and what it takes. Mined: units extracted in the dashboard's time range. Goal is the goal's kind, else the assignment (Contract), else None. Time in state counts from the bot's start at the latest.",
+      "description": "Name: the bot's own name for the ship, beside the game's symbol (SpaceTraders slice 2.14): one name per ship type each reset, from a list per type, numbered in the order the ships joined the fleet, such as MARINER-2 for the second probe. Type: the game's registration role (EXCAVATOR for mining and siphon drones alike). Can do: what its equipment allows. Where: the waypoint and its type; while travelling, an arrow and where the ship goes. Doing: what the bot has it do: its goal in a few words, else its contract work (mining at the contract's source, delivering at its destination, on the way between them), else idle, or blocked with the reason. Arrives in: while travelling. Cargo and capacity: units in the hold and what it takes. Mined: units extracted in the dashboard's time range. Goal is the goal's kind, else the assignment (Contract), else None. Time in state counts from the bot's start at the latest.",
       "transformations": [
         {
           "id": "merge",
@@ -891,21 +901,23 @@
               "Time": true,
               "Value #B": true,
               "Value #G": true,
-              "reason": true
+              "reason": true,
+              "Value #H": true
             },
             "indexByName": {
               "ship": 0,
-              "role": 1,
-              "can": 2,
-              "location": 3,
-              "activity": 4,
-              "state": 5,
-              "Value #C": 6,
-              "Value #D": 7,
-              "Value #E": 8,
-              "Value #F": 9,
-              "goal": 10,
-              "Value #A": 11
+              "name": 1,
+              "role": 2,
+              "can": 3,
+              "location": 4,
+              "activity": 5,
+              "state": 6,
+              "Value #C": 7,
+              "Value #D": 8,
+              "Value #E": 9,
+              "Value #F": 10,
+              "goal": 11,
+              "Value #A": 12
             },
             "renameByName": {
               "role": "type",
@@ -1061,9 +1073,19 @@
           "expr": "max by (ship, can) (spacetraders_ship_capabilities_info{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) and on (ship) max by (ship) (spacetraders_ship_role_info{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
+        },
+        {
+          "refId": "F",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (ship, name) (spacetraders_ship_name_info{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) and on (ship) max by (ship) (spacetraders_ship_role_info{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
+          "instant": true,
+          "format": "table"
         }
       ],
-      "description": "The role board (SpaceTraders slice 6.9, switch Automation.Plan.Roles.Enabled): each ship's role, what its equipment allows (can do), why it has the role, and what each role it could take would earn it per hour by the board's estimate (its best trip, after fuel, with the production chains' share). Why: only_role (one role whose plan is on), survey_first (it surveys, as the ship with the least to lose), contract (the contract wants ore), coverage (it keeps gathering a SCARCE or LIMITED mineral, one drone each, D48), gathers_first (a drone gathers whatever trading would pay, D58), construction (it builds the home system's jump gate: the largest hold that isn't a drone or the surveyor, D65; it trades while there is nothing it may buy), most_profitable (what earns the fleet most per hour), no_work (none of its roles had a trip; it keeps its role), no_role. A new role takes effect when the ship's trip ends. An empty cell: the ship can't take that role, or its plan is off. With the board off, the table says No data: the bot exports the roles only while the plans follow them (what each ship can do is in the fleet table). Each change is a RoleChanged line in the journal.",
+      "description": "The role board (SpaceTraders slice 6.9, switch Automation.Plan.Roles.Enabled): each ship, with the bot's own name for it (slice 2.14), its role, what its equipment allows (can do), why it has the role, and what each role it could take would earn it per hour by the board's estimate (its best trip, after fuel, with the production chains' share). Why: only_role (one role whose plan is on), survey_first (it surveys, as the ship with the least to lose), contract (the contract wants ore), coverage (it keeps gathering a SCARCE or LIMITED mineral, one drone each, D48), gathers_first (a drone gathers whatever trading would pay, D58), construction (it builds the home system's jump gate: the largest hold that isn't a drone or the surveyor, D65; it trades while there is nothing it may buy), most_profitable (what earns the fleet most per hour), no_work (none of its roles had a trip; it keeps its role), no_role. A new role takes effect when the ship's trip ends. An empty cell: the ship can't take that role, or its plan is off. With the board off, the table says No data: the bot exports the roles only while the plans follow them (what each ship can do is in the fleet table). Each change is a RoleChanged line in the journal.",
       "transformations": [
         {
           "id": "merge",
@@ -1075,16 +1097,18 @@
             "excludeByName": {
               "Time": true,
               "Value #A": true,
-              "Value #E": true
+              "Value #E": true,
+              "Value #F": true
             },
             "indexByName": {
               "ship": 0,
-              "role": 1,
-              "can": 2,
-              "reason": 3,
-              "Value #B": 4,
-              "Value #C": 5,
-              "Value #D": 6
+              "name": 1,
+              "role": 2,
+              "can": 3,
+              "reason": 4,
+              "Value #B": 5,
+              "Value #C": 6,
+              "Value #D": 7
             },
             "renameByName": {
               "can": "can do",
@@ -1827,10 +1851,10 @@
             "type": "loki",
             "uid": "grafana-loki"
           },
-          "expr": "{namespace=\"spacetraders\"} | json EventKind, ResetDate, message=\"[\\\"@m\\\"]\" | EventKind=~\"Surveyed|SurveyEnded\" | ResetDate=~\"$reset_date\" | line_format \"{{.message}}\""
+          "expr": "{namespace=\"spacetraders\"} | json EventKind, ResetDate, ShipName, message=\"[\\\"@m\\\"]\" | EventKind=~\"Surveyed|SurveyEnded\" | ResetDate=~\"$reset_date\" | line_format \"{{ if .ShipName }}[{{ .ShipName }}] {{ end }}{{ .message }}\""
         }
       ],
-      "description": "Every survey taken (deposits, size, expiry) and every survey that ended, why, and after how many extractions. Open a line for its properties: Signature, WaypointSymbol, Extractions.",
+      "description": "Every survey taken (deposits, size, expiry) and every survey that ended, why, and after how many extractions. Open a line for its properties: Signature, WaypointSymbol, Extractions. A line about a ship starts with the bot's own name for it, in brackets (slice 2.14).",
       "options": {
         "showTime": true,
         "showLabels": false,
@@ -3104,10 +3128,10 @@
             "type": "loki",
             "uid": "grafana-loki"
           },
-          "expr": "{namespace=\"spacetraders\"} | json EventKind, ResetDate, message=\"[\\\"@m\\\"]\" | EventKind != \"\" | ResetDate=~\"$reset_date\" | line_format \"{{.message}}\""
+          "expr": "{namespace=\"spacetraders\"} | json EventKind, ResetDate, ShipName, message=\"[\\\"@m\\\"]\" | EventKind != \"\" | ResetDate=~\"$reset_date\" | line_format \"{{ if .ShipName }}[{{ .ShipName }}] {{ end }}{{ .message }}\""
         }
       ],
-      "description": "One line per meaningful thing (JournalEvents): contracts, purchases and sales, plans, idle and blocked ships, setting changes, resets and anomalies. Open a line for its properties.",
+      "description": "One line per meaningful thing (JournalEvents): contracts, purchases and sales, plans, idle and blocked ships, setting changes, resets and anomalies. Open a line for its properties. A line about a ship starts with the bot's own name for it, in brackets (slice 2.14).",
       "options": {
         "showTime": true,
         "showLabels": false,
