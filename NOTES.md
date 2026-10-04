@@ -687,9 +687,10 @@ label `next_run` to `spacetraders_setting_info`).
 - The description says how to set them: `PUT /settings/{key}` now and for the next runs, `PUT /settings/next-run/{key}`
   only for the next runs, `DELETE /settings/next-run/{key}` for the default again. It no longer says a setting can be
   changed on the bot's own dashboard: its Settings page only shows them.
-- Until the bot runs an image with the label, the column is empty. This branch doesn't deploy the bot: that image exists
-  once the projects branch is merged, and its deploy is the usual bump of both deployments to its SHA. That deploy's
-  first start also switches on the plans the current agent has off, and keeps any setting changed before it (D69).
+- The same branch deploys the bot at projects main `52a73fd5` (slice 2.12, projects#156), in both deployments. Its first
+  start adds `agent_settings."FollowsDefault"` and `next_run_settings` to the database, switches on the plans the current
+  agent has had off since the reset of 13:00Z, and keeps any setting changed before it (D69). Each switch is a
+  `SettingChanged` journal line, so a blue "Setting changes" annotation. Until the new pod runs, the column is empty.
 - Tested: the panel in Grafana 11.6.1 against a local Prometheus (v2.55.1) scraping the series as the bot writes them,
   with the seed's settings as test data and three next-run values changed, looked at in a browser at desktop and phone
   width: the columns setting, value, next run and what it does, on and off in both. `scripts/validate.py` with flux
