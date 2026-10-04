@@ -21,6 +21,12 @@
       "type": "link",
       "url": "/grafana/d/spacetraders",
       "icon": "dashboard"
+    },
+    {
+      "title": "SpaceTraders systems",
+      "type": "link",
+      "url": "/grafana/d/spacetraders-systems",
+      "icon": "dashboard"
     }
   ],
   "templating": {
