@@ -2804,12 +2804,12 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "label_replace(max by (setting, current, description) (spacetraders_setting_info{namespace=\"spacetraders\", setting!~\"Runtime[.].*\", current=~\"true|false\"}), \"order\", \"1 $1\", \"setting\", \"(.*)\") or label_replace(max by (setting, current, description) (spacetraders_setting_info{namespace=\"spacetraders\", setting!~\"Runtime[.].*\", current!~\"true|false\"}), \"order\", \"2 $1\", \"setting\", \"(.*)\")",
+          "expr": "label_replace(max by (setting, current, next_run, description) (spacetraders_setting_info{namespace=\"spacetraders\", setting!~\"Runtime[.].*\", current=~\"true|false\"}), \"order\", \"1 $1\", \"setting\", \"(.*)\") or label_replace(max by (setting, current, next_run, description) (spacetraders_setting_info{namespace=\"spacetraders\", setting!~\"Runtime[.].*\", current!~\"true|false\"}), \"order\", \"2 $1\", \"setting\", \"(.*)\")",
           "instant": true,
           "format": "table"
         }
       ],
-      "description": "Every setting the bot has, with its value now and what it does. The switches (true or false) come first, on in green; then the other settings by name. A value that may hold a secret shows (hidden), as in the journal. Left out: the Runtime.* status flags, which aren't settings to tune. What a setting does is what the running version says. Change a setting on the bot's own dashboard (Settings) or with PUT /settings/{key}; the blue \"Setting changes\" annotations mark when each changed. The bot samples its settings every 10 seconds, and Prometheus scrapes it every minute.",
+      "description": "Every setting the bot has, with its value now, the value the next run starts with, and what it does. The switches (true or false) come first, on in green; then the other settings by name. A value that may hold a secret shows (hidden), as in the journal. Left out: the Runtime.* status flags, which aren't settings to tune. What a setting does is what the running version says. The next run is the agent the next server reset registers: it starts with the value chosen for it, else the default. PUT /settings/{key} changes a setting now and for the next runs; PUT /settings/next-run/{key} only for the next runs, and DELETE /settings/next-run/{key} gives them the default again (the bot's own dashboard only shows settings). The blue \"Setting changes\" annotations mark when each changed. The bot samples its settings every 10 seconds, and Prometheus scrapes it every minute.",
       "transformations": [
         {
           "id": "sortBy",
@@ -2832,10 +2832,12 @@
             "indexByName": {
               "setting": 0,
               "current": 1,
-              "description": 2
+              "next_run": 2,
+              "description": 3
             },
             "renameByName": {
               "current": "value",
+              "next_run": "next run",
               "description": "what it does"
             }
           }
@@ -2868,7 +2870,62 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 300
+                "value": 180
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "text"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "true": {
+                        "text": "on",
+                        "color": "green",
+                        "index": 0
+                      },
+                      "false": {
+                        "text": "off",
+                        "color": "text",
+                        "index": 1
+                      }
+                    }
+                  },
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "empty",
+                      "result": {
+                        "text": "(empty)",
+                        "index": 2
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "next run"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 180
               },
               {
                 "id": "custom.cellOptions",
