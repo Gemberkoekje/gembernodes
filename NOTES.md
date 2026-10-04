@@ -512,7 +512,7 @@ adds the metric `spacetraders_api_requests_initiated_total`).
 ## 2026-10-04 — SpaceTraders jump gate progress (slice 6.6)
 
 Asked on 2026-10-04: a "jump gate progress" on the Grafana dashboard, with the percentage and which materials are still
-needed (Gemberkoekje/projects `SpaceTraders/PLAN.md` slice 6.6, decisions D59–D63, branch `ccr-914173a3-6coo89`, which
+needed (Gemberkoekje/projects `SpaceTraders/PLAN.md` slice 6.6, decisions D64–D68, branch `ccr-914173a3-6coo89`, which
 adds a construction plan and role for the home system's jump gate, and the metrics
 `spacetraders_construction_units_required` and `spacetraders_construction_units_fulfilled`, each `{site,trade_symbol}`).
 
@@ -521,12 +521,12 @@ adds a construction plan and role for the home system's jump gate, and the metri
     by the gate's waypoint; green at 100%.
   - "Jump gate: materials still needed" (table): per material, what is left to supply, what the gate has and what it
     needs in all, the most needed first. A material the gate has all of drops off the table. No gate column: the bot
-    considers only the home system's gate (D63), and the stat names it. "still needed" comes next to the material, so
+    considers only the home system's gate (D68), and the stat names it. "still needed" comes next to the material, so
     on a phone it shows without scrolling sideways; "supplied" and "required" scroll.
   - "Jump gate materials" (bar gauge): each material's share of what the gate needs.
   - Two pods exporting the same rows (a rollout) count once (`max by (site, trade_symbol)`).
 - **Descriptions brought up to date:** the dashboard's mentions the jump gate. "Roles" lists the reasons `gathers_first`
-  (D58, missing until now) and `construction` (D60). "Purchase order" lists the tiers as the bot numbers them now:
+  (D58, missing until now) and `construction` (D65). "Purchase order" lists the tiers as the bot numbers them now:
   4 SurveyorPerArea (D55, missing until now), 5 CargoShips, 6 Construction (the gate's next load, with the material in
   the ship column and its market in the shipyard column), 7 Probes, 8 Alternating. "Spent per hour" names the ledger
   category ConstructionBuy, and "Profit per hour by activity" the activity construction (always a loss: supplying
