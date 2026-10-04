@@ -576,3 +576,37 @@ and `spacetraders_shipyard_ship_info{can,equipment}`).
   series as the bot writes them, looked at in a browser at desktop and phone width: one row per ship type, the
   type-only row empty, every column readable at desktop width. `scripts/validate.py`'s syntax check: no errors (no
   flux, kubeconform or helm here; CI runs the rest). Dashboards reload without a Grafana restart.
+
+## 2026-10-04 — SpaceTraders jump gate progress (slice 6.6)
+
+Asked on 2026-10-04: a "jump gate progress" on the Grafana dashboard, with the percentage and which materials are still
+needed (Gemberkoekje/projects `SpaceTraders/PLAN.md` slice 6.6, decisions D64–D68, projects#155, which adds a
+construction plan and role for the home system's jump gate, and the metrics `spacetraders_construction_units_required` and
+`spacetraders_construction_units_fulfilled`, each `{site,trade_symbol}`).
+
+- **Three panels under "Contracts"** (8 rows; the panels below moved down by that):
+  - "Jump gate progress" (stat): all units supplied over all units the gate needs, by us or anyone, in percent, named
+    by the gate's waypoint; green at 100%.
+  - "Jump gate: materials still needed" (table): per material, what is left to supply, what the gate has and what it
+    needs in all, the most needed first. A material the gate has all of drops off the table. No gate column: the bot
+    considers only the home system's gate (D68), and the stat names it. "still needed" comes next to the material, so
+    on a phone it shows without scrolling sideways; "supplied" and "required" scroll.
+  - "Jump gate materials" (bar gauge): each material's share of what the gate needs.
+  - Two pods exporting the same rows (a rollout) count once (`max by (site, trade_symbol)`).
+- **Descriptions brought up to date:** the dashboard's mentions the jump gate. "Roles" lists the reasons `gathers_first`
+  (D58, missing until now) and `construction` (D65). "Purchase order" lists the tiers as the bot numbers them now:
+  4 SurveyorPerArea (D55, missing until now), 5 CargoShips, 6 Construction (the gate's next load, with the material in
+  the ship column and its market in the shipyard column), 7 Probes, 8 Alternating. "Spent per hour" names the ledger
+  category ConstructionBuy, and "Profit per hour by activity" the activity construction (always a loss: supplying
+  pays nothing). On the markets dashboard, "Shipyards" lists Construct among what a ship for sale can do: a cargo ship
+  or the command ship can build the gate (slice 2.11 judges it as the fleet table does).
+- The cluster runs slice 6.6 since gembernodes#52 (projects main `851426a9`). The panels say "No data" until its
+  construction plan (`Automation.Plan.Construction.Enabled`, off by default) has seen the home gate under construction.
+  On 2026-10-04 the home gate, X1-DC53-I55, was already complete, so they stay empty until the server reset (13:00Z)
+  gives a new home system, whose agent starts with the plan off.
+- Tested: the five queries with `promtool test rules` (`prom/prometheus` v2.55.1) against synthetic series, every query
+  taken verbatim from the JSON: a gate under construction exported by two pods (counted once), a complete gate (100%,
+  nothing still needed), no gate (no data, not 0), another namespace left out. The panels in Grafana 11.6.1 against a
+  local Prometheus scraping a gate under construction and then a complete one, looked at in a browser at desktop and
+  phone width. `scripts/validate.py` with flux, kubeconform and helm: no errors, no warnings. Dashboards reload without
+  a Grafana restart.

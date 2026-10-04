@@ -1,7 +1,7 @@
 {
   "uid": "spacetraders",
   "title": "SpaceTraders",
-  "description": "What the SpaceTraders bot does and why: credits, fleet, surveys, contracts, the API, health, settings and the journal. See SpaceTraders/PLAN.md slice 2.4 in Gemberkoekje/projects.",
+  "description": "What the SpaceTraders bot does and why: credits, fleet, surveys, contracts, the jump gate, the API, health, settings and the journal. See SpaceTraders/PLAN.md slice 2.4 in Gemberkoekje/projects.",
   "tags": [
     "spacetraders"
   ],
@@ -666,7 +666,7 @@
           "sort": "desc"
         }
       },
-      "description": "What each kind of work earned, booked when its trip ends: sales − purchases − fuel (trade, mining, siphoning, spare time); contracts: payments − the fuel of their trips. Negative when trips lost money."
+      "description": "What each kind of work earned, booked when its trip ends: sales − purchases − fuel (trade, mining, siphoning, spare time); contracts: payments − the fuel of their trips; construction: the jump gate's materials and their fuel, always a loss, as supplying pays nothing (slice 6.6). Negative when trips lost money."
     },
     {
       "id": 9,
@@ -788,7 +788,7 @@
           "sort": "desc"
         }
       },
-      "description": "By ledger category: FuelPurchase, TradeBuy, ShipPurchase."
+      "description": "By ledger category: FuelPurchase, TradeBuy, ShipPurchase, and ConstructionBuy for the jump gate's materials (slice 6.6)."
     },
     {
       "id": 11,
@@ -1061,7 +1061,7 @@
           "format": "table"
         }
       ],
-      "description": "The role board (SpaceTraders slice 6.9, switch Automation.Plan.Roles.Enabled): each ship's role, what its equipment allows (can do), why it has the role, and what each role it could take would earn it per hour by the board's estimate (its best trip, after fuel, with the production chains' share). Why: only_role (one role whose plan is on), survey_first (it surveys, as the ship with the least to lose), contract (the contract wants ore), coverage (it keeps gathering a SCARCE or LIMITED mineral, one drone each, D48), most_profitable (what earns the fleet most per hour), no_work (none of its roles had a trip; it keeps its role), no_role. A new role takes effect when the ship's trip ends. An empty cell: the ship can't take that role, or its plan is off. With the board off, the table says No data: the bot exports the roles only while the plans follow them (what each ship can do is in the fleet table). Each change is a RoleChanged line in the journal.",
+      "description": "The role board (SpaceTraders slice 6.9, switch Automation.Plan.Roles.Enabled): each ship's role, what its equipment allows (can do), why it has the role, and what each role it could take would earn it per hour by the board's estimate (its best trip, after fuel, with the production chains' share). Why: only_role (one role whose plan is on), survey_first (it surveys, as the ship with the least to lose), contract (the contract wants ore), coverage (it keeps gathering a SCARCE or LIMITED mineral, one drone each, D48), gathers_first (a drone gathers whatever trading would pay, D58), construction (it builds the home system's jump gate: the largest hold that isn't a drone or the surveyor, D65; it trades while there is nothing it may buy), most_profitable (what earns the fleet most per hour), no_work (none of its roles had a trip; it keeps its role), no_role. A new role takes effect when the ship's trip ends. An empty cell: the ship can't take that role, or its plan is off. With the board off, the table says No data: the bot exports the roles only while the plans follow them (what each ship can do is in the fleet table). Each change is a RoleChanged line in the journal.",
       "transformations": [
         {
           "id": "merge",
@@ -1194,7 +1194,7 @@
           "format": "table"
         }
       ],
-      "description": "The order ships are bought in (SpaceTraders slice 6.10b, D43): what each plan that buys ships would buy now. The lowest position is first in line: the credits are saved up for it, and the purchases after it wait until it is bought or no longer needed (the ships still work). 1 Contract: the contract's drone. 2 Surveyor: a designated surveyor (D47). 3 Coverage: a drone per SCARCE or LIMITED mineral (D48). 4 CargoShips: the next ship of Trade.ShipPurchases, saved up for. 5 Probes: a probe per market (D29). 6 Alternating: drones and cargo ships in turn. credits needed is the price and the reserve a purchase leaves (D51). A plan that needs nothing has no row; No data: nothing to buy.",
+      "description": "The order ships are bought in (SpaceTraders slice 6.10b, D43): what each plan that buys ships would buy now. The lowest position is first in line: the credits are saved up for it, and the purchases after it wait until it is bought or no longer needed (the ships still work). 1 Contract: the contract's drone. 2 Surveyor: a designated surveyor (D47). 3 Coverage: a drone per SCARCE or LIMITED mineral and area (D48, D53). 4 SurveyorPerArea: one more surveyor per area with mining drones (D55). 5 CargoShips: the next ship of Trade.ShipPurchases, saved up for. 6 Construction: the jump gate's next load of materials (D64), with the material as the ship type and its market as the shipyard; while the gate needs materials, what comes after waits. 7 Probes: a probe per market (D29). 8 Alternating: drones and cargo ships in turn. credits needed is the price and the reserve a purchase leaves (D51). A plan that needs nothing has no row; No data: nothing to buy.",
       "transformations": [
         {
           "id": "merge",
@@ -1986,6 +1986,268 @@
       }
     },
     {
+      "id": 40,
+      "type": "stat",
+      "title": "Jump gate progress",
+      "description": "How much of its materials the home system's jump gate has, by us or anyone: all units supplied over all units it needs (slice 6.6). It opens the gate network once complete. No data until the construction plan has seen the gate under construction (Automation.Plan.Construction.Enabled).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 102
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "100 * sum by (site) (max by (site, trade_symbol) (spacetraders_construction_units_fulfilled{namespace=\"spacetraders\"})) / sum by (site) (max by (site, trade_symbol) (spacetraders_construction_units_required{namespace=\"spacetraders\"}))",
+          "legendFormat": "{{site}}",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 100
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "justifyMode": "auto",
+        "orientation": "auto"
+      }
+    },
+    {
+      "id": 41,
+      "type": "table",
+      "title": "Jump gate: materials still needed",
+      "description": "The materials the home system's jump gate still needs: what is left to supply, what it has, and what it needs in all. A material it has all of drops off the table. The construction role's ship buys them a full hold at a time, where the market isn't SCARCE or LIMITED (D64-D67).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 6,
+        "y": 102
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (site, trade_symbol) (spacetraders_construction_units_required{namespace=\"spacetraders\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (site, trade_symbol) (spacetraders_construction_units_fulfilled{namespace=\"spacetraders\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (site, trade_symbol) (spacetraders_construction_units_required{namespace=\"spacetraders\"}) - max by (site, trade_symbol) (spacetraders_construction_units_fulfilled{namespace=\"spacetraders\"})",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "site": true
+            },
+            "indexByName": {
+              "trade_symbol": 0,
+              "Value #C": 1,
+              "Value #B": 2,
+              "Value #A": 3
+            },
+            "renameByName": {
+              "trade_symbol": "material",
+              "Value #A": "required",
+              "Value #B": "supplied",
+              "Value #C": "still needed"
+            }
+          }
+        },
+        {
+          "id": "filterByValue",
+          "options": {
+            "filters": [
+              {
+                "fieldName": "still needed",
+                "config": {
+                  "id": "greater",
+                  "options": {
+                    "value": 0
+                  }
+                }
+              }
+            ],
+            "type": "include",
+            "match": "any"
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "still needed",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "minWidth": 90
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "material"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 180
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "still needed"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 110
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 42,
+      "type": "bargauge",
+      "title": "Jump gate materials",
+      "description": "Each material of the home system's jump gate: the share of what it needs that it has.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 102
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "100 * max by (site, trade_symbol) (spacetraders_construction_units_fulfilled{namespace=\"spacetraders\"}) / max by (site, trade_symbol) (spacetraders_construction_units_required{namespace=\"spacetraders\"})",
+          "legendFormat": "{{trade_symbol}}",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 100
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
       "id": 39,
       "type": "timeseries",
       "title": "API request rates",
@@ -1997,7 +2259,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 102
+        "y": 110
       },
       "targets": [
         {
@@ -2141,7 +2403,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 112
+        "y": 120
       },
       "targets": [
         {
@@ -2202,7 +2464,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 112
+        "y": 120
       },
       "targets": [
         {
@@ -2292,7 +2554,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 122
+        "y": 130
       },
       "targets": [
         {
@@ -2353,7 +2615,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 122
+        "y": 130
       },
       "targets": [
         {
@@ -2419,7 +2681,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 132
+        "y": 140
       },
       "targets": [
         {
@@ -2494,7 +2756,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 132
+        "y": 140
       },
       "targets": [
         {
@@ -2533,7 +2795,7 @@
         "h": 20,
         "w": 24,
         "x": 0,
-        "y": 140
+        "y": 148
       },
       "targets": [
         {
@@ -2680,7 +2942,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 160
+        "y": 168
       },
       "targets": [
         {
@@ -2774,7 +3036,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 168
+        "y": 176
       },
       "targets": [
         {
@@ -2810,7 +3072,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 182
+        "y": 190
       },
       "targets": [
         {
