@@ -885,3 +885,32 @@ since it joined the fleet, summed by ledger category, earnings positive and cost
   Purchase order without overlap. (Headless Chromium in a container with a POSIX locale needs an explicit `en-US`:
   Grafana's frontend fails on `en-US@posix`.) `scripts/validate.py` with flux 2.5.1, kubeconform v0.8.0 and helm v3.17.1:
   no errors, no warnings.
+
+## 2026-10-04 — SpaceTraders: the trading plan's order under the market tree (slice 2.17)
+
+Asked on 2026-10-04: "Can you, in a new pr, add the exact logic to the market tree view that is used to determine which
+trade is done first?" (Gemberkoekje/projects `SpaceTraders/PLAN.md` slice 2.17 and decision D75, projects#168, which adds
+`GET /status/trading-routes`.) The trading plan ranks each free trader's routes with the trader's hold, fuel and position and
+the credits, which Grafana can't recompute from Prometheus; the bot publishes the order it works out instead.
+
+- **"Trade routes, in the order traders take them"**, a table under "Market tree: goods traded in $system" on the markets
+  dashboard (12 rows; the panels below moved down by that). It reads `/status/trading-routes` through the SpaceTraders API
+  data source (slice 2.15): the trading plan's state as its last pass stored it. First the routes traders hold, with the
+  trader; then the lucrative routes no trader holds, numbered best first (a route that feeds a pricier good first, D15, then
+  the most profit after fuel). Columns: order, trader (`waiting` for one no trader holds), good, buy at, sell at, units
+  (D56, D74), profit after fuel, per unit, feeds, could take it (the free traders it was lucrative for) and as of (when the
+  plan last changed the list). The description states the plan's rules.
+- **Infinity's backend parser** returns the columns in alphabetical order, so an "organize" transformation puts them back,
+  as on the snapshots dashboard; the JSONata expression wraps its rows in `[...]`, so a single route stays a list.
+- **Empty:** "No routes: no trader holds one, and none waited at the trading plan's last pass". Not system-filtered: the
+  plan's state covers every system its traders work in.
+- **The market tree's description** points to the table.
+- It shows data once the bot runs a build with slice 2.17; until then the endpoint answers 404 and the panel an error.
+  Deploy that build with it.
+- Tested in Grafana 11.6.1 with Infinity 3.11.1 and the data source as the cluster has it (the key from the environment),
+  against a stand-in for the bot's API that checks the key and serves the JSON the bot's own endpoint wrote in its test:
+  - the panel's query through Grafana's query API: seven routes in the bot's order, one route, and none (no rows, no error);
+  - in a browser at 1920, 1440 and 390 pixels wide: every column fits at 1920; at 1440 with Grafana's menu docked and on a
+    phone the table scrolls sideways, as the market tree does, with the good's name whole; the empty table shows its
+    message; the table sits under the market tree, the rows below moved down without overlap.
+  - `scripts/validate.py` with flux 2.5.1, kubeconform v0.8.0 and helm v3.17.1: no errors, no warnings.
