@@ -840,3 +840,37 @@ source, reading the bot's internal API with its API key.
   - `helm template` of chart 8.15.0 with these values: `[plugins] preinstall`, the data source with
     `$__env{SPACETRADERS_INTERNAL_API_KEY}` verbatim, and the optional key in the pod's environment.
     `scripts/validate.py` with flux 2.5.1, kubeconform v0.8.0 and helm v3.17.1: no errors, no warnings.
+
+## 2026-10-04 — SpaceTraders profit by ship (slice 2.16)
+
+Asked on 2026-10-04: "For spacetraders, I'd like to see each ships total profit. So -purchase price-market buys+market
+sales-fuel (plus or minus any other relevant ship-specific credit changes)" (Gemberkoekje/projects `SpaceTraders/PLAN.md`
+slice 2.16, branch `ccr-fea929ec-ptl3vh`, which adds `spacetraders_ship_ledger_credits{ship,category}`: each ship's ledger
+since it joined the fleet, summed by ledger category, earnings positive and costs negative).
+
+- **"Profit by ship"** on the SpaceTraders dashboard, under Roles; the panels below moved down by its height (10). One row
+  per ship, most profitable first: ship, name, **profit**, then what it is made of: **purchase** (`ShipPurchase`,
+  `MountPurchase`, `ModulePurchase`), **market buys** (`TradeBuy`), **market sales** (`TradeSell`, and `MiningSell`, which
+  the bot doesn't book), **fuel** (`FuelPurchase`) and **other** (every other category: `AntimatterPurchase`,
+  `ConstructionBuy`, `Repair`, …), so the columns after profit add up to it. Costs are negative; profit is green from 0 and
+  red below; the bottom row sums each column, the fleet's totals.
+- Each column is `sum by (ship) (max by (ship, category) (spacetraders_ship_ledger_credits{…, category=~"…"}))`: the
+  `max by (ship, category)` first, so two pods during a rollout count once. Then
+  `or 0 * max by (ship) (spacetraders_ship_value_credits{…}) and on () count(spacetraders_ship_ledger_credits{…})`: a ship
+  with nothing in a column shows 0 rather than an empty cell, but only once the bot exports the ledger, so before that the
+  numbers stay empty rather than read 0.
+- Fixed widths for ship (105 px), name (130, for HUMMINGBIRD-12) and profit (100): on a phone those three fit and the
+  breakdown scrolls sideways, as the other tables do.
+- The contract's payments are booked to the agent, not a ship, so no row has them; the description says so and points to
+  "Profit per hour by activity".
+- **Until the bot runs a build with slice 2.16,** the table lists the ships and their names without numbers: deploy that
+  build with this dashboard.
+- Tested: the seven queries with `promtool test rules` (v2.55.1), taken verbatim from the JSON, against made-up series:
+  a starting ship that trades and jumps, a probe without ledger rows (0 in every column), a mining drone on two pods
+  (counted once), a builder with a mount and the jump gate's materials, the run before with the same symbols and another
+  namespace (left out), and a bot without the metric (no numbers): 13 checks, each row's columns adding up to its profit.
+  The table in Grafana 11.6.1 against a local Prometheus scraping the series as the bot writes them, looked at in a browser
+  at 1600 and 390 pixels wide: sorted by profit, zeros for the probe, the totals row, and in place between Roles and
+  Purchase order without overlap. (Headless Chromium in a container with a POSIX locale needs an explicit `en-US`:
+  Grafana's frontend fails on `en-US@posix`.) `scripts/validate.py` with flux 2.5.1, kubeconform v0.8.0 and helm v3.17.1:
+  no errors, no warnings.
