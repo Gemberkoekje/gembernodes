@@ -516,7 +516,7 @@
           "format": "table"
         }
       ],
-      "description": "Ship types per shipyard, as last seen; the details are empty until a ship has been there. Can do: what the ship could do in the fleet, judged as the fleet table's \"can do\" judges a ship: by its mounts, hold and tank, whichever plans are on (Survey, Mine, Siphon, Trade; none for a ship that can do none of them), but Probe for a probe, which the probe plan buys and flies. Price and supply: what the shipyard asks, and its supply. Fuel: what the tank holds. Cargo: what the holds take together. Equipment: its mounts, then its modules, without the MOUNT_ and MODULE_ prefixes, and without the cargo holds (cargo shows them) and crew quarters.",
+      "description": "Ship types per shipyard, as last seen; the details are empty until a ship has been there. Can do: what the ship could do in the fleet, judged as the fleet table's \"can do\" judges a ship: by its mounts, hold and tank, whichever plans are on (Survey, Mine, Siphon, Trade, Construct: build the home system's jump gate; none for a ship that can do none of them), but Probe for a probe, which the probe plan buys and flies. Price and supply: what the shipyard asks, and its supply. Fuel: what the tank holds. Cargo: what the holds take together. Equipment: its mounts, then its modules, without the MOUNT_ and MODULE_ prefixes, and without the cargo holds (cargo shows them) and crew quarters.",
       "transformations": [
         {
           "id": "merge",

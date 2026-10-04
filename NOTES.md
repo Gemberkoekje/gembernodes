@@ -598,7 +598,8 @@ construction plan and role for the home system's jump gate, and the metrics `spa
   4 SurveyorPerArea (D55, missing until now), 5 CargoShips, 6 Construction (the gate's next load, with the material in
   the ship column and its market in the shipyard column), 7 Probes, 8 Alternating. "Spent per hour" names the ledger
   category ConstructionBuy, and "Profit per hour by activity" the activity construction (always a loss: supplying
-  pays nothing).
+  pays nothing). On the markets dashboard, "Shipyards" lists Construct among what a ship for sale can do: a cargo ship
+  or the command ship can build the gate (slice 2.11 judges it as the fleet table does).
 - The cluster runs slice 6.6 since gembernodes#52 (projects main `851426a9`). The panels say "No data" until its
   construction plan (`Automation.Plan.Construction.Enabled`, off by default) has seen the home gate under construction.
   On 2026-10-04 the home gate, X1-DC53-I55, was already complete, so they stay empty until the server reset (13:00Z)
