@@ -1,0 +1,1578 @@
+{
+  "uid": "spacetraders-systems",
+  "title": "SpaceTraders systems",
+  "description": "The systems the SpaceTraders bot knows, the command ship's exploring through jump gates, and what each system offers for mining, trading and ships (Gemberkoekje/projects SpaceTraders/PLAN.md slice 6.11).",
+  "tags": [
+    "spacetraders"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "graphTooltip": 1,
+  "refresh": "1m",
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "links": [
+    {
+      "title": "SpaceTraders",
+      "type": "link",
+      "url": "/grafana/d/spacetraders",
+      "icon": "dashboard"
+    },
+    {
+      "title": "SpaceTraders markets",
+      "type": "link",
+      "url": "/grafana/d/spacetraders-markets",
+      "icon": "dashboard"
+    }
+  ],
+  "annotations": {
+    "list": []
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "system",
+        "label": "System",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "query": "label_values(spacetraders_system_info{namespace=\"spacetraders\"}, system)",
+        "definition": "label_values(spacetraders_system_info{namespace=\"spacetraders\"}, system)",
+        "refresh": 2,
+        "sort": 1,
+        "multi": true,
+        "includeAll": true,
+        "options": [],
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Systems known",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "count(spacetraders_system_info{namespace=\"spacetraders\"})",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "Home, every system the command ship explored, and every system a gate it asked connects to.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          },
+          "unit": "none",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value"
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Explored",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 4,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "count(spacetraders_system_explored_timestamp_seconds{namespace=\"spacetraders\"}) or vector(0)",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "Systems whose every market and shipyard the command ship visited once; home counts once the explore plan runs.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          },
+          "unit": "none",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value"
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "To explore",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 7,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "count(spacetraders_system_info{namespace=\"spacetraders\", state=\"to_explore\"}) or vector(0)",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "Known systems behind a built gate that the command ship hasn't explored yet.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          },
+          "unit": "none",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value"
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Gates under construction",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 10,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "count(spacetraders_system_info{namespace=\"spacetraders\", state=\"gate_under_construction\"}) or vector(0)",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "Known systems whose gate isn't built: no jump to them until it is. The plan looks at them again hourly.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          },
+          "unit": "none",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value"
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Antimatter bought (24h)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 14,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(spacetraders_credits_spent_total{namespace=\"spacetraders\", category=\"AntimatterPurchase\"}[24h])) or vector(0)",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "Credits the jumps cost: each buys one ANTIMATTER at the gate it leaves.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          },
+          "unit": "none",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value"
+      }
+    },
+    {
+      "id": 6,
+      "type": "table",
+      "title": "Command ship",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (location, activity) (spacetraders_ship_info{namespace=\"spacetraders\"} and on (ship) max by (ship) (spacetraders_ship_status_since_timestamp_seconds{namespace=\"spacetraders\", role=\"COMMAND\"}))",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "Where the command ship is and what it does.",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true
+            },
+            "indexByName": {
+              "location": 0,
+              "activity": 1
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "showHeader": false,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "Systems",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (system, state, gate_state) (spacetraders_system_info{namespace=\"spacetraders\", system=~\"$system\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (system) (spacetraders_system_jumps_from_home{namespace=\"spacetraders\", system=~\"$system\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (system) (time() - spacetraders_system_explored_timestamp_seconds{namespace=\"spacetraders\", system=~\"$system\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "D",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (system) (spacetraders_system_facilities{namespace=\"spacetraders\", system=~\"$system\", kind=\"market\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "E",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (system) (spacetraders_system_facilities{namespace=\"spacetraders\", system=~\"$system\", kind=\"shipyard\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "F",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (system) (spacetraders_system_waypoints{namespace=\"spacetraders\", system=~\"$system\", type=~\"ASTEROID|ASTEROID_FIELD|ENGINEERED_ASTEROID\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "G",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (system) (spacetraders_system_waypoints{namespace=\"spacetraders\", system=~\"$system\", type=\"GAS_GIANT\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "H",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (system) (spacetraders_system_facilities{namespace=\"spacetraders\", system=~\"$system\", kind=\"uncharted\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "I",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (system) (spacetraders_system_trade_margin{namespace=\"spacetraders\", system=~\"$system\"})",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "Every system the bot knows: what the explore plan knows of it, how many jumps from home, when it was explored, and what is there. Its best trade margin is per unit, before fuel.",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value #A": true
+            },
+            "indexByName": {
+              "system": 0,
+              "state": 1,
+              "gate_state": 2,
+              "Value #B": 3,
+              "Value #C": 4,
+              "Value #D": 5,
+              "Value #E": 6,
+              "Value #F": 7,
+              "Value #G": 8,
+              "Value #H": 9,
+              "Value #I": 10
+            },
+            "renameByName": {
+              "gate_state": "gate",
+              "Value #B": "jumps",
+              "Value #C": "explored ago",
+              "Value #D": "markets",
+              "Value #E": "shipyards",
+              "Value #F": "asteroids",
+              "Value #G": "gas giants",
+              "Value #H": "uncharted",
+              "Value #I": "best margin"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "jumps"
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "minWidth": 60
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "state"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "home": {
+                        "text": "home",
+                        "color": "blue",
+                        "index": 0
+                      },
+                      "explored": {
+                        "text": "explored",
+                        "color": "green",
+                        "index": 1
+                      },
+                      "to_explore": {
+                        "text": "to explore",
+                        "color": "yellow",
+                        "index": 2
+                      },
+                      "gate_under_construction": {
+                        "text": "gate under construction",
+                        "color": "orange",
+                        "index": 3
+                      },
+                      "jump_refused": {
+                        "text": "jump refused (an hour)",
+                        "color": "red",
+                        "index": 4
+                      },
+                      "gate_unknown": {
+                        "text": "gate not looked at yet",
+                        "color": "text",
+                        "index": 5
+                      },
+                      "no_gate": {
+                        "text": "no gate",
+                        "color": "text",
+                        "index": 6
+                      },
+                      "cached": {
+                        "text": "cached",
+                        "color": "text",
+                        "index": 7
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 190
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "jumps"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "explored ago"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "s"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "markets"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "shipyards"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "asteroids"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gas giants"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "uncharted"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "best margin"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gate"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "active": {
+                        "text": "built",
+                        "index": 0
+                      },
+                      "under_construction": {
+                        "text": "under construction",
+                        "index": 1
+                      },
+                      "none": {
+                        "text": "no gate",
+                        "index": 2
+                      },
+                      "unknown": {
+                        "text": "not known",
+                        "index": 3
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 140
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 8,
+      "type": "table",
+      "title": "Mining and siphoning",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 0,
+        "y": 15
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (system, good) (spacetraders_system_gathering_sites{namespace=\"spacetraders\", system=~\"$system\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (system, good, market) (spacetraders_system_raw_good_price{namespace=\"spacetraders\", system=~\"$system\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (system, good) (spacetraders_system_raw_good_supply{namespace=\"spacetraders\", system=~\"$system\"})",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "What can be mined or siphoned in each system, and which ores and gases its markets buy: at how many asteroids (by their deposits) or gas giants, the best price a market pays and where, and the lowest supply among the markets that buy it. SCARCE pays a drone most.",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "system": 0,
+              "good": 1,
+              "Value #A": 2,
+              "Value #B": 3,
+              "market": 4,
+              "Value #C": 5
+            },
+            "renameByName": {
+              "Value #A": "sites",
+              "Value #B": "best price",
+              "market": "sold at",
+              "Value #C": "lowest supply"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "system"
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "minWidth": 60
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sites"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "best price"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "lowest supply"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "1": {
+                        "text": "SCARCE",
+                        "color": "red",
+                        "index": 0
+                      },
+                      "2": {
+                        "text": "LIMITED",
+                        "color": "orange",
+                        "index": 1
+                      },
+                      "3": {
+                        "text": "MODERATE",
+                        "color": "yellow",
+                        "index": 2
+                      },
+                      "4": {
+                        "text": "HIGH",
+                        "color": "green",
+                        "index": 3
+                      },
+                      "5": {
+                        "text": "ABUNDANT",
+                        "color": "dark-green",
+                        "index": 4
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "good"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 150
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sold at"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 110
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 9,
+      "type": "table",
+      "title": "Trades",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 12,
+        "y": 15
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (system, good, buy_at, sell_at) (spacetraders_system_trade_margin{namespace=\"spacetraders\", system=~\"$system\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (system, good, buy_at, sell_at) (spacetraders_system_trade_volume{namespace=\"spacetraders\", system=~\"$system\"})",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "The best trades within each system, one per good, the five best: buy where it is cheapest, sell where it pays most, margin per unit before fuel, and the units one trade moves (the smaller trade volume).",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "system": 0,
+              "good": 1,
+              "buy_at": 2,
+              "sell_at": 3,
+              "Value #A": 4,
+              "Value #B": 5
+            },
+            "renameByName": {
+              "buy_at": "buy at",
+              "sell_at": "sell at",
+              "Value #A": "margin",
+              "Value #B": "volume"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "margin",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "minWidth": 60
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "margin"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "volume"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "good"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "buy at"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sell at"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 110
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 10,
+      "type": "table",
+      "title": "Shipyards",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 0,
+        "y": 27
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (system, waypoint, ship_type) (spacetraders_shipyard_ship_type{namespace=\"spacetraders\", system=~\"$system\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (system, waypoint, ship_type) (spacetraders_shipyard_ship_price{namespace=\"spacetraders\", system=~\"$system\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (system, waypoint, ship_type) (spacetraders_shipyard_ship_supply{namespace=\"spacetraders\", system=~\"$system\"})",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "The ship types each shipyard sells, with price and supply as last seen there.",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value #A": true
+            },
+            "indexByName": {
+              "system": 0,
+              "waypoint": 1,
+              "ship_type": 2,
+              "Value #B": 3,
+              "Value #C": 4
+            },
+            "renameByName": {
+              "waypoint": "shipyard",
+              "ship_type": "ship type",
+              "Value #B": "price",
+              "Value #C": "supply"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "ship type"
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "minWidth": 60
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "price"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "supply"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "1": {
+                        "text": "SCARCE",
+                        "color": "red",
+                        "index": 0
+                      },
+                      "2": {
+                        "text": "LIMITED",
+                        "color": "orange",
+                        "index": 1
+                      },
+                      "3": {
+                        "text": "MODERATE",
+                        "color": "yellow",
+                        "index": 2
+                      },
+                      "4": {
+                        "text": "HIGH",
+                        "color": "green",
+                        "index": 3
+                      },
+                      "5": {
+                        "text": "ABUNDANT",
+                        "color": "dark-green",
+                        "index": 4
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "shipyard"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ship type"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 170
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 11,
+      "type": "table",
+      "title": "Gates",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 12,
+        "y": 27
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (system, to, state) (spacetraders_system_connection_info{namespace=\"spacetraders\", system=~\"$system\"} * on (to) group_left (state) label_replace(max by (system, state) (spacetraders_system_info{namespace=\"spacetraders\"}), \"to\", \"$1\", \"system\", \"(.*)\"))",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "Which systems each known gate connects to, and what is known of the system at the other end.",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true
+            },
+            "indexByName": {
+              "system": 0,
+              "to": 1,
+              "state": 2
+            },
+            "renameByName": {
+              "to": "connects to",
+              "state": "its state"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "system"
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "minWidth": 60
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "its state"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "home": {
+                        "text": "home",
+                        "color": "blue",
+                        "index": 0
+                      },
+                      "explored": {
+                        "text": "explored",
+                        "color": "green",
+                        "index": 1
+                      },
+                      "to_explore": {
+                        "text": "to explore",
+                        "color": "yellow",
+                        "index": 2
+                      },
+                      "gate_under_construction": {
+                        "text": "gate under construction",
+                        "color": "orange",
+                        "index": 3
+                      },
+                      "jump_refused": {
+                        "text": "jump refused (an hour)",
+                        "color": "red",
+                        "index": 4
+                      },
+                      "gate_unknown": {
+                        "text": "gate not looked at yet",
+                        "color": "text",
+                        "index": 5
+                      },
+                      "no_gate": {
+                        "text": "no gate",
+                        "color": "text",
+                        "index": 6
+                      },
+                      "cached": {
+                        "text": "cached",
+                        "color": "text",
+                        "index": 7
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "Systems over time",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 39
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "count(spacetraders_system_explored_timestamp_seconds{namespace=\"spacetraders\"})",
+          "range": true,
+          "legendFormat": "explored"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "count(spacetraders_system_info{namespace=\"spacetraders\", state=\"to_explore\"})",
+          "range": true,
+          "legendFormat": "to explore"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "count(spacetraders_system_info{namespace=\"spacetraders\", state=\"gate_under_construction\"})",
+          "range": true,
+          "legendFormat": "gate under construction"
+        }
+      ],
+      "description": "How exploring goes: systems explored, and those known but not explored yet.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 0
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": [
+            "min",
+            "max",
+            "lastNotNull"
+          ],
+          "sortBy": "Last *",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 13,
+      "type": "logs",
+      "title": "Exploring journal",
+      "datasource": {
+        "type": "loki",
+        "uid": "grafana-loki"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 49
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "grafana-loki"
+          },
+          "expr": "{namespace=\"spacetraders\"} | json EventKind, Plan, Reason, message=\"[\\\"@m\\\"]\" | EventKind=~\"Jumped|SystemExplored\" or Plan=\"Explore\" or Reason=\"jump_refused\" | line_format \"{{.message}}\""
+        }
+      ],
+      "description": "The explore plan's journal: jumps (with what the antimatter cost), systems explored, the plan taking the command ship and bringing it home, waits for credits, and jumps the API refused.",
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending"
+      }
+    }
+  ]
+}

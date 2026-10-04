@@ -21,6 +21,12 @@
       "type": "link",
       "url": "/grafana/d/spacetraders",
       "icon": "dashboard"
+    },
+    {
+      "title": "SpaceTraders systems",
+      "type": "link",
+      "url": "/grafana/d/spacetraders-systems",
+      "icon": "dashboard"
     }
   ],
   "templating": {
@@ -314,7 +320,7 @@
       },
       "gridPos": {
         "h": 9,
-        "w": 12,
+        "w": 24,
         "x": 0,
         "y": 4
       },
@@ -443,10 +449,10 @@
         "uid": "prometheus"
       },
       "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 4
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 13
       },
       "targets": [
         {
@@ -478,9 +484,39 @@
           "expr": "max by (waypoint, ship_type) (spacetraders_shipyard_ship_supply{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
           "instant": true,
           "format": "table"
+        },
+        {
+          "refId": "D",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (waypoint, ship_type) (spacetraders_shipyard_ship_fuel_capacity_units{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "E",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (waypoint, ship_type) (spacetraders_shipyard_ship_cargo_capacity_units{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "F",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (waypoint, ship_type, can, equipment) (spacetraders_shipyard_ship_info{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "instant": true,
+          "format": "table"
         }
       ],
-      "description": "Ship types per shipyard, with price and supply as last seen (empty until a ship has been there).",
+      "description": "Ship types per shipyard, as last seen; the details are empty until a ship has been there. Can do: what the ship could do in the fleet, judged as the fleet table's \"can do\" judges a ship: by its mounts, hold and tank, whichever plans are on (Survey, Mine, Siphon, Trade; none for a ship that can do none of them), but Probe for a probe, which the probe plan buys and flies. Price and supply: what the shipyard asks, and its supply. Fuel: what the tank holds. Cargo: what the holds take together. Equipment: its mounts, then its modules, without the MOUNT_ and MODULE_ prefixes, and without the cargo holds (cargo shows them) and crew quarters.",
       "transformations": [
         {
           "id": "merge",
@@ -491,18 +527,26 @@
           "options": {
             "excludeByName": {
               "Time": true,
-              "Value #A": true
+              "Value #A": true,
+              "Value #F": true
             },
             "indexByName": {
               "waypoint": 0,
               "ship_type": 1,
-              "Value #B": 2,
-              "Value #C": 3
+              "can": 2,
+              "Value #B": 3,
+              "Value #C": 4,
+              "Value #D": 5,
+              "Value #E": 6,
+              "equipment": 7
             },
             "renameByName": {
               "ship_type": "ship type",
+              "can": "can do",
               "Value #B": "price",
-              "Value #C": "supply"
+              "Value #C": "supply",
+              "Value #D": "fuel",
+              "Value #E": "cargo"
             }
           }
         },
@@ -533,6 +577,10 @@
               {
                 "id": "unit",
                 "value": "none"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
               }
             ]
           },
@@ -582,6 +630,98 @@
                 "value": {
                   "type": "color-text"
                 }
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "waypoint"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ship type"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 210
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "can do"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 220
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fuel"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "custom.width",
+                "value": 70
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cargo"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "custom.width",
+                "value": 70
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "equipment"
+            },
+            "properties": [
+              {
+                "id": "custom.inspect",
+                "value": true
               }
             ]
           }
@@ -604,7 +744,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 13
+        "y": 23
       },
       "targets": [
         {
@@ -851,7 +991,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 27
+        "y": 37
       },
       "targets": [
         {
@@ -912,7 +1052,7 @@
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 35
+        "y": 45
       },
       "targets": [
         {
@@ -1051,7 +1191,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 47
+        "y": 57
       },
       "panels": [
         {
@@ -1066,7 +1206,7 @@
             "h": 16,
             "w": 24,
             "x": 0,
-            "y": 48
+            "y": 58
           },
           "targets": [
             {
@@ -1135,7 +1275,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 48
+        "y": 58
       },
       "description": "To see, over time, how many units of an input we sell to a market against what happens to the supply, trade volume and price of the goods it makes, since nobody knows how many units of input make one of output, or how fast. Pick the market at the top.",
       "panels": []
@@ -1152,7 +1292,7 @@
         "h": 10,
         "w": 8,
         "x": 0,
-        "y": 49
+        "y": 59
       },
       "interval": "1h",
       "targets": [
@@ -1217,7 +1357,7 @@
         "h": 10,
         "w": 8,
         "x": 8,
-        "y": 49
+        "y": 59
       },
       "targets": [
         {
@@ -1271,7 +1411,7 @@
         "h": 10,
         "w": 8,
         "x": 16,
-        "y": 49
+        "y": 59
       },
       "targets": [
         {
