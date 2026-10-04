@@ -752,3 +752,33 @@ second probe of the run of 2026-10-04).
   and Roles keeps only the ships on the board. The three LogQL queries with `logcli --stdin` (v3.5.5) against lines in the
   bot's JSON: `[PICKAXE-1] MiningStarted: …` for a line with `ShipName`, unchanged without one, another run's left out. Not
   looked at in a browser: the column has no data until the build runs.
+
+## 2026-10-04 — SpaceTraders market tree: trade volumes
+
+Asked on 2026-10-04, after asking why the bot doesn't trade SHIP_PARTS, which the market tree showed bought for 2,870 and
+sold for 7,878, a difference of 5,008: "Oh right, not enough trade volume. Can you add the buyers trade volume to the
+grafana market tree part?" The trading plan trades only a full hold, in one purchase and one sale (Gemberkoekje/projects
+`SpaceTraders/PLAN.md` decision D56): a route counts only when both markets' trade volumes are at least the ship's free
+hold. The market tree showed the prices without the volumes, so a large difference looked tradeable when it wasn't.
+
+- **"Market tree: goods traded in $system"** on the markets dashboard has two more columns. **sell volume**, after
+  "sell for", is the buyer's: the trade volume at the market that pays most for the good ("sell at"). **buy volume**,
+  after "buy for", is the trade volume where the good is cheapest ("buy at"), as D56 needs both. Each is
+  `spacetraders_market_trade_volume` at the market the column beside it names, chosen the way that column chooses it:
+  `max by (good) (… and on (good, waypoint, reset_date) bottomk by (good) (1, …purchase_price… > 0))`, and `topk` of
+  the sell price for sell volume. `reset_date` in the join keeps two ticked runs apart; two pods during a rollout count
+  once.
+- **The description** says what the volumes are, and that the pair shown is traded only when both volumes are at least
+  the trader's free hold (D56); another pair, with a smaller difference, may be.
+- **Fixed widths for the short columns**, as in "Shipyards": 120 pixels for "buy at" and "sell at", 100 for the prices,
+  the volumes and the difference. At 1920 pixels every column fits, the longest "made from" lists included (before,
+  "ELECTRONICS, MICROPROCESSORS" was cut off). At 1440 with Grafana's menu docked the table scrolls sideways, as it
+  already did; on a phone it scrolls sideways, as the other tables do.
+- Uses the metrics the bot exports now: no new build needed. Dashboards reload without a Grafana restart.
+- Tested: the panel's six queries with `promtool test rules` (v2.55.1), taken verbatim from the JSON, against made-up
+  series: SHIP_PARTS made at one market (15 at once) and bought at two (6 and 13 at once), FABRICS and FUEL, a second pod
+  with a newer volume, an earlier run at the same waypoints, and another system and namespace, left out. With the join on
+  `good, waypoint` alone, two ticked runs mixed their volumes and the test failed. The panel in Grafana 11.6.1 against a
+  local Prometheus scraping the series from two pods, looked at in a browser at 1920, 1440 and 390 pixels wide: one row
+  per good, each volume the one of the market beside it, a tie for the cheapest market included. `scripts/validate.py`
+  with flux 2.5.1, kubeconform v0.8.0 and helm v3.17.1: no errors, no warnings.
