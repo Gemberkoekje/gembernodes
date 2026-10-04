@@ -1,0 +1,18 @@
+# The Tailscale subnet router (infrastructure/tailscale) is applied on its own and depends only on
+# its namespace: remote access keeps working, and can be repaired through Git, while infrastructure,
+# apps or ingress are failing, and a mistake here doesn't hold those up.
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: tailscale
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: namespaces
+  retryInterval: 30s
+  interval: 1m0s
+  path: ./infrastructure/tailscale
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system

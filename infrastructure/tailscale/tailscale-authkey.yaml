@@ -1,0 +1,9 @@
+# The Tailscale auth key the subnet router logs in with the first time (subnet-router.yaml). A
+# Password item: its password field becomes the key `password` of the Secret tailscale-authkey.
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: tailscale-authkey
+  namespace: tailscale
+spec:
+  itemPath: "vaults/Gembercluster/items/tailscale-authkey"
