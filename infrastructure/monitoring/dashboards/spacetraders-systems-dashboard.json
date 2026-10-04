@@ -123,7 +123,7 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
+        "w": 3,
         "x": 4,
         "y": 0
       },
@@ -174,8 +174,8 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 8,
+        "w": 3,
+        "x": 7,
         "y": 0
       },
       "targets": [
@@ -226,7 +226,7 @@
       "gridPos": {
         "h": 4,
         "w": 4,
-        "x": 12,
+        "x": 10,
         "y": 0
       },
       "targets": [
@@ -277,7 +277,7 @@
       "gridPos": {
         "h": 4,
         "w": 4,
-        "x": 16,
+        "x": 14,
         "y": 0
       },
       "targets": [
@@ -327,8 +327,8 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 20,
+        "w": 6,
+        "x": 18,
         "y": 0
       },
       "targets": [
@@ -510,7 +510,7 @@
               "Value #F": "asteroids",
               "Value #G": "gas giants",
               "Value #H": "uncharted",
-              "Value #I": "best trade margin"
+              "Value #I": "best margin"
             }
           }
         },
@@ -526,7 +526,11 @@
         }
       ],
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {
+            "minWidth": 60
+          }
+        },
         "overrides": [
           {
             "matcher": {
@@ -589,6 +593,10 @@
                 "value": {
                   "type": "color-text"
                 }
+              },
+              {
+                "id": "custom.width",
+                "value": 190
               }
             ]
           },
@@ -707,7 +715,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "best trade margin"
+              "options": "best margin"
             },
             "properties": [
               {
@@ -717,6 +725,44 @@
               {
                 "id": "unit",
                 "value": "none"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gate"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "active": {
+                        "text": "built",
+                        "index": 0
+                      },
+                      "under_construction": {
+                        "text": "under construction",
+                        "index": 1
+                      },
+                      "none": {
+                        "text": "no gate",
+                        "index": 2
+                      },
+                      "unknown": {
+                        "text": "not known",
+                        "index": 3
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 140
               }
             ]
           }
@@ -813,7 +859,11 @@
         }
       ],
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {
+            "minWidth": 60
+          }
+        },
         "overrides": [
           {
             "matcher": {
@@ -893,6 +943,30 @@
                 "value": {
                   "type": "color-text"
                 }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "good"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 150
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sold at"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 110
               }
             ]
           }
@@ -980,7 +1054,11 @@
         }
       ],
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {
+            "minWidth": 60
+          }
+        },
         "overrides": [
           {
             "matcher": {
@@ -1011,6 +1089,42 @@
               {
                 "id": "unit",
                 "value": "none"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "good"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "buy at"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sell at"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 110
               }
             ]
           }
@@ -1107,7 +1221,11 @@
         }
       ],
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {
+            "minWidth": 60
+          }
+        },
         "overrides": [
           {
             "matcher": {
@@ -1171,6 +1289,30 @@
                 "value": {
                   "type": "color-text"
                 }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "shipyard"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ship type"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 170
               }
             ]
           }
@@ -1243,7 +1385,11 @@
         }
       ],
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {
+            "minWidth": 60
+          }
+        },
         "overrides": [
           {
             "matcher": {
@@ -1325,7 +1471,7 @@
         "uid": "prometheus"
       },
       "gridPos": {
-        "h": 8,
+        "h": 10,
         "w": 24,
         "x": 0,
         "y": 39
@@ -1376,8 +1522,16 @@
       },
       "options": {
         "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": [
+            "min",
+            "max",
+            "lastNotNull"
+          ],
+          "sortBy": "Last *",
+          "sortDesc": true
         },
         "tooltip": {
           "mode": "multi"
@@ -1396,7 +1550,7 @@
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 47
+        "y": 49
       },
       "targets": [
         {
