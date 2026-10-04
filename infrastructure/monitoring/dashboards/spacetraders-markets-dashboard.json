@@ -1114,9 +1114,29 @@
           "expr": "max by (good) (spacetraders_market_sell_price{namespace=\"spacetraders\", system=\"$system\", reset_date=~\"$reset_date\"} > 0) - min by (good) (spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\", reset_date=~\"$reset_date\"} > 0)",
           "instant": true,
           "format": "table"
+        },
+        {
+          "refId": "E",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (good) (spacetraders_market_trade_volume{namespace=\"spacetraders\", system=\"$system\", reset_date=~\"$reset_date\"} and on (good, waypoint, reset_date) bottomk by (good) (1, spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\", reset_date=~\"$reset_date\"} > 0))",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "F",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (good) (spacetraders_market_trade_volume{namespace=\"spacetraders\", system=\"$system\", reset_date=~\"$reset_date\"} and on (good, waypoint, reset_date) topk by (good) (1, spacetraders_market_sell_price{namespace=\"spacetraders\", system=\"$system\", reset_date=~\"$reset_date\"} > 0))",
+          "instant": true,
+          "format": "table"
         }
       ],
-      "description": "The game's production chains for every good with a price in this system: what it is made from, and what is made from it. Raw goods are made from nothing (the game lists MACHINERY for some extracted goods). Then where it is cheapest to buy and where it sells best, at the prices last seen: the difference is what a unit earns before fuel; at 0 or below no market pays more than another charges.",
+      "description": "The game's production chains for every good with a price in this system: what it is made from, and what is made from it. Raw goods are made from nothing (the game lists MACHINERY for some extracted goods). Then where it is cheapest to buy and where it sells best, at the prices last seen, each with its trade volume: the most units one purchase or one sale at that market takes. The difference is what a unit earns before fuel; at 0 or below no market pays more than another charges. A trader buys its whole free hold in one purchase and sells it in one sale (D56), so the pair shown here is traded only when both volumes are at least the trader's free hold; another pair, with a smaller difference, may be.",
       "transformations": [
         {
           "id": "merge",
@@ -1136,17 +1156,21 @@
               "used_for": 2,
               "buy_at": 3,
               "Value #B": 4,
-              "sell_at": 5,
-              "Value #C": 6,
-              "Value #D": 7
+              "Value #E": 5,
+              "sell_at": 6,
+              "Value #C": 7,
+              "Value #F": 8,
+              "Value #D": 9
             },
             "renameByName": {
               "made_from": "made from",
               "used_for": "used for",
               "buy_at": "buy at",
               "Value #B": "buy for",
+              "Value #E": "buy volume",
               "sell_at": "sell at",
               "Value #C": "sell for",
+              "Value #F": "sell volume",
               "Value #D": "difference"
             }
           }
@@ -1165,6 +1189,86 @@
       "fieldConfig": {
         "defaults": {},
         "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "buy at"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "buy for"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "buy volume"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sell at"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sell for"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sell volume"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
           {
             "matcher": {
               "id": "byName",
@@ -1192,6 +1296,10 @@
                     }
                   ]
                 }
+              },
+              {
+                "id": "custom.width",
+                "value": 100
               }
             ]
           }
