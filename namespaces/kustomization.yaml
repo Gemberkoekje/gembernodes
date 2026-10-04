@@ -20,3 +20,4 @@ resources:
 - spacetraders-namespace.yaml
 - reflector-namespace.yaml
 - traefik-namespace.yaml
+- tailscale-namespace.yaml

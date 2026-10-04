@@ -1,0 +1,69 @@
+# A Tailscale subnet router: devices on the tailnet reach the cluster's LAN addresses through this
+# pod, so Grafana is at http://192.168.1.230/grafana from anywhere, the same URL as at home.
+# It runs in the cluster rather than on the nodes so it can be deployed and fixed through Git when
+# nobody can reach the LAN. Setup in Tailscale and 1Password: NOTES.md, 2026-10-04.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: subnet-router
+  namespace: tailscale
+  labels:
+    app: subnet-router
+spec:
+  replicas: 1
+  # Two pods on one state Secret would be the same tailnet device twice.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: subnet-router
+  template:
+    metadata:
+      labels:
+        app: subnet-router
+    spec:
+      serviceAccountName: subnet-router
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: tailscale
+          image: ghcr.io/tailscale/tailscale:v1.102.5
+          env:
+            - name: TS_HOSTNAME
+              value: gembercluster
+            # The nodes (.201-.203) and MetalLB's pool (.230-.239), not the whole 192.168.1.0/24:
+            # many other networks use that /24 too, and these narrower routes win over it on a
+            # phone or laptop that is on such a network.
+            - name: TS_ROUTES
+              value: 192.168.1.200/29,192.168.1.224/28
+            # Userspace networking needs no privileges and still routes. Traffic reaches the LAN
+            # from the pod IP, which grafana-internal's allowlist (10.0.0.0/8) accepts.
+            - name: TS_USERSPACE
+              value: "true"
+            # The device's keys live in this Secret, so restarts and reschedules (kured) keep the
+            # same tailnet device. Created by the pod; Flux doesn't manage it.
+            - name: TS_KUBE_SECRET
+              value: subnet-router-state
+            # Use the auth key only when there is no state yet: once logged in, the pod no longer
+            # needs it, so the key may expire or be single-use.
+            - name: TS_AUTH_ONCE
+              value: "true"
+            - name: TS_AUTHKEY
+              valueFrom:
+                secretKeyRef:
+                  name: tailscale-authkey
+                  key: password
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "64Mi"
+            limits:
+              memory: "256Mi"

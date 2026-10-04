@@ -610,3 +610,64 @@ construction plan and role for the home system's jump gate, and the metrics `spa
   local Prometheus scraping a gate under construction and then a complete one, looked at in a browser at desktop and
   phone width. `scripts/validate.py` with flux, kubeconform and helm: no errors, no warnings. Dashboards reload without
   a Grafana restart.
+
+## 2026-10-04 — Tailscale subnet router: Grafana from outside the LAN
+
+Asked on 2026-10-04, from away: reach Grafana remotely. Tailscale used to give access to the LAN and
+stopped working. It was never in this repository (nothing in Git or its history), so it was set up by
+hand, and with nobody on the LAN there was no way to look at it or restart it.
+
+- **A Tailscale subnet router in the cluster** (`infrastructure/tailscale/`): one pod, tailnet device
+  `gembercluster`, routing to `192.168.1.200/29` (the nodes, .201–.203) and `192.168.1.224/28`
+  (MetalLB's pool, .230–.239). From a device on the tailnet Grafana is at
+  `http://192.168.1.230/grafana`, the same URL (and `root_url`) as at home, so nothing in Grafana
+  changes. Postgres (.232) and SSH to the nodes should work the same way (not tried).
+- **Narrower routes than the LAN's /24 on purpose:** `192.168.1.0/24` is a common home network, and a
+  phone or laptop on such a network elsewhere would send .230 to its own LAN. The more specific routes
+  win there. Widen `TS_ROUTES` if more of the LAN is needed.
+- **In the cluster, not on the nodes:** Flux can deploy and repair it from Git with nobody home, which
+  is what was missing this time. The other side: it is down whenever the cluster is, where tailscaled
+  on the nodes would not be.
+- **Its own Flux Kustomization** (`clusters/home/tailscale-kustomization.yaml`), like
+  `system-upgrade-plans`, depending only on `namespaces`: it doesn't wait for infrastructure to be
+  Ready, and a mistake in it doesn't hold up the apps' deploys.
+- **State in a Secret** (`subnet-router-state`, `TS_KUBE_SECRET`) plus `TS_AUTH_ONCE`: restarts and
+  kured reschedules keep the same device, and the auth key is only used for the first login. The pod
+  creates the Secret and Flux doesn't manage it; deleting it (or the namespace) means a new auth key
+  and a new device.
+- **Userspace networking:** no privileges (UID 1000, all capabilities dropped). Connections to the LAN
+  leave from the pod IP, which grafana-internal's allowlist (`10.0.0.0/8`) accepts.
+- Image pinned to `ghcr.io/tailscale/tailscale:v1.102.5`, the newest stable tag on 2026-10-04.
+
+### Setup (before merging)
+
+1. Tailscale admin console → Settings → Keys → **Generate auth key**: Reusable on (a failed first start
+   can then simply retry), **Ephemeral off** (an ephemeral device is deleted when it's offline for a
+   while, e.g. during a reschedule, and could not come back), Pre-approved on if device approval is
+   enabled.
+2. 1Password, vault Gembercluster: a new **Password** item named `tailscale-authkey` with the key as its
+   password. The operator turns it into the Secret `tailscale-authkey`, key `password`.
+3. Merge. Flux applies it within a couple of minutes and the pod logs in once the Secret exists.
+4. Admin console → Machines → `gembercluster` → ⋯: **Edit route settings** and approve both routes, and
+   **Disable key expiry**. Untagged devices otherwise need a new login after 180 days, which for this
+   pod means a new auth key.
+5. On the phone or laptop: Tailscale on, with subnet routes allowed (the default on iOS, Android, macOS
+   and Windows; `--accept-routes` on Linux), then open `http://192.168.1.230/grafana`.
+
+If something is wrong the alert emails say so after 15 minutes ("Container crash-looping or failing to
+start"): `CreateContainerConfigError` means the Secret or its `password` key is missing (step 2),
+`CrashLoopBackOff` usually a rejected auth key (step 1; replace the key in 1Password and wait for the
+operator's 10-minute sync).
+
+```bash
+kubectl -n flux-system get kustomization tailscale
+kubectl -n tailscale get pods,secrets
+kubectl -n tailscale logs deploy/subnet-router
+```
+
+### The old setup
+
+Look it up in the admin console (Machines): its name and "Last seen" tell where it ran and when it
+stopped. An "Expired" badge means its key expired (180 days by default). Tailscale's docs say an admin
+can then use "Temporarily extend key" (30 minutes) and, within that time, "Disable key expiry", without
+touching the device, as long as it is still running. Remove the old device once `gembercluster` works.
