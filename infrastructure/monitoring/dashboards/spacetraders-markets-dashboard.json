@@ -1143,7 +1143,7 @@
           "format": "table"
         }
       ],
-      "description": "The game's production chains for every good with a price in this system: what it is made from, and what is made from it. Raw goods are made from nothing (the game lists MACHINERY for some extracted goods). Then where it is cheapest to buy and where it sells best, at the prices last seen, each with its trade volume: the most units one purchase or one sale at that market takes. The difference is what a unit earns before fuel; at 0 or below no market pays more than another charges. A trader buys its whole free hold in one purchase and sells it in one sale (D56), so the pair shown here is traded only when both volumes are at least the trader's free hold; another pair, with a smaller difference, may be.",
+      "description": "The game's production chains for every good with a price in this system: what it is made from, and what is made from it. Raw goods are made from nothing (the game lists MACHINERY for some extracted goods). Then where it is cheapest to buy and where it sells best, at the prices last seen, each with its trade volume: the most units one purchase or one sale at that market takes. The difference is what a unit earns before fuel; at 0 or below no market pays more than another charges. A trader buys a full hold in one purchase and sells it in one sale (D56), so the pair shown here is traded only when both volumes are at least the trader's free hold, or when the seller's supply is ABUNDANT (see Trade goods): then it carries the smaller volume, still in one purchase and one sale (D74). Another pair, with a smaller difference, may be traded instead.",
       "transformations": [
         {
           "id": "merge",

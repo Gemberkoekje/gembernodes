@@ -840,3 +840,14 @@ source, reading the bot's internal API with its API key.
   - `helm template` of chart 8.15.0 with these values: `[plugins] preinstall`, the data source with
     `$__env{SPACETRADERS_INTERNAL_API_KEY}` verbatim, and the optional key in the pod's environment.
     `scripts/validate.py` with flux 2.5.1, kubeconform v0.8.0 and helm v3.17.1: no errors, no warnings.
+
+## 2026-10-04 — SpaceTraders market tree: D74 in its description
+
+Gemberkoekje/projects `SpaceTraders/PLAN.md` slice 6.13 (decision D74, branch `ccr-f3fba810-ie3vm6`) lets a trader carry
+less than a full hold where the seller's supply is ABUNDANT: the smaller of the two trade volumes, still in one purchase
+and one sale. The market tree's description, merged an hour earlier (gembernodes#61), said a pair is traded only when both
+volumes reach the trader's free hold (D56). It now says the ABUNDANT case too.
+
+- Only the description changes; the queries and columns are as gembernodes#61 left them.
+- It describes the bot once the bot runs a build with slice 6.13: deploy that build with it.
+- Tested: `scripts/validate.py` with flux 2.5.1, kubeconform v0.8.0 and helm v3.17.1: no errors, no warnings.
