@@ -509,6 +509,46 @@ adds the metric `spacetraders_api_requests_initiated_total`).
   `scripts/validate.py` with flux, kubeconform and helm: no errors, no warnings. Dashboards reload without a Grafana
   restart.
 
+## 2026-10-04 — SpaceTraders systems dashboard (slice 6.11)
+
+Asked on 2026-10-04: "a systems grafana dashboard with a more wide view of which systems have been explored and what
+kind of mining, trading and shipyard opportunities it gives" (Gemberkoekje/projects `SpaceTraders/PLAN.md` slice 6.11,
+branch `ccr-c7061120-est7c1`, which adds the explore plan and the eleven `spacetraders_system_*` metrics).
+
+- A third SpaceTraders dashboard, "SpaceTraders systems" (`dashboards/spacetraders-systems-dashboard.json`, uid
+  `spacetraders-systems`), plus its `configMapGenerator` entry. The SpaceTraders and markets dashboards link to it, and
+  it links to them.
+- Variable: `system` (every system the bot knows, all by default). The tables keep to it; the counts at the top don't.
+- Panels:
+  - counts: systems known, explored (home counts once the explore plan runs), to explore, gates under construction, and
+    what the jumps' antimatter cost over 24 hours (`spacetraders_credits_spent_total{category="AntimatterPurchase"}`);
+    the command ship's location and activity next to them;
+  - "Systems": per system its state (in words, coloured), its gate (built, under construction, no gate, not known),
+    jumps from home, how long ago it was explored, markets, shipyards, asteroids, gas giants, uncharted waypoints and
+    its best trade margin; by jumps from home;
+  - "Mining and siphoning": per system and good, at how many waypoints it can be mined or siphoned, the best price a
+    market there pays for it and which, and the lowest supply among the markets that buy it (in words);
+  - "Trades": each system's five best trades within it, one per good: where to buy, where to sell, the margin per unit
+    before fuel, and the units one trade moves;
+  - "Shipyards": the ship types each shipyard sells, with price and supply as last seen (the existing shipyard metrics);
+  - "Gates": which systems each gate connects to, and what is known of the system at the other end;
+  - "Systems over time": explored, to explore and gates under construction, with a table legend (min, max, last);
+  - "Exploring journal": jumps with what the antimatter cost, systems explored, the plan taking the command ship and
+    bringing it home, its waits for credits, and refused jumps (Loki, parsed as the "Journal" panel is).
+- Table columns may shrink to 60 px, so every column fits at desktop width; text columns keep room for a whole symbol
+  (goods, waypoints, ship types). At 1280 px a few headers are cut short; on a phone the tables scroll sideways.
+- A system the command ship has only explored has no per-good market series (the bot keeps those to the systems its
+  ships work in), so the markets dashboard shows only its markets' refresh times; this dashboard's summary covers it.
+- Until the bot runs an image with slice 6.11, the panels on the new metrics say "No data" (the explored, to explore,
+  gates and antimatter counts read 0); the shipyards and the command ship show already. Until the explore plan is
+  switched on, only home is there.
+- Tested: the panel queries with `promtool test rules` (Prometheus 3.5.0) against synthetic series, 40 checks: five
+  systems (home, explored, to explore, gate under construction, jump refused), one or two systems picked, another
+  namespace left out, and an image without the metrics (the counts 0 or no data, the tables empty). The dashboard in
+  Grafana 11.6.1 against a local Prometheus scraping synthetic metrics while exploring advanced, looked at in a browser
+  at 1600 px, 1280 px and phone width; the journal panel had no Loki to read. `scripts/validate.py` with flux 2.5.1,
+  kubeconform and helm: no errors, no warnings. Dashboards reload without a Grafana restart.
+
 ## 2026-10-04 — SpaceTraders shipyards: tank, hold, can do and equipment
 
 Asked on 2026-10-04: "For spacetraders, can we add some more information to the shipyard ships? I'd like to know fuel
@@ -528,7 +568,8 @@ and `spacetraders_shipyard_ship_info{can,equipment}`).
   short columns have fixed widths, so equipment takes the rest: the command frigate's six items fit at 1920 pixels.
   On a narrower screen a long list is cut off; the eye icon that hovering over the cell shows opens all of it. On a
   phone the table scrolls sideways, as the other tables do.
-- Until the bot runs an image with slice 2.11, the four columns stay empty; the rest works now.
+- The same branch deploys the bot at projects main `851426a9` (slices 6.11, 2.11 and 6.6; the explore and construction
+  plans stay off until switched on). The four columns fill once the new pod runs, for each shipyard a ship has been at.
 - Tested: the panel's three new queries and the ship type query with `promtool test rules` (promtool v2.55.1) against
   synthetic series in two systems: each gives the expected rows, the other system left out, and a ship type listed
   without details only in the type query. The dashboard in Grafana 11.6.1 against a local Prometheus scraping the
