@@ -508,3 +508,30 @@ adds the metric `spacetraders_api_requests_initiated_total`).
   11.6.1 against a local Prometheus holding a day of synthetic data, looked at in a browser at desktop and phone width.
   `scripts/validate.py` with flux, kubeconform and helm: no errors, no warnings. Dashboards reload without a Grafana
   restart.
+
+## 2026-10-04 — SpaceTraders shipyards: tank, hold, can do and equipment
+
+Asked on 2026-10-04: "For spacetraders, can we add some more information to the shipyard ships? I'd like to know fuel
+tank size, cargo size, and which special bits they have (e.g. mining laser)", in Grafana, and "Also which role they can
+fulfill within my fleet" (Gemberkoekje/projects `SpaceTraders/PLAN.md` slice 2.11, branch `ccr-1e461fef-n6hydk`, which
+adds the metrics `spacetraders_shipyard_ship_fuel_capacity_units`, `spacetraders_shipyard_ship_cargo_capacity_units`
+and `spacetraders_shipyard_ship_info{can,equipment}`).
+
+- **"Shipyards"** on the markets dashboard has four more columns: **can do** (what the ship could do in the fleet,
+  judged as the fleet table's "can do" judges a ship, by its mounts, hold and tank: Survey, Mine, Siphon, Trade; `none`
+  for a ship that can do none of them; `Probe` for a probe, which the probe plan buys and flies), **fuel** (what the
+  tank holds), **cargo** (what the holds take together) and **equipment** (its mounts, then its modules, without the
+  `MOUNT_` and `MODULE_` prefixes, the cargo holds and the crew quarters, such as `MINING_LASER_I, MINERAL_PROCESSOR_I`).
+  Like price and supply, they show once a ship has been at the shipyard; a ship type listed without details keeps its
+  row, with these columns empty.
+- The table is full width now, under "Places", which is full width too; the panels below moved down by its 10 rows. The
+  short columns have fixed widths, so equipment takes the rest: the command frigate's six items fit at 1920 pixels.
+  On a narrower screen a long list is cut off; the eye icon that hovering over the cell shows opens all of it. On a
+  phone the table scrolls sideways, as the other tables do.
+- Until the bot runs an image with slice 2.11, the four columns stay empty; the rest works now.
+- Tested: the panel's three new queries and the ship type query with `promtool test rules` (promtool v2.55.1) against
+  synthetic series in two systems: each gives the expected rows, the other system left out, and a ship type listed
+  without details only in the type query. The dashboard in Grafana 11.6.1 against a local Prometheus scraping the
+  series as the bot writes them, looked at in a browser at desktop and phone width: one row per ship type, the
+  type-only row empty, every column readable at desktop width. `scripts/validate.py`'s syntax check: no errors (no
+  flux, kubeconform or helm here; CI runs the rest). Dashboards reload without a Grafana restart.
