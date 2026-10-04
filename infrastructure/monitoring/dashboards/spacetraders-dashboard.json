@@ -1192,6 +1192,306 @@
       }
     },
     {
+      "id": 43,
+      "type": "table",
+      "title": "Profit by ship",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 55
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (ship) (max by (ship, category) (spacetraders_ship_ledger_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\", category=~\"ShipPurchase|MountPurchase|ModulePurchase\"})) or 0 * max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) and on () count(spacetraders_ship_ledger_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (ship) (max by (ship, category) (spacetraders_ship_ledger_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\", category=\"TradeBuy\"})) or 0 * max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) and on () count(spacetraders_ship_ledger_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (ship) (max by (ship, category) (spacetraders_ship_ledger_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\", category=~\"TradeSell|MiningSell\"})) or 0 * max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) and on () count(spacetraders_ship_ledger_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "D",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (ship) (max by (ship, category) (spacetraders_ship_ledger_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\", category=\"FuelPurchase\"})) or 0 * max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) and on () count(spacetraders_ship_ledger_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "E",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (ship) (max by (ship, category) (spacetraders_ship_ledger_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\", category!~\"ShipPurchase|MountPurchase|ModulePurchase|TradeBuy|TradeSell|MiningSell|FuelPurchase\"})) or 0 * max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) and on () count(spacetraders_ship_ledger_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "F",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (ship) (max by (ship, category) (spacetraders_ship_ledger_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})) or 0 * max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) and on () count(spacetraders_ship_ledger_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "G",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (ship, name) (spacetraders_ship_name_info{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "What each ship has made since it joined the fleet, from the bot's ledger (SpaceTraders slice 2.16), most first. profit: the sum of the columns after it, in which a cost is negative: what the ship sold, less its purchase, the cargo it bought, its fuel and its other costs. purchase: what was paid for the ship and the mounts and modules installed on it; 0 for a starting ship. market buys: the cargo it bought to trade. market sales: everything it sold, traded, mined or siphoned. fuel: its refuels. other: the rest booked to the ship: antimatter for its jumps, the jump gate's materials it bought (supplying pays nothing, so building only costs, slice 6.6) and repairs. The contract's payments are the agent's, not a ship's, so no row has them: a ship that mines and delivers for the contract shows only its fuel here (Profit per hour by activity shows the contract's). A trader between its purchase and its sale shows the purchase until it sells. The ledger keeps 30 days, longer than a reset lasts. The bottom row: the fleet's totals.",
+      "options": {
+        "showHeader": true,
+        "footer": {
+          "show": true,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false,
+          "fields": ""
+        }
+      },
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value #G": true
+            },
+            "indexByName": {
+              "ship": 0,
+              "name": 1,
+              "Value #F": 2,
+              "Value #A": 3,
+              "Value #B": 4,
+              "Value #C": 5,
+              "Value #D": 6,
+              "Value #E": 7
+            },
+            "renameByName": {
+              "Value #A": "purchase",
+              "Value #B": "market buys",
+              "Value #C": "market sales",
+              "Value #D": "fuel",
+              "Value #E": "other",
+              "Value #F": "profit"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "profit",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ship"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 105
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "name"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "profit"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "locale"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "green",
+                      "value": 0
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "purchase"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "locale"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "market buys"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "locale"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "market sales"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "locale"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fuel"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "locale"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "other"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "locale"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "id": 38,
       "type": "table",
       "title": "Purchase order",
@@ -1203,7 +1503,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 55
+        "y": 65
       },
       "targets": [
         {
@@ -1316,7 +1616,7 @@
         "h": 10,
         "w": 8,
         "x": 0,
-        "y": 61
+        "y": 71
       },
       "targets": [
         {
@@ -1367,7 +1667,7 @@
         "h": 10,
         "w": 8,
         "x": 8,
-        "y": 61
+        "y": 71
       },
       "targets": [
         {
@@ -1432,7 +1732,7 @@
         "h": 10,
         "w": 8,
         "x": 16,
-        "y": 61
+        "y": 71
       },
       "targets": [
         {
@@ -1492,7 +1792,7 @@
         "h": 4,
         "w": 6,
         "x": 0,
-        "y": 71
+        "y": 81
       },
       "targets": [
         {
@@ -1537,7 +1837,7 @@
         "h": 4,
         "w": 6,
         "x": 6,
-        "y": 71
+        "y": 81
       },
       "targets": [
         {
@@ -1583,7 +1883,7 @@
         "h": 4,
         "w": 6,
         "x": 12,
-        "y": 71
+        "y": 81
       },
       "targets": [
         {
@@ -1629,7 +1929,7 @@
         "h": 4,
         "w": 6,
         "x": 18,
-        "y": 71
+        "y": 81
       },
       "targets": [
         {
@@ -1674,7 +1974,7 @@
         "h": 10,
         "w": 8,
         "x": 0,
-        "y": 75
+        "y": 85
       },
       "targets": [
         {
@@ -1739,7 +2039,7 @@
         "h": 10,
         "w": 8,
         "x": 8,
-        "y": 75
+        "y": 85
       },
       "targets": [
         {
@@ -1795,7 +2095,7 @@
         "h": 10,
         "w": 8,
         "x": 16,
-        "y": 75
+        "y": 85
       },
       "targets": [
         {
@@ -1849,7 +2149,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 85
+        "y": 95
       },
       "targets": [
         {
@@ -1885,7 +2185,7 @@
         "h": 7,
         "w": 14,
         "x": 0,
-        "y": 95
+        "y": 105
       },
       "targets": [
         {
@@ -1970,7 +2270,7 @@
         "h": 7,
         "w": 10,
         "x": 14,
-        "y": 95
+        "y": 105
       },
       "targets": [
         {
@@ -2031,7 +2331,7 @@
         "h": 8,
         "w": 6,
         "x": 0,
-        "y": 102
+        "y": 112
       },
       "targets": [
         {
@@ -2095,7 +2395,7 @@
         "h": 8,
         "w": 10,
         "x": 6,
-        "y": 102
+        "y": 112
       },
       "targets": [
         {
@@ -2232,7 +2532,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 102
+        "y": 112
       },
       "targets": [
         {
@@ -2292,7 +2592,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 110
+        "y": 120
       },
       "targets": [
         {
@@ -2436,7 +2736,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 120
+        "y": 130
       },
       "targets": [
         {
@@ -2497,7 +2797,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 120
+        "y": 130
       },
       "targets": [
         {
@@ -2587,7 +2887,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 130
+        "y": 140
       },
       "targets": [
         {
@@ -2648,7 +2948,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 130
+        "y": 140
       },
       "targets": [
         {
@@ -2714,7 +3014,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 140
+        "y": 150
       },
       "targets": [
         {
@@ -2789,7 +3089,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 140
+        "y": 150
       },
       "targets": [
         {
@@ -2828,7 +3128,7 @@
         "h": 20,
         "w": 24,
         "x": 0,
-        "y": 148
+        "y": 158
       },
       "targets": [
         {
@@ -3032,7 +3332,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 168
+        "y": 178
       },
       "targets": [
         {
@@ -3126,7 +3426,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 176
+        "y": 186
       },
       "targets": [
         {
@@ -3162,7 +3462,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 190
+        "y": 200
       },
       "targets": [
         {
