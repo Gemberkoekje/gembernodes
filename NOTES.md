@@ -725,3 +725,30 @@ runs apart.
   identically, 11 differed only by the seconds between the two queries, and "Log lines per hour" answered 675 both ways
   once it kept the lines without a run. Not yet looked at in a browser: the picker has no values until the bot's build
   runs.
+
+## 2026-10-04 — SpaceTraders ship names
+
+Asked on 2026-10-04: "SHIPS are now named by the game in ascending order. Can we make custom names within the API which
+should be type-number … Bonus points if there's a list of relevant names for each of the types, one of which is picked per
+reset to call that type" (Gemberkoekje/projects `SpaceTraders/PLAN.md` slice 2.14 and decision D72, branch
+`claude/dreamy-albattani-zo7njw`, which adds `spacetraders_ship_name_info{ship,name,type}` and the property `ShipName` on
+every log line about a ship). The API can't rename a ship, so the name is the bot's own, shown beside the game's symbol:
+one name per ship type each reset, from a list per type, numbered in the order the ships joined the fleet (MARINER-2 is the
+second probe of the run of 2026-10-04).
+
+- **Fleet** and **Roles** on the SpaceTraders dashboard have a **name** column after **ship**:
+  `max by (ship, name) (spacetraders_ship_name_info{…})`, merged on `ship` as the other columns are; in Roles only for the
+  ships on the board (`and on (ship)` the role series), as its "can do" column is.
+- **The journals** (the journal and the survey journal on the SpaceTraders dashboard, the exploring journal on the systems
+  dashboard) start a line about a ship with its name in brackets: `[PICKAXE-1] MiningStarted: ship SPECTER-3 mines …`
+  (`| json …, ShipName, … | line_format "{{ if .ShipName }}[{{ .ShipName }}] {{ end }}{{ .message }}"`). A line about no
+  ship reads as before.
+- **The `ship` label and `ShipSymbol` stay the game's symbol,** so every other panel, the alert rules and the links between
+  the dashboards work as they did.
+- **Until the bot runs a build with slice 2.14,** the column is empty and no journal line has a name: deploy that build
+  with these dashboards.
+- Tested: `scripts/validate.py` with flux 2.5.1, kubeconform v0.8.0 and helm v3.17.1: no errors, no warnings. The two
+  PromQL queries with `promtool test rules` (v2.55.1) against made-up series: the picker leaves another run's names out,
+  and Roles keeps only the ships on the board. The three LogQL queries with `logcli --stdin` (v3.5.5) against lines in the
+  bot's JSON: `[PICKAXE-1] MiningStarted: …` for a line with `ShipName`, unchanged without one, another run's left out. Not
+  looked at in a browser: the column has no data until the build runs.
