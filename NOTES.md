@@ -695,3 +695,33 @@ label `next_run` to `spacetraders_setting_info`).
   with the seed's settings as test data and three next-run values changed, looked at in a browser at desktop and phone
   width: the columns setting, value, next run and what it does, on and off in both. `scripts/validate.py` with flux
   2.5.1, kubeconform v0.8.0 and helm v3.17.1: no errors, no warnings. Dashboards reload without a Grafana restart.
+
+## 2026-10-04 — SpaceTraders dashboards per server reset
+
+Asked on 2026-10-04, after the server reset: "Can we key all the Grafana data off the agent ID (or something else that's
+different between resets) so data does not mix between different agents/different resets?", with the reset date as the
+key, on all three dashboards (Gemberkoekje/projects `SpaceTraders/PLAN.md` slice 2.13 and decision D70, branch
+`claude/spacetraders-run-label`, which puts the label `reset_date` on every `spacetraders_*` series and the property
+`ResetDate` on every log line). The bot registers the same symbol after every reset, so only the reset date tells two
+runs apart.
+
+- **A "Reset" picker** is the first variable of the SpaceTraders, markets and systems dashboards: the `reset_date` values of
+  `spacetraders_agent_credits` in the time range, newest first, so a dashboard opens on the run that runs now. It is
+  multi-value without "All": tick several to compare runs.
+- **Every Prometheus query** filters on it (`reset_date=~"$reset_date"` in each selector of a `spacetraders_*` metric),
+  the markets and systems pickers too, so their lists hold only that run's systems, markets and goods. An `increase()`, an
+  `offset 1h` or a table over the range no longer adds two runs up.
+- **The Loki queries:** the journal, the survey journal, the exploring journal and the "Setting changes" markers keep the
+  chosen run's lines (`| json …, ResetDate | ResetDate=~"$reset_date"`). "Errors" keeps them and the lines that carry no
+  run: the web UI's, the init container's, and a start's first lines before the agent is known. "Log lines per hour"
+  counts those too (`drop __error__`), as the log-volume alert does.
+- **Left unfiltered:** the "Bot" stat (`up` is Prometheus's own series, without the label) and the "Server resets"
+  markers, the line between two runs. The alert rules don't change: they look at what the bot reports now.
+- **The links between the three dashboards pass the picker on** (`includeVars`), and the system with it.
+- **Data from before the deploy has no reset date**, so the picker can't show it: the run of 2026-10-04 shows from the
+  deploy of the bot's build with slice 2.13 on. Deploy that build with these dashboards. Until then the picker is empty.
+- Tested against the cluster's Prometheus and Loki through port-forwards, read-only: every changed query, with the picker
+  matching anything, against the query as it was. All 131 changed queries ran, the pickers' included: 119 answered
+  identically, 11 differed only by the seconds between the two queries, and "Log lines per hour" answered 675 both ways
+  once it kept the lines without a run. Not yet looked at in a browser: the picker has no values until the bot's build
+  runs.

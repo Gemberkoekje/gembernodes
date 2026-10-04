@@ -19,13 +19,15 @@
       "title": "SpaceTraders markets",
       "type": "link",
       "url": "/grafana/d/spacetraders-markets",
-      "icon": "dashboard"
+      "icon": "dashboard",
+      "includeVars": true
     },
     {
       "title": "SpaceTraders systems",
       "type": "link",
       "url": "/grafana/d/spacetraders-systems",
-      "icon": "dashboard"
+      "icon": "dashboard",
+      "includeVars": true
     }
   ],
   "annotations": {
@@ -50,7 +52,7 @@
         },
         "enable": true,
         "iconColor": "blue",
-        "expr": "{namespace=\"spacetraders\"} | json EventKind, Setting, OldValue, NewValue | EventKind=\"SettingChanged\"",
+        "expr": "{namespace=\"spacetraders\"} | json EventKind, Setting, OldValue, NewValue, ResetDate | EventKind=\"SettingChanged\" | ResetDate=~\"$reset_date\"",
         "titleFormat": "Setting changed",
         "textFormat": "{{Setting}}: {{OldValue}} → {{NewValue}}",
         "tagKeys": "Setting"
@@ -91,7 +93,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max(spacetraders_agent_credits{namespace=\"spacetraders\"})",
+          "expr": "max(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "instant": true
         }
       ],
@@ -136,7 +138,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(max(spacetraders_agent_credits{namespace=\"spacetraders\"}) + (sum(max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\"})) or vector(0)) + (sum(max by (ship, good) (spacetraders_ship_cargo_units{namespace=\"spacetraders\"}) * on (good) group_left () avg by (good) (spacetraders_market_sell_price{namespace=\"spacetraders\"})) or vector(0))) - (max(spacetraders_agent_credits{namespace=\"spacetraders\"} offset 1h) + (sum(max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\"} offset 1h)) or vector(0)) + (sum(max by (ship, good) (spacetraders_ship_cargo_units{namespace=\"spacetraders\"} offset 1h) * on (good) group_left () avg by (good) (spacetraders_market_sell_price{namespace=\"spacetraders\"} offset 1h)) or vector(0)))",
+          "expr": "(max(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) + (sum(max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})) or vector(0)) + (sum(max by (ship, good) (spacetraders_ship_cargo_units{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) * on (good) group_left () avg by (good) (spacetraders_market_sell_price{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})) or vector(0))) - (max(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"} offset 1h) + (sum(max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"} offset 1h)) or vector(0)) + (sum(max by (ship, good) (spacetraders_ship_cargo_units{namespace=\"spacetraders\", reset_date=~\"$reset_date\"} offset 1h) * on (good) group_left () avg by (good) (spacetraders_market_sell_price{namespace=\"spacetraders\", reset_date=~\"$reset_date\"} offset 1h)) or vector(0)))",
           "instant": true
         }
       ],
@@ -195,7 +197,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max(spacetraders_server_next_reset_timestamp_seconds{namespace=\"spacetraders\"}) * 1000",
+          "expr": "max(spacetraders_server_next_reset_timestamp_seconds{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) * 1000",
           "instant": true
         }
       ],
@@ -241,7 +243,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max(spacetraders_db_size_bytes{namespace=\"spacetraders\"})",
+          "expr": "max(spacetraders_db_size_bytes{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "instant": true
         }
       ],
@@ -304,7 +306,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(spacetraders_anomaly_active{namespace=\"spacetraders\"}) or vector(0)",
+          "expr": "sum(spacetraders_anomaly_active{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) or vector(0)",
           "instant": true
         }
       ],
@@ -434,7 +436,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max(spacetraders_agent_credits{namespace=\"spacetraders\"})",
+          "expr": "max(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "legendFormat": "credits"
         },
         {
@@ -443,7 +445,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max(spacetraders_credit_reserve{namespace=\"spacetraders\"})",
+          "expr": "max(spacetraders_credit_reserve{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "legendFormat": "reserve a ship purchase leaves"
         }
       ],
@@ -498,7 +500,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(max(spacetraders_agent_credits{namespace=\"spacetraders\"}) + (sum(max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\"})) or vector(0)) + (sum(max by (ship, good) (spacetraders_ship_cargo_units{namespace=\"spacetraders\"}) * on (good) group_left () avg by (good) (spacetraders_market_sell_price{namespace=\"spacetraders\"})) or vector(0))) - (max(spacetraders_agent_credits{namespace=\"spacetraders\"} offset 1h) + (sum(max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\"} offset 1h)) or vector(0)) + (sum(max by (ship, good) (spacetraders_ship_cargo_units{namespace=\"spacetraders\"} offset 1h) * on (good) group_left () avg by (good) (spacetraders_market_sell_price{namespace=\"spacetraders\"} offset 1h)) or vector(0)))",
+          "expr": "(max(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) + (sum(max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})) or vector(0)) + (sum(max by (ship, good) (spacetraders_ship_cargo_units{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) * on (good) group_left () avg by (good) (spacetraders_market_sell_price{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})) or vector(0))) - (max(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"} offset 1h) + (sum(max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"} offset 1h)) or vector(0)) + (sum(max by (ship, good) (spacetraders_ship_cargo_units{namespace=\"spacetraders\", reset_date=~\"$reset_date\"} offset 1h) * on (good) group_left () avg by (good) (spacetraders_market_sell_price{namespace=\"spacetraders\", reset_date=~\"$reset_date\"} offset 1h)) or vector(0)))",
           "legendFormat": "value now minus an hour ago"
         }
       ],
@@ -552,7 +554,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max(spacetraders_agent_credits{namespace=\"spacetraders\"})",
+          "expr": "max(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "legendFormat": "credits"
         },
         {
@@ -561,7 +563,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\"}))",
+          "expr": "sum(max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}))",
           "legendFormat": "ships and equipment"
         },
         {
@@ -570,7 +572,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(max by (ship, good) (spacetraders_ship_cargo_units{namespace=\"spacetraders\"}) * on (good) group_left () avg by (good) (spacetraders_market_sell_price{namespace=\"spacetraders\"})) or (max(spacetraders_agent_credits{namespace=\"spacetraders\"}) * 0)",
+          "expr": "sum(max by (ship, good) (spacetraders_ship_cargo_units{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) * on (good) group_left () avg by (good) (spacetraders_market_sell_price{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})) or (max(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) * 0)",
           "legendFormat": "cargo"
         }
       ],
@@ -630,7 +632,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(sum by (activity) (increase(spacetraders_trip_profit_credits_total{namespace=\"spacetraders\"}[1h])) or (sum by (activity) (increase(spacetraders_trip_loss_credits_total{namespace=\"spacetraders\"}[1h])) * 0)) - (sum by (activity) (increase(spacetraders_trip_loss_credits_total{namespace=\"spacetraders\"}[1h])) or (sum by (activity) (increase(spacetraders_trip_profit_credits_total{namespace=\"spacetraders\"}[1h])) * 0))",
+          "expr": "(sum by (activity) (increase(spacetraders_trip_profit_credits_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[1h])) or (sum by (activity) (increase(spacetraders_trip_loss_credits_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[1h])) * 0)) - (sum by (activity) (increase(spacetraders_trip_loss_credits_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[1h])) or (sum by (activity) (increase(spacetraders_trip_profit_credits_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[1h])) * 0))",
           "interval": "1h",
           "legendFormat": "{{activity}}"
         }
@@ -689,7 +691,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (source) (increase(spacetraders_credits_earned_total{namespace=\"spacetraders\"}[1h]))",
+          "expr": "sum by (source) (increase(spacetraders_credits_earned_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[1h]))",
           "legendFormat": "{{source}}"
         }
       ],
@@ -750,7 +752,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (category) (increase(spacetraders_credits_spent_total{namespace=\"spacetraders\"}[1h]))",
+          "expr": "sum by (category) (increase(spacetraders_credits_spent_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[1h]))",
           "legendFormat": "{{category}}"
         }
       ],
@@ -811,7 +813,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (ship, role, state, goal, reason) (time() - spacetraders_ship_status_since_timestamp_seconds{namespace=\"spacetraders\"})",
+          "expr": "max by (ship, role, state, goal, reason) (time() - spacetraders_ship_status_since_timestamp_seconds{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -821,7 +823,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (ship, location, activity) (spacetraders_ship_info{namespace=\"spacetraders\"})",
+          "expr": "max by (ship, location, activity) (spacetraders_ship_info{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -831,7 +833,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (ship) (spacetraders_ship_arrival_timestamp_seconds{namespace=\"spacetraders\"}) - time()",
+          "expr": "max by (ship) (spacetraders_ship_arrival_timestamp_seconds{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) - time()",
           "instant": true,
           "format": "table"
         },
@@ -841,7 +843,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (ship) (spacetraders_ship_cargo_units{namespace=\"spacetraders\"}) or 0 * max by (ship) (spacetraders_ship_cargo_capacity_units{namespace=\"spacetraders\"})",
+          "expr": "sum by (ship) (spacetraders_ship_cargo_units{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) or 0 * max by (ship) (spacetraders_ship_cargo_capacity_units{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -851,7 +853,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (ship) (spacetraders_ship_cargo_capacity_units{namespace=\"spacetraders\"})",
+          "expr": "max by (ship) (spacetraders_ship_cargo_capacity_units{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -861,7 +863,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "round(sum by (ship) (increase(spacetraders_extracted_units_total{namespace=\"spacetraders\"}[$__range])))",
+          "expr": "round(sum by (ship) (increase(spacetraders_extracted_units_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[$__range])))",
           "instant": true,
           "format": "table"
         },
@@ -871,7 +873,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (ship, can) (spacetraders_ship_capabilities_info{namespace=\"spacetraders\"})",
+          "expr": "max by (ship, can) (spacetraders_ship_capabilities_info{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         }
@@ -1016,7 +1018,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (ship, role, reason) (spacetraders_ship_role_info{namespace=\"spacetraders\"})",
+          "expr": "max by (ship, role, reason) (spacetraders_ship_role_info{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -1026,7 +1028,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (ship) (spacetraders_ship_role_credits_per_hour{namespace=\"spacetraders\", role=\"Mine\"})",
+          "expr": "max by (ship) (spacetraders_ship_role_credits_per_hour{namespace=\"spacetraders\", role=\"Mine\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -1036,7 +1038,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (ship) (spacetraders_ship_role_credits_per_hour{namespace=\"spacetraders\", role=\"Siphon\"})",
+          "expr": "max by (ship) (spacetraders_ship_role_credits_per_hour{namespace=\"spacetraders\", role=\"Siphon\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -1046,7 +1048,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (ship) (spacetraders_ship_role_credits_per_hour{namespace=\"spacetraders\", role=\"Trade\"})",
+          "expr": "max by (ship) (spacetraders_ship_role_credits_per_hour{namespace=\"spacetraders\", role=\"Trade\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -1056,7 +1058,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (ship, can) (spacetraders_ship_capabilities_info{namespace=\"spacetraders\"}) and on (ship) max by (ship) (spacetraders_ship_role_info{namespace=\"spacetraders\"})",
+          "expr": "max by (ship, can) (spacetraders_ship_capabilities_info{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) and on (ship) max by (ship) (spacetraders_ship_role_info{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         }
@@ -1179,7 +1181,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (position, tier, plan, ship_type, shipyard) (spacetraders_purchase_need_credits{namespace=\"spacetraders\"})",
+          "expr": "max by (position, tier, plan, ship_type, shipyard) (spacetraders_purchase_need_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -1189,7 +1191,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (position, tier, plan, ship_type, shipyard) (spacetraders_purchase_need_credits{namespace=\"spacetraders\"}) + on () group_left () max(spacetraders_credit_reserve{namespace=\"spacetraders\"})",
+          "expr": "max by (position, tier, plan, ship_type, shipyard) (spacetraders_purchase_need_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) + on () group_left () max(spacetraders_credit_reserve{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         }
@@ -1292,7 +1294,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (ship, good) (spacetraders_ship_cargo_units{namespace=\"spacetraders\"})",
+          "expr": "max by (ship, good) (spacetraders_ship_cargo_units{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "legendFormat": "{{ship}} {{good}}"
         }
@@ -1343,7 +1345,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (ship, good) (increase(spacetraders_extracted_units_total{namespace=\"spacetraders\"}[1h]))",
+          "expr": "sum by (ship, good) (increase(spacetraders_extracted_units_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[1h]))",
           "legendFormat": "{{ship}} {{good}} mined"
         },
         {
@@ -1352,7 +1354,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (ship, good) (increase(spacetraders_jettisoned_units_total{namespace=\"spacetraders\"}[1h]))",
+          "expr": "sum by (ship, good) (increase(spacetraders_jettisoned_units_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[1h]))",
           "legendFormat": "{{ship}} {{good}} jettisoned"
         }
       ],
@@ -1408,7 +1410,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (role, state) (spacetraders_ships{namespace=\"spacetraders\"}) > 0",
+          "expr": "sum by (role, state) (spacetraders_ships{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) > 0",
           "legendFormat": "{{role}} {{state}}"
         }
       ],
@@ -1468,7 +1470,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(spacetraders_surveys_taken_total{namespace=\"spacetraders\"}[24h]))",
+          "expr": "sum(increase(spacetraders_surveys_taken_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[24h]))",
           "instant": true
         }
       ],
@@ -1513,7 +1515,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(spacetraders_surveys_ended_total{namespace=\"spacetraders\",used=\"false\"}[24h])) / sum(increase(spacetraders_surveys_ended_total{namespace=\"spacetraders\"}[24h]))",
+          "expr": "sum(increase(spacetraders_surveys_ended_total{namespace=\"spacetraders\",used=\"false\", reset_date=~\"$reset_date\"}[24h])) / sum(increase(spacetraders_surveys_ended_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[24h]))",
           "instant": true
         }
       ],
@@ -1559,7 +1561,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(spacetraders_extractions_total{namespace=\"spacetraders\",surveyed=\"true\"}[24h])) / sum(increase(spacetraders_extractions_total{namespace=\"spacetraders\"}[24h]))",
+          "expr": "sum(increase(spacetraders_extractions_total{namespace=\"spacetraders\",surveyed=\"true\", reset_date=~\"$reset_date\"}[24h])) / sum(increase(spacetraders_extractions_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[24h]))",
           "instant": true
         }
       ],
@@ -1605,7 +1607,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(max by (waypoint, used) (spacetraders_surveys_active{namespace=\"spacetraders\"}))",
+          "expr": "sum(max by (waypoint, used) (spacetraders_surveys_active{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}))",
           "instant": true
         }
       ],
@@ -1650,7 +1652,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(increase(spacetraders_surveys_taken_total{namespace=\"spacetraders\"}[1h]))",
+          "expr": "sum(increase(spacetraders_surveys_taken_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[1h]))",
           "legendFormat": "taken"
         },
         {
@@ -1659,7 +1661,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (reason, used) (increase(spacetraders_surveys_ended_total{namespace=\"spacetraders\"}[1h]))",
+          "expr": "sum by (reason, used) (increase(spacetraders_surveys_ended_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[1h]))",
           "legendFormat": "ended: {{reason}}, used {{used}}"
         }
       ],
@@ -1715,7 +1717,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (waypoint, used) (max by (waypoint, used) (spacetraders_surveys_active{namespace=\"spacetraders\"}))",
+          "expr": "sum by (waypoint, used) (max by (waypoint, used) (spacetraders_surveys_active{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}))",
           "legendFormat": "{{waypoint}}, used {{used}}"
         }
       ],
@@ -1771,7 +1773,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (surveyed) (increase(spacetraders_extractions_total{namespace=\"spacetraders\"}[1h]))",
+          "expr": "sum by (surveyed) (increase(spacetraders_extractions_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[1h]))",
           "legendFormat": "with a survey: {{surveyed}}"
         }
       ],
@@ -1825,7 +1827,7 @@
             "type": "loki",
             "uid": "grafana-loki"
           },
-          "expr": "{namespace=\"spacetraders\"} | json EventKind, message=\"[\\\"@m\\\"]\" | EventKind=~\"Surveyed|SurveyEnded\" | line_format \"{{.message}}\""
+          "expr": "{namespace=\"spacetraders\"} | json EventKind, ResetDate, message=\"[\\\"@m\\\"]\" | EventKind=~\"Surveyed|SurveyEnded\" | ResetDate=~\"$reset_date\" | line_format \"{{.message}}\""
         }
       ],
       "description": "Every survey taken (deposits, size, expiry) and every survey that ended, why, and after how many extractions. Open a line for its properties: Signature, WaypointSymbol, Extractions.",
@@ -1861,7 +1863,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (contract, trade_symbol) (spacetraders_contract_units_required{namespace=\"spacetraders\"})",
+          "expr": "max by (contract, trade_symbol) (spacetraders_contract_units_required{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -1871,7 +1873,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (contract, trade_symbol) (spacetraders_contract_units_fulfilled{namespace=\"spacetraders\"})",
+          "expr": "max by (contract, trade_symbol) (spacetraders_contract_units_fulfilled{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -1881,7 +1883,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(max by (contract, trade_symbol) (spacetraders_contract_units_required{namespace=\"spacetraders\"}) * 0 + on (contract) group_left () max by (contract) (spacetraders_contract_deadline_timestamp_seconds{namespace=\"spacetraders\"})) * 1000",
+          "expr": "(max by (contract, trade_symbol) (spacetraders_contract_units_required{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) * 0 + on (contract) group_left () max by (contract) (spacetraders_contract_deadline_timestamp_seconds{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})) * 1000",
           "instant": true,
           "format": "table"
         }
@@ -1946,7 +1948,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "100 * max by (contract, trade_symbol) (spacetraders_contract_units_fulfilled{namespace=\"spacetraders\"}) / max by (contract, trade_symbol) (spacetraders_contract_units_required{namespace=\"spacetraders\"})",
+          "expr": "100 * max by (contract, trade_symbol) (spacetraders_contract_units_fulfilled{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) / max by (contract, trade_symbol) (spacetraders_contract_units_required{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "legendFormat": "{{contract}} {{trade_symbol}}",
           "instant": true
         }
@@ -2007,7 +2009,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "100 * sum by (site) (max by (site, trade_symbol) (spacetraders_construction_units_fulfilled{namespace=\"spacetraders\"})) / sum by (site) (max by (site, trade_symbol) (spacetraders_construction_units_required{namespace=\"spacetraders\"}))",
+          "expr": "100 * sum by (site) (max by (site, trade_symbol) (spacetraders_construction_units_fulfilled{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})) / sum by (site) (max by (site, trade_symbol) (spacetraders_construction_units_required{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}))",
           "legendFormat": "{{site}}",
           "instant": true
         }
@@ -2071,7 +2073,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (site, trade_symbol) (spacetraders_construction_units_required{namespace=\"spacetraders\"})",
+          "expr": "max by (site, trade_symbol) (spacetraders_construction_units_required{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -2081,7 +2083,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (site, trade_symbol) (spacetraders_construction_units_fulfilled{namespace=\"spacetraders\"})",
+          "expr": "max by (site, trade_symbol) (spacetraders_construction_units_fulfilled{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -2091,7 +2093,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (site, trade_symbol) (spacetraders_construction_units_required{namespace=\"spacetraders\"}) - max by (site, trade_symbol) (spacetraders_construction_units_fulfilled{namespace=\"spacetraders\"})",
+          "expr": "max by (site, trade_symbol) (spacetraders_construction_units_required{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) - max by (site, trade_symbol) (spacetraders_construction_units_fulfilled{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         }
@@ -2208,7 +2210,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "100 * max by (site, trade_symbol) (spacetraders_construction_units_fulfilled{namespace=\"spacetraders\"}) / max by (site, trade_symbol) (spacetraders_construction_units_required{namespace=\"spacetraders\"})",
+          "expr": "100 * max by (site, trade_symbol) (spacetraders_construction_units_fulfilled{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) / max by (site, trade_symbol) (spacetraders_construction_units_required{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "legendFormat": "{{trade_symbol}}",
           "instant": true
         }
@@ -2268,7 +2270,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(spacetraders_api_requests_initiated_total{namespace=\"spacetraders\"}[5m]))",
+          "expr": "sum(rate(spacetraders_api_requests_initiated_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[5m]))",
           "legendFormat": "initiated"
         },
         {
@@ -2277,7 +2279,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(spacetraders_api_requests_total{namespace=\"spacetraders\"}[5m]))",
+          "expr": "sum(rate(spacetraders_api_requests_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[5m]))",
           "legendFormat": "executed"
         },
         {
@@ -2286,7 +2288,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(spacetraders_api_requests_total{namespace=\"spacetraders\", status!=\"error\"}[5m]))",
+          "expr": "sum(rate(spacetraders_api_requests_total{namespace=\"spacetraders\", status!=\"error\", reset_date=~\"$reset_date\"}[5m]))",
           "legendFormat": "completed"
         },
         {
@@ -2295,7 +2297,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(spacetraders_api_throttled_total{namespace=\"spacetraders\"}[5m])) or 0 * sum(rate(spacetraders_api_requests_total{namespace=\"spacetraders\"}[5m]))",
+          "expr": "sum(rate(spacetraders_api_throttled_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[5m])) or 0 * sum(rate(spacetraders_api_requests_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[5m]))",
           "legendFormat": "rate limited (429)"
         }
       ],
@@ -2412,7 +2414,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (method, endpoint) (rate(spacetraders_api_requests_total{namespace=\"spacetraders\"}[5m])) * 60",
+          "expr": "sum by (method, endpoint) (rate(spacetraders_api_requests_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[5m])) * 60",
           "legendFormat": "{{method}} {{endpoint}}"
         }
       ],
@@ -2473,7 +2475,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (source) (increase(spacetraders_api_throttled_total{namespace=\"spacetraders\"}[5m]))",
+          "expr": "sum by (source) (increase(spacetraders_api_throttled_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[5m]))",
           "legendFormat": "429 from {{source}}"
         },
         {
@@ -2482,7 +2484,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (status) (increase(spacetraders_api_requests_total{namespace=\"spacetraders\", status!~\"2..\"}[5m]))",
+          "expr": "sum by (status) (increase(spacetraders_api_requests_total{namespace=\"spacetraders\", status!~\"2..\", reset_date=~\"$reset_date\"}[5m]))",
           "legendFormat": "status {{status}}"
         },
         {
@@ -2491,7 +2493,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(spacetraders_api_rate_limit_wait_seconds_total{namespace=\"spacetraders\"}[5m])) * 60",
+          "expr": "sum(rate(spacetraders_api_rate_limit_wait_seconds_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[5m])) * 60",
           "legendFormat": "seconds waited per minute"
         }
       ],
@@ -2563,7 +2565,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (type) (rate(spacetraders_messages_handled_total{namespace=\"spacetraders\"}[5m])) * 60",
+          "expr": "sum by (type) (rate(spacetraders_messages_handled_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[5m])) * 60",
           "legendFormat": "{{type}}"
         }
       ],
@@ -2624,7 +2626,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (kind) (rate(spacetraders_goal_steps_total{namespace=\"spacetraders\"}[5m])) * 60",
+          "expr": "sum by (kind) (rate(spacetraders_goal_steps_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[5m])) * 60",
           "legendFormat": "{{kind}}"
         },
         {
@@ -2633,7 +2635,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (ship) (increase(spacetraders_goal_breaker_trips_total{namespace=\"spacetraders\"}[5m])) > 0",
+          "expr": "sum by (ship) (increase(spacetraders_goal_breaker_trips_total{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}[5m])) > 0",
           "legendFormat": "breaker trip {{ship}}"
         }
       ],
@@ -2690,7 +2692,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max(spacetraders_db_size_bytes{namespace=\"spacetraders\"})",
+          "expr": "max(spacetraders_db_size_bytes{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
           "legendFormat": "database"
         }
       ],
@@ -2765,7 +2767,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (rule, subject) (spacetraders_anomaly_active{namespace=\"spacetraders\"}) > 0",
+          "expr": "max by (rule, subject) (spacetraders_anomaly_active{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) > 0",
           "instant": true,
           "format": "table"
         }
@@ -2804,7 +2806,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "label_replace(max by (setting, current, next_run, description) (spacetraders_setting_info{namespace=\"spacetraders\", setting!~\"Runtime[.].*\", current=~\"true|false\"}), \"order\", \"1 $1\", \"setting\", \"(.*)\") or label_replace(max by (setting, current, next_run, description) (spacetraders_setting_info{namespace=\"spacetraders\", setting!~\"Runtime[.].*\", current!~\"true|false\"}), \"order\", \"2 $1\", \"setting\", \"(.*)\")",
+          "expr": "label_replace(max by (setting, current, next_run, description) (spacetraders_setting_info{namespace=\"spacetraders\", setting!~\"Runtime[.].*\", current=~\"true|false\", reset_date=~\"$reset_date\"}), \"order\", \"1 $1\", \"setting\", \"(.*)\") or label_replace(max by (setting, current, next_run, description) (spacetraders_setting_info{namespace=\"spacetraders\", setting!~\"Runtime[.].*\", current!~\"true|false\", reset_date=~\"$reset_date\"}), \"order\", \"2 $1\", \"setting\", \"(.*)\")",
           "instant": true,
           "format": "table"
         }
@@ -3008,7 +3010,7 @@
             "type": "loki",
             "uid": "grafana-loki"
           },
-          "expr": "sum(count_over_time({namespace=\"spacetraders\"}[1h]))",
+          "expr": "sum(count_over_time({namespace=\"spacetraders\"} | json ResetDate | drop __error__, __error_details__ | ResetDate=~\"$reset_date\" or ResetDate=\"\" [1h]))",
           "legendFormat": "lines per hour"
         },
         {
@@ -3017,7 +3019,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "count(count by (ship) (spacetraders_ship_info{namespace=\"spacetraders\"})) * 5000 / 24",
+          "expr": "count(count by (ship) (spacetraders_ship_info{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})) * 5000 / 24",
           "legendFormat": "budget"
         }
       ],
@@ -3102,7 +3104,7 @@
             "type": "loki",
             "uid": "grafana-loki"
           },
-          "expr": "{namespace=\"spacetraders\"} | json EventKind, message=\"[\\\"@m\\\"]\" | EventKind != \"\" | line_format \"{{.message}}\""
+          "expr": "{namespace=\"spacetraders\"} | json EventKind, ResetDate, message=\"[\\\"@m\\\"]\" | EventKind != \"\" | ResetDate=~\"$reset_date\" | line_format \"{{.message}}\""
         }
       ],
       "description": "One line per meaningful thing (JournalEvents): contracts, purchases and sales, plans, idle and blocked ships, setting changes, resets and anomalies. Open a line for its properties.",
@@ -3138,7 +3140,7 @@
             "type": "loki",
             "uid": "grafana-loki"
           },
-          "expr": "{namespace=\"spacetraders\"} |~ `\"@l\":\"(?:Error|Fatal)\"|^[^{].*(?i:error)` | json message=\"[\\\"@m\\\"]\" | line_format `{{ if .message }}{{ .message }}{{ else }}{{ __line__ }}{{ end }}`"
+          "expr": "{namespace=\"spacetraders\"} |~ `\"@l\":\"(?:Error|Fatal)\"|^[^{].*(?i:error)` | json message=\"[\\\"@m\\\"]\", ResetDate | ResetDate=~\"$reset_date\" or ResetDate=\"\" | line_format `{{ if .message }}{{ .message }}{{ else }}{{ __line__ }}{{ end }}`"
         }
       ],
       "description": "What the \"SpaceTraders logged errors\" alert counts: the bot's lines at level Error or Fatal, and lines from nginx or the init container containing \"error\". Warnings that repeat raise the RepeatingError anomaly instead. Open a line for its properties.",
@@ -3153,5 +3155,27 @@
         "sortOrder": "Descending"
       }
     }
-  ]
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "reset_date",
+        "label": "Reset",
+        "description": "The server reset whose run the dashboard shows, newest first (slice 2.13): every series carries it as reset_date and every log line as ResetDate, so runs never mix. Tick several to compare runs. Data from before slice 2.13 has no reset date and shows under none.",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "query": "label_values(spacetraders_agent_credits{namespace=\"spacetraders\"}, reset_date)",
+        "definition": "label_values(spacetraders_agent_credits{namespace=\"spacetraders\"}, reset_date)",
+        "refresh": 2,
+        "sort": 2,
+        "multi": true,
+        "includeAll": false,
+        "options": [],
+        "current": {}
+      }
+    ]
+  }
 }

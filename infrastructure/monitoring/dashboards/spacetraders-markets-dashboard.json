@@ -20,17 +20,37 @@
       "title": "SpaceTraders",
       "type": "link",
       "url": "/grafana/d/spacetraders",
-      "icon": "dashboard"
+      "icon": "dashboard",
+      "includeVars": true
     },
     {
       "title": "SpaceTraders systems",
       "type": "link",
       "url": "/grafana/d/spacetraders-systems",
-      "icon": "dashboard"
+      "icon": "dashboard",
+      "includeVars": true
     }
   ],
   "templating": {
     "list": [
+      {
+        "name": "reset_date",
+        "label": "Reset",
+        "description": "The server reset whose run the dashboard shows, newest first (slice 2.13): every series carries it as reset_date and every log line as ResetDate, so runs never mix. Tick several to compare runs. Data from before slice 2.13 has no reset date and shows under none.",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "query": "label_values(spacetraders_agent_credits{namespace=\"spacetraders\"}, reset_date)",
+        "definition": "label_values(spacetraders_agent_credits{namespace=\"spacetraders\"}, reset_date)",
+        "refresh": 2,
+        "sort": 2,
+        "multi": true,
+        "includeAll": false,
+        "options": [],
+        "current": {}
+      },
       {
         "name": "system",
         "label": "System",
@@ -39,8 +59,8 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "query": "label_values({__name__=~\"spacetraders_(market|shipyard)_observed_timestamp_seconds\", namespace=\"spacetraders\"}, system)",
-        "definition": "label_values({__name__=~\"spacetraders_(market|shipyard)_observed_timestamp_seconds\", namespace=\"spacetraders\"}, system)",
+        "query": "label_values({__name__=~\"spacetraders_(market|shipyard)_observed_timestamp_seconds\", namespace=\"spacetraders\", reset_date=~\"$reset_date\"}, system)",
+        "definition": "label_values({__name__=~\"spacetraders_(market|shipyard)_observed_timestamp_seconds\", namespace=\"spacetraders\", reset_date=~\"$reset_date\"}, system)",
         "refresh": 2,
         "sort": 1,
         "multi": false,
@@ -56,8 +76,8 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "query": "label_values(spacetraders_market_observed_timestamp_seconds{namespace=\"spacetraders\", system=\"$system\"}, waypoint)",
-        "definition": "label_values(spacetraders_market_observed_timestamp_seconds{namespace=\"spacetraders\", system=\"$system\"}, waypoint)",
+        "query": "label_values(spacetraders_market_observed_timestamp_seconds{namespace=\"spacetraders\", system=\"$system\", reset_date=~\"$reset_date\"}, waypoint)",
+        "definition": "label_values(spacetraders_market_observed_timestamp_seconds{namespace=\"spacetraders\", system=\"$system\", reset_date=~\"$reset_date\"}, waypoint)",
         "refresh": 2,
         "sort": 1,
         "multi": false,
@@ -73,8 +93,8 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "query": "label_values({__name__=~\"spacetraders_(market|shipyard)_observed_timestamp_seconds\", namespace=\"spacetraders\", system=\"$system\"}, waypoint)",
-        "definition": "label_values({__name__=~\"spacetraders_(market|shipyard)_observed_timestamp_seconds\", namespace=\"spacetraders\", system=\"$system\"}, waypoint)",
+        "query": "label_values({__name__=~\"spacetraders_(market|shipyard)_observed_timestamp_seconds\", namespace=\"spacetraders\", system=\"$system\", reset_date=~\"$reset_date\"}, waypoint)",
+        "definition": "label_values({__name__=~\"spacetraders_(market|shipyard)_observed_timestamp_seconds\", namespace=\"spacetraders\", system=\"$system\", reset_date=~\"$reset_date\"}, waypoint)",
         "refresh": 2,
         "sort": 1,
         "multi": true,
@@ -98,8 +118,8 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "query": "label_values(spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\"}, good)",
-        "definition": "label_values(spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\"}, good)",
+        "query": "label_values(spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\", reset_date=~\"$reset_date\"}, good)",
+        "definition": "label_values(spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\", reset_date=~\"$reset_date\"}, good)",
         "refresh": 2,
         "sort": 1,
         "multi": false,
@@ -134,7 +154,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "count(spacetraders_market_observed_timestamp_seconds{namespace=\"spacetraders\", system=\"$system\"})",
+          "expr": "count(spacetraders_market_observed_timestamp_seconds{namespace=\"spacetraders\", system=\"$system\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         }
@@ -183,7 +203,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "count(count by (waypoint) (spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\"}))",
+          "expr": "count(count by (waypoint) (spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\", reset_date=~\"$reset_date\"}))",
           "instant": true,
           "format": "table"
         }
@@ -232,7 +252,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "count(spacetraders_shipyard_observed_timestamp_seconds{namespace=\"spacetraders\", system=\"$system\"})",
+          "expr": "count(spacetraders_shipyard_observed_timestamp_seconds{namespace=\"spacetraders\", system=\"$system\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         }
@@ -281,7 +301,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "time() - min(spacetraders_market_observed_timestamp_seconds{namespace=\"spacetraders\", system=\"$system\"})",
+          "expr": "time() - min(spacetraders_market_observed_timestamp_seconds{namespace=\"spacetraders\", system=\"$system\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         }
@@ -331,7 +351,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (waypoint, waypoint_type) (time() - spacetraders_market_observed_timestamp_seconds{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "expr": "max by (waypoint, waypoint_type) (time() - spacetraders_market_observed_timestamp_seconds{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -341,7 +361,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (waypoint, waypoint_type) (time() - spacetraders_shipyard_observed_timestamp_seconds{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "expr": "max by (waypoint, waypoint_type) (time() - spacetraders_shipyard_observed_timestamp_seconds{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -351,7 +371,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "count by (waypoint) (spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "expr": "count by (waypoint) (spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         }
@@ -461,7 +481,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (waypoint, ship_type) (spacetraders_shipyard_ship_type{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "expr": "max by (waypoint, ship_type) (spacetraders_shipyard_ship_type{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -471,7 +491,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (waypoint, ship_type) (spacetraders_shipyard_ship_price{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "expr": "max by (waypoint, ship_type) (spacetraders_shipyard_ship_price{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -481,7 +501,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (waypoint, ship_type) (spacetraders_shipyard_ship_supply{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "expr": "max by (waypoint, ship_type) (spacetraders_shipyard_ship_supply{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -491,7 +511,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (waypoint, ship_type) (spacetraders_shipyard_ship_fuel_capacity_units{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "expr": "max by (waypoint, ship_type) (spacetraders_shipyard_ship_fuel_capacity_units{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -501,7 +521,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (waypoint, ship_type) (spacetraders_shipyard_ship_cargo_capacity_units{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "expr": "max by (waypoint, ship_type) (spacetraders_shipyard_ship_cargo_capacity_units{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -511,7 +531,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (waypoint, ship_type, can, equipment) (spacetraders_shipyard_ship_info{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "expr": "max by (waypoint, ship_type, can, equipment) (spacetraders_shipyard_ship_info{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         }
@@ -753,7 +773,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (waypoint, good, kind) (spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "expr": "max by (waypoint, good, kind) (spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -763,7 +783,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (waypoint, good, kind) (spacetraders_market_sell_price{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "expr": "max by (waypoint, good, kind) (spacetraders_market_sell_price{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -773,7 +793,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (waypoint, good, kind) (spacetraders_market_trade_volume{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "expr": "max by (waypoint, good, kind) (spacetraders_market_trade_volume{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -783,7 +803,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (waypoint, good, kind) (spacetraders_market_supply{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "expr": "max by (waypoint, good, kind) (spacetraders_market_supply{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         },
@@ -793,7 +813,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (waypoint, good, kind) (spacetraders_market_activity{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\"})",
+          "expr": "max by (waypoint, good, kind) (spacetraders_market_activity{namespace=\"spacetraders\", system=\"$system\", waypoint=~\"$waypoint\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
         }
@@ -1000,7 +1020,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (waypoint) (spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\", good=\"$good\"})",
+          "expr": "max by (waypoint) (spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\", good=\"$good\", reset_date=~\"$reset_date\"})",
           "range": true,
           "legendFormat": "{{waypoint}} buy"
         },
@@ -1010,7 +1030,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (waypoint) (spacetraders_market_sell_price{namespace=\"spacetraders\", system=\"$system\", good=\"$good\"})",
+          "expr": "max by (waypoint) (spacetraders_market_sell_price{namespace=\"spacetraders\", system=\"$system\", good=\"$good\", reset_date=~\"$reset_date\"})",
           "range": true,
           "legendFormat": "{{waypoint}} sell"
         }
@@ -1061,7 +1081,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (good, made_from, used_for) (spacetraders_good_supply_chain{namespace=\"spacetraders\"}) * on (good) group_left () (max by (good) (spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\"}) * 0 + 1)",
+          "expr": "max by (good, made_from, used_for) (spacetraders_good_supply_chain{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) * on (good) group_left () (max by (good) (spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\", reset_date=~\"$reset_date\"}) * 0 + 1)",
           "instant": true,
           "format": "table"
         },
@@ -1071,7 +1091,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (good, buy_at) (label_replace(bottomk by (good) (1, spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\"} > 0), \"buy_at\", \"$1\", \"waypoint\", \"(.*)\"))",
+          "expr": "max by (good, buy_at) (label_replace(bottomk by (good) (1, spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\", reset_date=~\"$reset_date\"} > 0), \"buy_at\", \"$1\", \"waypoint\", \"(.*)\"))",
           "instant": true,
           "format": "table"
         },
@@ -1081,7 +1101,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (good, sell_at) (label_replace(topk by (good) (1, spacetraders_market_sell_price{namespace=\"spacetraders\", system=\"$system\"} > 0), \"sell_at\", \"$1\", \"waypoint\", \"(.*)\"))",
+          "expr": "max by (good, sell_at) (label_replace(topk by (good) (1, spacetraders_market_sell_price{namespace=\"spacetraders\", system=\"$system\", reset_date=~\"$reset_date\"} > 0), \"sell_at\", \"$1\", \"waypoint\", \"(.*)\"))",
           "instant": true,
           "format": "table"
         },
@@ -1091,7 +1111,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (good) (spacetraders_market_sell_price{namespace=\"spacetraders\", system=\"$system\"} > 0) - min by (good) (spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\"} > 0)",
+          "expr": "max by (good) (spacetraders_market_sell_price{namespace=\"spacetraders\", system=\"$system\", reset_date=~\"$reset_date\"} > 0) - min by (good) (spacetraders_market_purchase_price{namespace=\"spacetraders\", system=\"$system\", reset_date=~\"$reset_date\"} > 0)",
           "instant": true,
           "format": "table"
         }
@@ -1215,7 +1235,7 @@
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "max by (good, made_from, used_for) (spacetraders_good_supply_chain{namespace=\"spacetraders\"})",
+              "expr": "max by (good, made_from, used_for) (spacetraders_good_supply_chain{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
               "instant": true,
               "format": "table"
             }
@@ -1302,7 +1322,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (good) (increase(spacetraders_goods_sold_units_total{namespace=\"spacetraders\", waypoint=\"$market\"}[1h]))",
+          "expr": "sum by (good) (increase(spacetraders_goods_sold_units_total{namespace=\"spacetraders\", waypoint=\"$market\", reset_date=~\"$reset_date\"}[1h]))",
           "range": true,
           "interval": "1h",
           "legendFormat": "{{good}}"
@@ -1366,7 +1386,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (good) (spacetraders_market_purchase_price{namespace=\"spacetraders\", waypoint=\"$market\", kind=\"EXPORT\"})",
+          "expr": "max by (good) (spacetraders_market_purchase_price{namespace=\"spacetraders\", waypoint=\"$market\", kind=\"EXPORT\", reset_date=~\"$reset_date\"})",
           "range": true,
           "legendFormat": "{{good}}"
         }
@@ -1420,7 +1440,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (good) (spacetraders_market_supply{namespace=\"spacetraders\", waypoint=\"$market\", kind=\"EXPORT\"})",
+          "expr": "max by (good) (spacetraders_market_supply{namespace=\"spacetraders\", waypoint=\"$market\", kind=\"EXPORT\", reset_date=~\"$reset_date\"})",
           "range": true,
           "legendFormat": "{{good}} supply"
         },
@@ -1430,7 +1450,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "max by (good) (spacetraders_market_trade_volume{namespace=\"spacetraders\", waypoint=\"$market\", kind=\"EXPORT\"})",
+          "expr": "max by (good) (spacetraders_market_trade_volume{namespace=\"spacetraders\", waypoint=\"$market\", kind=\"EXPORT\", reset_date=~\"$reset_date\"})",
           "range": true,
           "legendFormat": "{{good}} volume"
         }
