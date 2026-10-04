@@ -29,6 +29,13 @@
       "url": "/grafana/d/spacetraders-systems",
       "icon": "dashboard",
       "includeVars": true
+    },
+    {
+      "title": "SpaceTraders snapshots",
+      "type": "link",
+      "url": "/grafana/d/spacetraders-snapshots",
+      "icon": "dashboard",
+      "includeVars": true
     }
   ],
   "templating": {

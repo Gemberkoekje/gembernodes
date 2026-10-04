@@ -50,6 +50,13 @@ spec:
         from_address: gemberkoekje@gmail.com
         from_name: Gembercluster
         startTLS_policy: MandatoryStartTLS
+      # The Infinity data source, for the SpaceTraders snapshots dashboard (SpaceTraders PLAN.md slice 2.15). Pinned: 4.x
+      # needs Grafana 11.6.11 or later, and the chart's newest 8.x ships 11.6.1. Grafana installs it from grafana.com in the
+      # background at start, next to its own preinstalled plugins, and keeps it on its volume, so later starts don't
+      # fetch it again. A start that can't reach grafana.com only logs it; the chart's `plugins` value would instead
+      # stop Grafana (its start script runs with `bash -e`).
+      plugins:
+        preinstall: yesoreyeram-infinity-datasource@3.11.1
     datasources:
       datasources.yaml:
         apiVersion: 1
@@ -66,6 +73,24 @@ spec:
             access: proxy
             url: http://grafana-loki.monitoring.svc.cluster.local:3100
             isDefault: false
+          # The SpaceTraders bot's internal API, with its API key, for the snapshots dashboard (SpaceTraders PLAN.md
+          # slice 2.15, D73). Infinity reads its base URL from jsonData.url; Grafana's data source proxy, through which
+          # the dashboard's links download a snapshot as a file, from url. The key is the one the bot's dashboard
+          # already hands every browser that opens it (B22), so it also lets a Grafana user call the API's PUT and
+          # POST endpoints, through the proxy or an Infinity query (which allows POST).
+          - name: SpaceTraders API
+            type: yesoreyeram-infinity-datasource
+            uid: spacetraders-api
+            access: proxy
+            url: http://spacetraders-api-service.spacetraders.svc.cluster.local/spacetraders/api
+            isDefault: false
+            jsonData:
+              url: http://spacetraders-api-service.spacetraders.svc.cluster.local/spacetraders/api
+              allowedHosts:
+                - http://spacetraders-api-service.spacetraders.svc.cluster.local
+              httpHeaderName1: X-Api-Key
+            secureJsonData:
+              httpHeaderValue1: $__env{SPACETRADERS_INTERNAL_API_KEY}
     # Dashboards live as JSON in ./dashboards; kustomization.yaml generates them into the
     # grafana-dashboards ConfigMap, which the chart mounts at the provider path below.
     dashboardProviders:
@@ -90,5 +115,13 @@ spec:
         configMap: grafana-alerting-provisioning
         readOnly: true
     envFromSecret: grafana-smtp-secret
+    # The bot's API key, for the SpaceTraders API data source above (spacetraders-secrets.yaml). Optional: without it
+    # Grafana still starts, and only the snapshots dashboard fails, with the bot's 401.
+    envValueFrom:
+      SPACETRADERS_INTERNAL_API_KEY:
+        secretKeyRef:
+          name: spacetraders-secrets
+          key: SPACETRADERS_INTERNAL_API_KEY
+          optional: true
     env:
       GF_SECRETS_ENCRYPTION_PROVIDER: ""

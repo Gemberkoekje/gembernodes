@@ -4,6 +4,7 @@ resources:
   - prometheus-release.yaml
   - grafana-secret.yaml
   - grafana-smtp-secret.yaml
+  - spacetraders-secrets.yaml
   - grafana-alerting-provisioning.yaml
   - grafana-release.yaml
   - loki-release.yaml
@@ -21,6 +22,7 @@ configMapGenerator:
       - dashboards/flux-dashboard.json
       - dashboards/spacetraders-dashboard.json
       - dashboards/spacetraders-markets-dashboard.json
+      - dashboards/spacetraders-snapshots-dashboard.json
       - dashboards/spacetraders-systems-dashboard.json
 generatorOptions:
   disableNameSuffixHash: true

@@ -782,3 +782,61 @@ hold. The market tree showed the prices without the volumes, so a large differen
   local Prometheus scraping the series from two pods, looked at in a browser at 1920, 1440 and 390 pixels wide: one row
   per good, each volume the one of the market beside it, a tie for the cheapest market included. `scripts/validate.py`
   with flux 2.5.1, kubeconform v0.8.0 and helm v3.17.1: no errors, no warnings.
+
+## 2026-10-04 — SpaceTraders snapshots in Grafana (slice 2.15)
+
+Asked on 2026-10-04: "Can you expand the JSON export to include shipyard information, and can you make these jsons
+available through Grafana? If we do that, is everything from the webUI covered in Grafana?", then "I'd like the snapshots
+to be made whenever a new discovery is made. So a shipyard with a new ship type or a market with a new good type, in
+addition to the times they are currently made." (Gemberkoekje/projects `SpaceTraders/PLAN.md` slice 2.15 and decision D73,
+branch `ccr-a2ff9235-gidedj`, which puts every cached market and shipyard in the bot's snapshots and takes one at every
+discovery.) Grafana read only Prometheus and Loki, which can't hold a JSON document; the choice was the Infinity data
+source, reading the bot's internal API with its API key.
+
+- **The Infinity data source** (`yesoreyeram-infinity-datasource` 3.11.1) comes from Grafana's own background preinstall
+  (`grafana.ini` `[plugins] preinstall`), next to the plugins Grafana preinstalls itself. Pinned: 4.x needs Grafana
+  11.6.11 or later, and the chart's newest 8.x ships 11.6.1. Not the chart's `plugins` value: that installs from the start
+  script, which runs with `bash -e`, so a start that can't reach grafana.com stops Grafana (tried: the container exits
+  with 1). The preinstall logs it and Grafana runs on, the snapshots dashboard failing until a start that reaches
+  grafana.com. Once on Grafana's volume the pinned version isn't fetched again.
+- **The SpaceTraders API data source** (uid `spacetraders-api`) calls
+  `http://spacetraders-api-service.spacetraders.svc.cluster.local/spacetraders/api` with the header `X-Api-Key`, from
+  `$__env{SPACETRADERS_INTERNAL_API_KEY}`. Infinity reads its base URL from `jsonData.url` and calls only the hosts in
+  `allowedHosts`; Grafana's data source proxy reads `url`, which the dashboard's downloads go through.
+- **The key:** `infrastructure/monitoring/spacetraders-secrets.yaml` copies the bot's 1Password item into the monitoring
+  namespace (the operator copies every field), and the Grafana pod gets only `SPACETRADERS_INTERNAL_API_KEY`
+  (`envValueFrom`, optional: without it Grafana starts, and only the snapshots dashboard fails, with the bot's 401). No
+  step by hand: the item exists.
+- **What the key allows:** what it allows the bot's own dashboard, which hands it to every browser that opens it
+  (SpaceTraders B22). Through Grafana a logged-in user can also call the API's PUT and POST endpoints, switching
+  automation off or changing a setting: the data source proxy forwards every method, and an Infinity query may POST. A key
+  that only reads, for Grafana, would close that; it isn't built.
+- **The "SpaceTraders snapshots" dashboard** (uid `spacetraders-snapshots`, linked from and to the three other SpaceTraders
+  dashboards):
+  - **Snapshots of the run under way:** when, why (`Startup`, `Discovery`; the run's first says so) and, for a discovery,
+    what was new and where; **JSON** downloads the snapshot as the bot saved it (a new tab, so Grafana's router leaves
+    the link alone; the browser needs no key), **show below** picks it. The bot keeps only its own agent's snapshots, the
+    run's first and the 10 newest.
+  - **The picked snapshot** (the "Snapshot" picker, newest first): a summary row, what it found, its ships, its shipyards
+    (one row per ship type: price, supply, activity, tank, hold, mounts and modules where the listing is cached, and
+    when it was seen) and its markets (one row per good; without prices, what the market imports, exports and
+    exchanges). Each table is a JSONata expression over the snapshot's JSON (Infinity's backend parser), guarded so a
+    snapshot without discoveries, shipyards or markets shows an empty table rather than an error.
+  - **Discoveries:** the journal's `Discovered` lines for the picked resets (the "Reset" picker, as on the other three),
+    which Loki keeps 31 days, after the snapshots themselves are pruned.
+- **When this lands** Grafana restarts (its values change) and installs the plugin. Deploy the bot's build with slice 2.15
+  with it: an older build lists its snapshots without why, and they hold only the market and shipyard where a ship was.
+- Tested in Grafana 11.6.1 with Infinity 3.11.1 and the cluster's settings (served at `/grafana/`), against a stand-in for
+  the bot's API that serves two snapshots the bot's own code wrote and checks the key, a local Prometheus for the Reset
+  picker and a local Loki fed `Discovered` lines in the bot's JSON:
+  - the data source sent the key from the environment, and every panel's query answered for a startup snapshot and a
+    discovery snapshot, a market without prices and a ship in transit included;
+  - in a browser at 1600 and 390 pixels wide: the pickers filled, no panel showed an error, "show below" picked the
+    snapshot, and the JSON link, opened with only Grafana's login, downloaded `discovery-snapshot-2-…json`, the bot's
+    file byte for byte;
+  - the proxy forwarded POST, PUT and DELETE with the key, as described above;
+  - with grafana.com unreachable: the preinstall logged a failure and Grafana served; the chart's `plugins` value
+    stopped it; with the plugin already on the volume, it started either way.
+  - `helm template` of chart 8.15.0 with these values: `[plugins] preinstall`, the data source with
+    `$__env{SPACETRADERS_INTERNAL_API_KEY}` verbatim, and the optional key in the pod's environment.
+    `scripts/validate.py` with flux 2.5.1, kubeconform v0.8.0 and helm v3.17.1: no errors, no warnings.

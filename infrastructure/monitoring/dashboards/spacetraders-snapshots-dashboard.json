@@ -1,0 +1,1221 @@
+{
+  "uid": "spacetraders-snapshots",
+  "title": "SpaceTraders snapshots",
+  "description": "The SpaceTraders bot's snapshots of the game state: the list, a download of each as JSON, and what the picked one holds (Gemberkoekje/projects SpaceTraders/PLAN.md slice 2.15). Read from the bot's internal API with the Infinity data source.",
+  "tags": [
+    "spacetraders"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "graphTooltip": 1,
+  "refresh": "1m",
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "links": [
+    {
+      "title": "SpaceTraders",
+      "type": "link",
+      "url": "/grafana/d/spacetraders",
+      "icon": "dashboard",
+      "includeVars": true
+    },
+    {
+      "title": "SpaceTraders markets",
+      "type": "link",
+      "url": "/grafana/d/spacetraders-markets",
+      "icon": "dashboard",
+      "includeVars": true
+    },
+    {
+      "title": "SpaceTraders systems",
+      "type": "link",
+      "url": "/grafana/d/spacetraders-systems",
+      "icon": "dashboard",
+      "includeVars": true
+    }
+  ],
+  "annotations": {
+    "list": []
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "reset_date",
+        "label": "Reset",
+        "description": "The server reset whose discoveries the journal panel shows, newest first (slice 2.13). The snapshots are the run under way's: the bot keeps only its own agent's.",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "query": "label_values(spacetraders_agent_credits{namespace=\"spacetraders\"}, reset_date)",
+        "definition": "label_values(spacetraders_agent_credits{namespace=\"spacetraders\"}, reset_date)",
+        "refresh": 2,
+        "sort": 2,
+        "multi": true,
+        "includeAll": false,
+        "options": [],
+        "current": {}
+      },
+      {
+        "name": "snapshot",
+        "label": "Snapshot",
+        "description": "The snapshot the panels below show, newest first.",
+        "type": "query",
+        "datasource": {
+          "type": "yesoreyeram-infinity-datasource",
+          "uid": "spacetraders-api"
+        },
+        "query": {
+          "queryType": "infinity",
+          "refId": "variable",
+          "infinityQuery": {
+            "refId": "variable",
+            "datasource": {
+              "type": "yesoreyeram-infinity-datasource",
+              "uid": "spacetraders-api"
+            },
+            "type": "json",
+            "source": "url",
+            "parser": "backend",
+            "format": "table",
+            "url": "/status/startup-snapshots",
+            "url_options": {
+              "method": "GET",
+              "data": ""
+            },
+            "root_selector": "($rows := [$map($, function($s){ {\"__text\": \"#\" & $string($s.id) & \" · \" & $replace($substring($s.capturedAt, 0, 16), \"T\", \" \") & \" UTC · \" & $s.reason, \"__value\": $string($s.id)} })]; $count($rows) > 0 ? $rows : [])",
+            "columns": [
+              {
+                "selector": "__text",
+                "text": "__text",
+                "type": "string"
+              },
+              {
+                "selector": "__value",
+                "text": "__value",
+                "type": "string"
+              }
+            ],
+            "filters": [],
+            "computed_columns": []
+          }
+        },
+        "definition": "Snapshots of the run under way, newest first",
+        "refresh": 2,
+        "sort": 0,
+        "multi": false,
+        "includeAll": false,
+        "options": [],
+        "current": {}
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "table",
+      "title": "Snapshots of the run under way",
+      "description": "Every snapshot the bot keeps of the run under way, newest first: one at every start and one whenever the cached shipyards or markets list a ship type or good no snapshot of the run held yet, with what was new and where (SpaceTraders slice 2.15). It keeps the run's first (\"(first)\") and the 10 newest. \"JSON\" downloads the snapshot as the bot saved it, through Grafana; \"show below\" picks it for the panels below. Read from the bot's internal API (/status/startup-snapshots) with the Infinity data source. A long \"discovered\" shows in full in the cell's inspect view, and under \"New in this snapshot\" once shown below.",
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "spacetraders-api"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "spacetraders-api"
+          },
+          "type": "json",
+          "source": "url",
+          "parser": "backend",
+          "format": "table",
+          "url": "/status/startup-snapshots",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "($rows := [$map($, function($s){ {\"id\": $s.id, \"captured\": $s.capturedAt, \"why\": $s.reason & ($s.isInitialSnapshot ? \" (first)\" : \"\"), \"discovered\": $s.discovered, \"file\": \"JSON\", \"show\": \"show below\"} })]; $count($rows) > 0 ? $rows : [])",
+          "columns": [
+            {
+              "selector": "id",
+              "text": "id",
+              "type": "number"
+            },
+            {
+              "selector": "captured",
+              "text": "captured",
+              "type": "timestamp"
+            },
+            {
+              "selector": "why",
+              "text": "why",
+              "type": "string"
+            },
+            {
+              "selector": "discovered",
+              "text": "discovered",
+              "type": "string"
+            },
+            {
+              "selector": "file",
+              "text": "file",
+              "type": "string"
+            },
+            {
+              "selector": "show",
+              "text": "show",
+              "type": "string"
+            }
+          ],
+          "filters": [],
+          "computed_columns": []
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "captured": 0,
+              "why": 1,
+              "file": 2,
+              "show": 3,
+              "discovered": 4,
+              "id": 5
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "minWidth": 60,
+            "inspect": true
+          },
+          "noValue": "—"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "id"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "captured"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 150
+              },
+              {
+                "id": "custom.width",
+                "value": 160
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "why"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 90
+              },
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "discovered"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "file"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 60
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Download snapshot ${__data.fields.id} as JSON",
+                    "targetBlank": true,
+                    "url": "/grafana/api/datasources/proxy/uid/spacetraders-api/status/startup-snapshots/${__data.fields.id}/download"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "show"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 100
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Show snapshot ${__data.fields.id} below",
+                    "url": "/grafana/d/spacetraders-snapshots?var-snapshot=${__data.fields.id}&${reset_date:queryparam}&${__url_time_range}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 2,
+      "type": "table",
+      "title": "Snapshot ${snapshot}",
+      "description": "The snapshot picked above (Snapshot): when and why it was taken, and how much it holds. It holds every market and shipyard the bot had cached, as last seen, also where no ship was.",
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "spacetraders-api"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "spacetraders-api"
+          },
+          "type": "json",
+          "source": "url",
+          "parser": "backend",
+          "format": "table",
+          "url": "/status/startup-snapshots/${snapshot}/download",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "($r := $; [{\"captured\": $r.CapturedAt, \"why\": $r.Reason, \"credits\": $r.Agent.Credits, \"ships\": $count($r.Ships), \"contracts\": $count($r.Contracts), \"systems\": $count($r.Systems), \"markets\": $count($r.Systems.Waypoints[Market]), \"shipyards\": $count($r.Systems.Waypoints[Shipyard])}])",
+          "columns": [
+            {
+              "selector": "captured",
+              "text": "captured",
+              "type": "timestamp"
+            },
+            {
+              "selector": "why",
+              "text": "why",
+              "type": "string"
+            },
+            {
+              "selector": "credits",
+              "text": "credits",
+              "type": "number"
+            },
+            {
+              "selector": "ships",
+              "text": "ships",
+              "type": "number"
+            },
+            {
+              "selector": "contracts",
+              "text": "contracts",
+              "type": "number"
+            },
+            {
+              "selector": "systems",
+              "text": "systems",
+              "type": "number"
+            },
+            {
+              "selector": "markets",
+              "text": "markets",
+              "type": "number"
+            },
+            {
+              "selector": "shipyards",
+              "text": "shipyards",
+              "type": "number"
+            }
+          ],
+          "filters": [],
+          "computed_columns": []
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "captured": 0,
+              "why": 1,
+              "credits": 2,
+              "ships": 3,
+              "contracts": 4,
+              "systems": 5,
+              "markets": 6,
+              "shipyards": 7
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "minWidth": 60,
+            "inspect": true
+          },
+          "noValue": "—"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "captured"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "credits"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 3,
+      "type": "table",
+      "title": "New in this snapshot",
+      "description": "The ship types and goods new to the run that the snapshot was taken for, and the shipyards or markets that list them. Empty for a snapshot taken at a start.",
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "spacetraders-api"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 0,
+        "y": 13
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "spacetraders-api"
+          },
+          "type": "json",
+          "source": "url",
+          "parser": "backend",
+          "format": "table",
+          "url": "/status/startup-snapshots/${snapshot}/download",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "($rows := [$exists(Discoveries) ? Discoveries.($d := $; {\"kind\": $d.Kind = \"ShipType\" ? \"ship type\" : \"good\", \"symbol\": $d.Symbol, \"where\": $join($d.Waypoints, \", \")}) : []]; $count($rows) > 0 ? $rows : [])",
+          "columns": [
+            {
+              "selector": "kind",
+              "text": "kind",
+              "type": "string"
+            },
+            {
+              "selector": "symbol",
+              "text": "symbol",
+              "type": "string"
+            },
+            {
+              "selector": "where",
+              "text": "where",
+              "type": "string"
+            }
+          ],
+          "filters": [],
+          "computed_columns": []
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "kind": 0,
+              "symbol": 1,
+              "where": 2
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "minWidth": 60,
+            "inspect": true
+          },
+          "noValue": "—"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "symbol"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 150
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 4,
+      "type": "table",
+      "title": "Ships in this snapshot",
+      "description": "Each ship as the bot had cached it: its registration type, where it was (in transit, an arrow and where it was flying to, as the dashboard's fleet table shows it), fuel and hold, and the kind of goal it had.",
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "spacetraders-api"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 16,
+        "x": 8,
+        "y": 13
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "spacetraders-api"
+          },
+          "type": "json",
+          "source": "url",
+          "parser": "backend",
+          "format": "table",
+          "url": "/status/startup-snapshots/${snapshot}/download",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "($rows := [Ships.($s := $; {\"ship\": $s.Symbol, \"type\": $s.ShipType, \"where\": $s.Status = \"IN_TRANSIT\" ? \"→ \" & ($exists($s.DestinationSymbol) ? $s.DestinationSymbol : $s.WaypointSymbol) : $s.WaypointSymbol, \"status\": $s.Status, \"fuel\": $string($s.FuelCurrent) & \"/\" & $string($s.FuelCapacity), \"cargo\": $string($s.CargoUnits) & \"/\" & $string($s.CargoCapacity), \"goal\": $s.Goal.Kind})]; $count($rows) > 0 ? $rows : [])",
+          "columns": [
+            {
+              "selector": "ship",
+              "text": "ship",
+              "type": "string"
+            },
+            {
+              "selector": "type",
+              "text": "type",
+              "type": "string"
+            },
+            {
+              "selector": "where",
+              "text": "where",
+              "type": "string"
+            },
+            {
+              "selector": "status",
+              "text": "status",
+              "type": "string"
+            },
+            {
+              "selector": "fuel",
+              "text": "fuel",
+              "type": "string"
+            },
+            {
+              "selector": "cargo",
+              "text": "cargo",
+              "type": "string"
+            },
+            {
+              "selector": "goal",
+              "text": "goal",
+              "type": "string"
+            }
+          ],
+          "filters": [],
+          "computed_columns": []
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "ship": 0,
+              "type": 1,
+              "where": 2,
+              "status": 3,
+              "fuel": 4,
+              "cargo": 5,
+              "goal": 6
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "minWidth": 60,
+            "inspect": true
+          },
+          "noValue": "—"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "where"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 120
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 5,
+      "type": "table",
+      "title": "Shipyards in this snapshot",
+      "description": "Every shipyard the bot had cached, one row per ship type it sells. Price, supply, activity, tank (fuel), hold (cargo, from the cargo hold modules), mounts and modules come from the listing, which the game shows only while one of our ships is there: a row without them is a type no ship of ours has seen listed there. \"seen\" is when the listing was stored.",
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "spacetraders-api"
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "spacetraders-api"
+          },
+          "type": "json",
+          "source": "url",
+          "parser": "backend",
+          "format": "table",
+          "url": "/status/startup-snapshots/${snapshot}/download",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "($rows := [Systems.Waypoints[Shipyard].($w := Waypoint.Symbol; $sy := Shipyard; $sy.ShipTypes.($t := type; $l := $sy.Ships[type = $t]; {\"shipyard\": $w, \"ship type\": $t, \"price\": $l.purchasePrice, \"supply\": $l.supply, \"activity\": $l.activity, \"fuel\": $l.frame.fuelCapacity, \"cargo\": $sum($l.modules[$contains(symbol, \"CARGO_HOLD\")].capacity), \"mounts\": $join($l.mounts.$substringAfter(symbol, \"MOUNT_\"), \", \"), \"modules\": $join($l.modules.$substringAfter(symbol, \"MODULE_\"), \", \"), \"seen\": $sy.LastObservedAt}))]; $count($rows) > 0 ? $rows : [])",
+          "columns": [
+            {
+              "selector": "shipyard",
+              "text": "shipyard",
+              "type": "string"
+            },
+            {
+              "selector": "ship type",
+              "text": "ship type",
+              "type": "string"
+            },
+            {
+              "selector": "price",
+              "text": "price",
+              "type": "number"
+            },
+            {
+              "selector": "supply",
+              "text": "supply",
+              "type": "string"
+            },
+            {
+              "selector": "activity",
+              "text": "activity",
+              "type": "string"
+            },
+            {
+              "selector": "fuel",
+              "text": "fuel",
+              "type": "number"
+            },
+            {
+              "selector": "cargo",
+              "text": "cargo",
+              "type": "number"
+            },
+            {
+              "selector": "mounts",
+              "text": "mounts",
+              "type": "string"
+            },
+            {
+              "selector": "modules",
+              "text": "modules",
+              "type": "string"
+            },
+            {
+              "selector": "seen",
+              "text": "seen",
+              "type": "timestamp"
+            }
+          ],
+          "filters": [],
+          "computed_columns": []
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "shipyard": 0,
+              "ship type": 1,
+              "price": 2,
+              "supply": 3,
+              "activity": 4,
+              "fuel": 5,
+              "cargo": 6,
+              "mounts": 7,
+              "modules": 8,
+              "seen": 9
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "minWidth": 60,
+            "inspect": true
+          },
+          "noValue": "—"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "price"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "supply"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "SCARCE": {
+                        "color": "red",
+                        "index": 0
+                      },
+                      "LIMITED": {
+                        "color": "orange",
+                        "index": 1
+                      },
+                      "MODERATE": {
+                        "color": "yellow",
+                        "index": 2
+                      },
+                      "HIGH": {
+                        "color": "green",
+                        "index": 3
+                      },
+                      "ABUNDANT": {
+                        "color": "dark-green",
+                        "index": 4
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "shipyard"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ship type"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 170
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mounts"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 140
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "modules"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 220
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "seen"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 6,
+      "type": "table",
+      "title": "Markets in this snapshot",
+      "description": "Every market the bot had cached, one row per good: what a ship pays there (buy) and gets (sell), trade volume, supply and activity, as last seen. Prices come only while one of our ships is there; a market without them lists what it imports, exports and exchanges.",
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "spacetraders-api"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 34
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "spacetraders-api"
+          },
+          "type": "json",
+          "source": "url",
+          "parser": "backend",
+          "format": "table",
+          "url": "/status/startup-snapshots/${snapshot}/download",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "($rows := [Systems.Waypoints[Market].($w := Waypoint.Symbol; $m := Market; $exists($m.TradeGoods) ? $m.TradeGoods.($g := $; {\"market\": $w, \"good\": $g.symbol, \"kind\": $g.type, \"buy\": $g.purchasePrice, \"sell\": $g.sellPrice, \"volume\": $g.tradeVolume, \"supply\": $g.supply, \"activity\": $g.activity, \"seen\": $m.LastObservedAt}) : [$m.Imports.($g := $; {\"market\": $w, \"good\": $g.symbol, \"kind\": \"IMPORT\", \"seen\": $m.LastObservedAt}), $m.Exports.($g := $; {\"market\": $w, \"good\": $g.symbol, \"kind\": \"EXPORT\", \"seen\": $m.LastObservedAt}), $m.Exchange.($g := $; {\"market\": $w, \"good\": $g.symbol, \"kind\": \"EXCHANGE\", \"seen\": $m.LastObservedAt})])]; $count($rows) > 0 ? $rows : [])",
+          "columns": [
+            {
+              "selector": "market",
+              "text": "market",
+              "type": "string"
+            },
+            {
+              "selector": "good",
+              "text": "good",
+              "type": "string"
+            },
+            {
+              "selector": "kind",
+              "text": "kind",
+              "type": "string"
+            },
+            {
+              "selector": "buy",
+              "text": "buy",
+              "type": "number"
+            },
+            {
+              "selector": "sell",
+              "text": "sell",
+              "type": "number"
+            },
+            {
+              "selector": "volume",
+              "text": "volume",
+              "type": "number"
+            },
+            {
+              "selector": "supply",
+              "text": "supply",
+              "type": "string"
+            },
+            {
+              "selector": "activity",
+              "text": "activity",
+              "type": "string"
+            },
+            {
+              "selector": "seen",
+              "text": "seen",
+              "type": "timestamp"
+            }
+          ],
+          "filters": [],
+          "computed_columns": []
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "market": 0,
+              "good": 1,
+              "kind": 2,
+              "buy": 3,
+              "sell": 4,
+              "volume": 5,
+              "supply": 6,
+              "activity": 7,
+              "seen": 8
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "minWidth": 60,
+            "inspect": true
+          },
+          "noValue": "—"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "buy"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sell"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "volume"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "supply"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "SCARCE": {
+                        "color": "red",
+                        "index": 0
+                      },
+                      "LIMITED": {
+                        "color": "orange",
+                        "index": 1
+                      },
+                      "MODERATE": {
+                        "color": "yellow",
+                        "index": 2
+                      },
+                      "HIGH": {
+                        "color": "green",
+                        "index": 3
+                      },
+                      "ABUNDANT": {
+                        "color": "dark-green",
+                        "index": 4
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "market"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "good"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 170
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "seen"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 7,
+      "type": "logs",
+      "title": "Discoveries",
+      "description": "The journal's Discovered lines in the time range, for the picked resets: what each discovery snapshot found. Loki keeps them 31 days, after the snapshots themselves are pruned.",
+      "datasource": {
+        "type": "loki",
+        "uid": "grafana-loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 46
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "grafana-loki"
+          },
+          "expr": "{namespace=\"spacetraders\"} | json EventKind, ResetDate, message=\"[\\\"@m\\\"]\" | EventKind=\"Discovered\" | ResetDate=~\"$reset_date\" | line_format \"{{.message}}\""
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending"
+      }
+    }
+  ]
+}
