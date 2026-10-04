@@ -15,7 +15,9 @@ taken off in May 2026 for filling the shared PostgreSQL.
 | `../../namespaces/spacetraders-namespace.yaml` | The namespace. |
 
 Grafana's "SpaceTraders" dashboard and the alert groups `spacetraders` and `spacetraders-logs`
-(`infrastructure/monitoring/`) read its metrics and its log.
+(`infrastructure/monitoring/`) read its metrics and its log. Its "SpaceTraders snapshots" dashboard reads the internal API
+through the SpaceTraders API data source, with the API key from this app's 1Password item
+(`infrastructure/monitoring/spacetraders-secrets.yaml`, slice 2.15).
 
 ## Before the first deploy (by hand)
 
