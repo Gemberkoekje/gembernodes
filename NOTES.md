@@ -671,3 +671,26 @@ Look it up in the admin console (Machines): its name and "Last seen" tell where 
 stopped. An "Expired" badge means its key expired (180 days by default). Tailscale's docs say an admin
 can then use "Temporarily extend key" (30 minutes) and, within that time, "Disable key expiry", without
 touching the device, as long as it is still running. Remove the old device once `gembercluster` works.
+
+## 2026-10-04 — SpaceTraders settings: what the next run starts with
+
+Asked on 2026-10-04, after the server reset of 13:00Z left the new agent with most plans off: every plan on by default,
+the settings you set carried over to the next agent, and "a separate set of endpoints to only affect future runs"
+(Gemberkoekje/projects `SpaceTraders/PLAN.md` slice 2.12 and decision D69, branch `ccr-856636cc-qj1te0`, which adds the
+label `next_run` to `spacetraders_setting_info`).
+
+- **"Settings"** on the SpaceTraders dashboard has a **next run** column after **value**: what the agent the next server
+  reset registers starts with, the value chosen for it or else the default, with the same on and off as "value".
+- "value" and "next run" are 180 pixels wide each ("value" was 300), so on a phone both fit beside each other once the
+  table is scrolled sideways. A longer value (`Trade.ShipPurchases`) is cut off; the eye icon that hovering over the
+  cell shows opens all of it.
+- The description says how to set them: `PUT /settings/{key}` now and for the next runs, `PUT /settings/next-run/{key}`
+  only for the next runs, `DELETE /settings/next-run/{key}` for the default again. It no longer says a setting can be
+  changed on the bot's own dashboard: its Settings page only shows them.
+- Until the bot runs an image with the label, the column is empty. This branch doesn't deploy the bot: that image exists
+  once the projects branch is merged, and its deploy is the usual bump of both deployments to its SHA. That deploy's
+  first start also switches on the plans the current agent has off, and keeps any setting changed before it (D69).
+- Tested: the panel in Grafana 11.6.1 against a local Prometheus (v2.55.1) scraping the series as the bot writes them,
+  with the seed's settings as test data and three next-run values changed, looked at in a browser at desktop and phone
+  width: the columns setting, value, next run and what it does, on and off in both. `scripts/validate.py` with flux
+  2.5.1, kubeconform v0.8.0 and helm v3.17.1: no errors, no warnings. Dashboards reload without a Grafana restart.
