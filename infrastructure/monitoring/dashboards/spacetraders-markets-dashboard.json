@@ -1143,7 +1143,7 @@
           "format": "table"
         }
       ],
-      "description": "The game's production chains for every good with a price in this system: what it is made from, and what is made from it. Raw goods are made from nothing (the game lists MACHINERY for some extracted goods). Then where it is cheapest to buy and where it sells best, at the prices last seen, each with its trade volume: the most units one purchase or one sale at that market takes. The difference is what a unit earns before fuel; at 0 or below no market pays more than another charges. A trader buys a full hold in one purchase and sells it in one sale (D56), so the pair shown here is traded only when both volumes are at least the trader's free hold, or when the seller's supply is ABUNDANT (see Trade goods): then it carries the smaller volume, still in one purchase and one sale (D74). Another pair, with a smaller difference, may be traded instead.",
+      "description": "The game's production chains for every good with a price in this system: what it is made from, and what is made from it. Raw goods are made from nothing (the game lists MACHINERY for some extracted goods). Then where it is cheapest to buy and where it sells best, at the prices last seen, each with its trade volume: the most units one purchase or one sale at that market takes. The difference is what a unit earns before fuel; at 0 or below no market pays more than another charges. A trader buys a full hold in one purchase and sells it in one sale (D56), so the pair shown here is traded only when both volumes are at least the trader's free hold, or when the seller's supply is ABUNDANT (see Trade goods): then it carries the smaller volume, still in one purchase and one sale (D74). Another pair, with a smaller difference, may be traded instead. Which routes the bot trades, and in what order, is in the table below.",
       "transformations": [
         {
           "id": "merge",
@@ -1318,6 +1318,300 @@
       }
     },
     {
+      "id": 16,
+      "type": "table",
+      "title": "Trade routes, in the order traders take them",
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "spacetraders-api"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 57
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "spacetraders-api"
+          },
+          "type": "json",
+          "source": "url",
+          "parser": "backend",
+          "format": "table",
+          "url": "/status/trading-routes",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "($asOf := updatedAt; $rows := [$map(routes, function($r){ {\"order\": $r.position, \"trader\": $r.status = \"Assigned\" ? $r.shipSymbol : \"waiting\", \"good\": $r.tradeSymbol, \"buyAt\": $r.buyWaypointSymbol, \"sellAt\": $r.sellWaypointSymbol, \"units\": $r.units, \"profit\": $r.expectedProfit, \"perUnit\": $r.profitPerUnit, \"feeds\": $r.feedsTradeSymbol, \"couldTakeIt\": $r.candidateShips, \"asOf\": $asOf} })]; $count($rows) > 0 ? $rows : [])",
+          "columns": [
+            {
+              "selector": "order",
+              "text": "order",
+              "type": "number"
+            },
+            {
+              "selector": "trader",
+              "text": "trader",
+              "type": "string"
+            },
+            {
+              "selector": "good",
+              "text": "good",
+              "type": "string"
+            },
+            {
+              "selector": "buyAt",
+              "text": "buy at",
+              "type": "string"
+            },
+            {
+              "selector": "sellAt",
+              "text": "sell at",
+              "type": "string"
+            },
+            {
+              "selector": "units",
+              "text": "units",
+              "type": "number"
+            },
+            {
+              "selector": "profit",
+              "text": "profit after fuel",
+              "type": "number"
+            },
+            {
+              "selector": "perUnit",
+              "text": "per unit",
+              "type": "number"
+            },
+            {
+              "selector": "feeds",
+              "text": "feeds",
+              "type": "string"
+            },
+            {
+              "selector": "couldTakeIt",
+              "text": "could take it",
+              "type": "string"
+            },
+            {
+              "selector": "asOf",
+              "text": "as of",
+              "type": "timestamp"
+            }
+          ],
+          "filters": [],
+          "computed_columns": []
+        }
+      ],
+      "description": "The bot's own order: the trading plan's routes as its last pass with a free trader stored them (the bot's /status/trading-routes, through the SpaceTraders API data source, across every system its traders are in). First the routes traders hold, with the trader. Then the lucrative routes no trader holds, numbered best first: the order the plan hands routes out in, each to the free trader it suits best. How the plan ranks, for each free trader: every route from where the trader stands that earns at least Trade.MinProfitPerUnit a unit after the fuel for the whole trip (D14); its units are a full hold bought and sold at once, or, where the seller's supply is ABUNDANT, what both markets trade at once (D56, D74); the credits no other trip holds back must pay for them (D57). Among those, a route whose sell market makes a pricier good from the cargo (feeds) comes first (D15), then the most profit after fuel. Two traders never share a route (D18). A waiting route shows the figures of the trader it suits best, and at most 20 are listed, only from a pass when a trader was free; a held route keeps the figures it was chosen with. Could take it: the free traders it was lucrative for. As of: when the plan last changed this list.",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "order": 0,
+              "trader": 1,
+              "good": 2,
+              "buy at": 3,
+              "sell at": 4,
+              "units": 5,
+              "profit after fuel": 6,
+              "per unit": 7,
+              "feeds": 8,
+              "could take it": 9,
+              "as of": 10
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "minWidth": 60
+          },
+          "noValue": "No routes: no trader holds one, and none waited at the trading plan's last pass"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "order"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 60
+              },
+              {
+                "id": "noValue",
+                "value": "—"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "trader"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "good"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 160
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "buy at"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sell at"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "units"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "profit after fuel"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "per unit"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "feeds"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 170
+              },
+              {
+                "id": "noValue",
+                "value": "—"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "could take it"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 150
+              },
+              {
+                "id": "noValue",
+                "value": "—"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "as of"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeFromNow"
+              },
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
       "id": 10,
       "type": "row",
       "title": "Market tree: all goods",
@@ -1326,7 +1620,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 57
+        "y": 69
       },
       "panels": [
         {
@@ -1341,7 +1635,7 @@
             "h": 16,
             "w": 24,
             "x": 0,
-            "y": 58
+            "y": 70
           },
           "targets": [
             {
@@ -1410,7 +1704,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 58
+        "y": 70
       },
       "description": "To see, over time, how many units of an input we sell to a market against what happens to the supply, trade volume and price of the goods it makes, since nobody knows how many units of input make one of output, or how fast. Pick the market at the top.",
       "panels": []
@@ -1427,7 +1721,7 @@
         "h": 10,
         "w": 8,
         "x": 0,
-        "y": 59
+        "y": 71
       },
       "interval": "1h",
       "targets": [
@@ -1492,7 +1786,7 @@
         "h": 10,
         "w": 8,
         "x": 8,
-        "y": 59
+        "y": 71
       },
       "targets": [
         {
@@ -1546,7 +1840,7 @@
         "h": 10,
         "w": 8,
         "x": 16,
-        "y": 59
+        "y": 71
       },
       "targets": [
         {
