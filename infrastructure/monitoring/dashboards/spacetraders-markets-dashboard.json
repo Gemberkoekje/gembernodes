@@ -1678,7 +1678,7 @@
           "computed_columns": []
         }
       ],
-      "description": "Each good with a price gap (a market in the system sells it for less than another pays for it) that no route in the table above carries, and why the trading plan doesn't trade it (D76): the first of its checks the good's route failed, for the free trader that got furthest with it, then the route with the largest price gap. The checks, in their order (the bot's /status/trading-routes, as TradeRoutePlanner.Rank runs them): the buy market in reach from where the trader is, refuelling at markets on the way; the sell market in reach from there; a full hold in one purchase and one sale, or, where the seller's supply is ABUNDANT, what both markets trade at once (D56, D74); the credits free for cargo pay for it with the trip's fuel (D56); at least Trade.MinProfitPerUnit a unit after fuel (D14). Below the listed routes: lucrative, but the 20 waiting routes the plan keeps rank higher. Why not: that check in a sentence, with the trader first and the figures. While every trader is on a trip the plan checks nothing, and the rows of its last pass with a free trader stay. As of: when that pass found it.",
+      "description": "Each good with a price gap (a market in the system sells it for less than another pays for it) that no trader's route carries, and why the trading plan doesn't trade it (D76): the first of its checks the good's route failed, for the free trader that got furthest with it, then the route with the largest price gap. The checks, in their order (the bot's /status/trading-routes, as TradeRoutePlanner.Rank runs them): the buy market in reach from where the trader is, refuelling at markets on the way; the sell market in reach from there; room in the hold, and a price and a trade volume at both markets (no room); a unit the credits free for cargo pay for with the trip's fuel (too few credits); the first unit, and the trip after fuel, earning at least Trade.MinProfitPerUnit a unit (D14, D79; too little profit). Waits for a free trader: lucrative, and among the 20 waiting routes the plan keeps, but the free traders took routes that rank higher (B66). Below the listed routes: lucrative, but the 20 waiting routes rank higher. Why not: that check in a sentence, with the trader first and the figures. While every trader is on a trip the plan checks nothing, and the rows of its last pass with a free trader stay. As of: when that pass found it.",
       "transformations": [
         {
           "id": "organize",
@@ -1755,6 +1755,14 @@
                       "below_the_listed_routes": {
                         "text": "below the listed routes",
                         "index": 5
+                      },
+                      "no_room": {
+                        "text": "no room",
+                        "index": 6
+                      },
+                      "waiting": {
+                        "text": "waits for a free trader",
+                        "index": 7
                       }
                     }
                   }
