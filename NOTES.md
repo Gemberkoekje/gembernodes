@@ -1004,3 +1004,19 @@ was in neither table. The bot now gives such a good a row with the reason `waiti
 
 - The dashboard JSON parses, and only the panel's mappings and description changed. `scripts/validate.py` runs in CI
   (flux, kubeconform and helm aren't installed on this PC).
+
+## 2026-10-05 — SpaceTraders: the jump gate's miners in the purchase order (slice 6.25)
+
+For the bot's slice 6.25 (Gemberkoekje/projects `SpaceTraders/PLAN.md`, decision D92, branch `ccr-ca2bf7e9-hweozt`):
+while the jump gate needs materials, the mining plan buys a mining drone per ore every half hour for the smelters that
+make the gate's metals (IRON_ORE into IRON for FAB_MATS, COPPER_ORE into COPPER for ADVANCED_CIRCUITRY), until each has
+its ore at HIGH. Asked on 2026-10-05: "Same tier as gate loads, capped. If the gate can be built, it should be built,
+otherwise extra miners can be built."
+
+- **"Purchase order"**: the description says that a Mining plan `SHIP_MINING_DRONE` at position 6 (Construction) is one
+  of the gate's miners, which waits while a load of the gate can be bought and is bought while the load waits for its
+  markets. No query changed: the bot reports it with the existing metric, at the Construction tier.
+
+### How it was tested
+
+- The dashboard JSON parses, and only the panel's description changed. `scripts/validate.py` runs in CI.
