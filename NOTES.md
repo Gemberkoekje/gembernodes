@@ -985,3 +985,22 @@ got furthest with it.
     table scrolls sideways, as the routes table does; the empty table shows its message; the table sits under the routes
     table, the rows below moved down without overlap.
   - `scripts/validate.py` with flux 2.5.1, kubeconform v0.8.0 and helm v3.17.1: no errors, no warnings.
+
+## 2026-10-05 — SpaceTraders: goods that wait for a free trader (B66)
+
+Asked on 2026-10-05: "Assault Rifles should make a tidy profit at 2191, yet it doesn't even show up in the Goods not
+traded and why tab." (Gemberkoekje/projects#179, `SpaceTraders/PLAN.md` B66.) A good whose route waited for a free trader
+had no row, being listed among the waiting routes, and once every trader was on a trip the waiting routes went: the good
+was in neither table. The bot now gives such a good a row with the reason `waiting`.
+
+- **"Goods not traded, and why"** maps `waiting` to "waits for a free trader", and `no_room`, the reason that replaced
+  `not_full_hold` in the bot's slice 6.16 (D79), to "no room": both showed as the raw code. `not_full_hold` stays mapped,
+  for an older build.
+- **The table's description** lists the checks as the bot runs them since D79 (room in the hold and a price and trade
+  volume at both markets, a unit the credits pay for, the first unit and the trip earning the minimum) and says what
+  "waits for a free trader" means. The table shows every good no trader's route carries.
+
+### How it was tested
+
+- The dashboard JSON parses, and only the panel's mappings and description changed. `scripts/validate.py` runs in CI
+  (flux, kubeconform and helm aren't installed on this PC).
