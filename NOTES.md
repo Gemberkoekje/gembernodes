@@ -294,6 +294,47 @@ What it can't see: chart values below the top level that the chart ignores (char
 only as comments), the contents of secrets (`valuesFrom` gets placeholders), and anything that needs
 the cluster: CRDs being installed, admission webhooks, resources already owned by something else.
 
+## 2026-10-05 — CI: a pull request's images have to exist
+
+Asked on 2026-10-05: "Is it possible to add the 'does this version exist upstream' check to the PR
+validation checks of gembernodes?" A deploy PR (an image tag bumped to a commit of another repository)
+can be opened, and merged, before that repository's CI has pushed the image: Flux then rolls out a tag
+the registry doesn't have, and the pods sit in ImagePullBackOff. The SpaceTraders deployments are
+`Recreate`, so the old pod is already gone by then.
+
+- `scripts/check_images.py` (Python 3 and git only) reads the `image:` lines the pull request adds or
+  changes (`git diff <base>...HEAD`) and asks each image's registry for the manifest, the way
+  `docker pull` does: the token service its `WWW-Authenticate` challenge names, then a `HEAD` of
+  `/v2/<repository>/manifests/<tag>`. Any OCI registry works this way: ghcr.io, Docker Hub, quay.io.
+- A 404 is looked for again every 30 seconds for `IMAGE_WAIT_MINUTES` (20), so a deploy PR opened while
+  the image builds turns green by itself once it is pushed; after that it is an error on the line.
+- A registry that won't show the image is a warning, not an error: a private package. Anonymously, on
+  2026-10-05, ghcr.io showed spacetraders-api/-webui, thecuratool, hackerminigames, adventureengine
+  and bot-on-the-clocktower, and refused armabotcs, cov-website, dungeontable and
+  eosfrontier/ebi-cs-api (a private package answers 401, never 404, so it can't pass for a missing
+  tag). The workflow's `GITHUB_TOKEN` (`packages: read`) is tried on ghcr.io for those; it reads a
+  private package only once the package gives this repository access (the package's settings,
+  "Manage Actions access").
+- `.github/workflows/validate.yaml` runs it as the `images` job, on pull requests only.
+
+### How it was tested
+
+- Locally against throwaway commits: spacetraders-api set to a tag of forty zeros was an error on its
+  line, spacetraders-webui set to an older tag passed, and armabotcs set to another tag was a warning.
+  Without image changes the script says so and passes.
+
+### What it can't see
+
+- An image a Helm chart builds from separate `repository` and `tag` values; a templated reference.
+- That the image runs: only that the registry has the tag.
+- It doesn't block a merge by itself: `main` has no branch protection. To make it block, require the
+  `images` check (and `validate`) in a branch protection rule or ruleset for `main`.
+
+### File map
+
+- `scripts/check_images.py`: the check.
+- `.github/workflows/validate.yaml`: the `images` job.
+
 ## 2026-10-02 — SpaceTraders errors by log level
 
 The SpaceTraders bot came back on 2026-10-02 (PR #11), and five minutes later "Error logs detected
