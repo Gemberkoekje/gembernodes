@@ -42,3 +42,23 @@ jobs:
 
       - name: Validate
         run: python scripts/validate.py
+
+  images:
+    # The images a pull request adds or changes have to exist before it merges (scripts/check_images.py):
+    # a deploy PR opened while its image still builds waits for it, up to 20 minutes.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      # Tried for a private package on ghcr.io: reads only the packages that give this repository access.
+      packages: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Images exist
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+        run: python3 scripts/check_images.py "origin/${{ github.base_ref }}"
