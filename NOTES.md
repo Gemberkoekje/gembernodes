@@ -914,3 +914,33 @@ the credits, which Grafana can't recompute from Prometheus; the bot publishes th
     phone the table scrolls sideways, as the market tree does, with the good's name whole; the empty table shows its
     message; the table sits under the market tree, the rows below moved down without overlap.
   - `scripts/validate.py` with flux 2.5.1, kubeconform v0.8.0 and helm v3.17.1: no errors, no warnings.
+
+## 2026-10-05 — SpaceTraders: why the other goods aren't traded (slice 2.18)
+
+Asked on 2026-10-05: "Can the new list also add why the other goods are not considered for trading?" (Gemberkoekje/projects
+`SpaceTraders/PLAN.md` slice 2.18 and decision D76, projects#170, which adds `notTraded` to `GET /status/trading-routes`.)
+For each good with a price gap (a market in the system sells it for less than another pays for it) that no listed route
+carries, the trading plan says why: the first of its route checks that the good's route failed, for the free trader that
+got furthest with it.
+
+- **"Goods not traded, and why"**, a table under "Trade routes, in the order traders take them" on the markets dashboard
+  (12 rows; the panels below, and the one inside the collapsed "Market tree: all goods" row, moved down by that). It reads
+  `notTraded` from the same endpoint through the SpaceTraders API data source. Columns: good, check (the check that failed,
+  in words: buy market out of reach, sell market out of reach, no full hold, too few credits, too little profit, below the
+  listed routes), buy at, sell at, why not (the bot's sentence: the trader first, then the check's figures) and as of
+  (when the plan's last pass with a free trader found it). The description states the checks in their order.
+- **A table of its own**, not rows in the routes table: Grafana 11.6 sizes a table's rows by one wrapped column only, so in
+  one table the reasons were either cut off, or long candidate lists and goods spilled over their rows; and a good that
+  isn't traded has no units, profit, feeds or candidates, which left five empty cells a row. Here "why not" wraps, and its
+  rows grow to fit it.
+- **Empty:** "None: every good with a price gap is in the routes above, or no pass of the trading plan with a free trader
+  has found one yet". A build without slice 2.18 sends no `notTraded`, and the table shows the same.
+- **The routes table** is as slice 2.17 left it; its description and the market tree's point to the new table.
+- Tested in Grafana 11.6.1 with Infinity 3.11.1 and the data source as the cluster has it, against a stand-in for the bot's
+  API that checks the key and serves the JSON the bot's own endpoint wrote in its test:
+  - the panel's query through Grafana's query API: six goods with every check, goods without routes, the routes without
+    `notTraded` (an older build) and nothing at all (no rows, no error);
+  - in a browser at 1920, 1440 and 390 pixels wide: every column fits at 1920 and 1440, and the reasons wrap; on a phone the
+    table scrolls sideways, as the routes table does; the empty table shows its message; the table sits under the routes
+    table, the rows below moved down without overlap.
+  - `scripts/validate.py` with flux 2.5.1, kubeconform v0.8.0 and helm v3.17.1: no errors, no warnings.

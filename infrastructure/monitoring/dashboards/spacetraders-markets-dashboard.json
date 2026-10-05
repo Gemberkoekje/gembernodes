@@ -1143,7 +1143,7 @@
           "format": "table"
         }
       ],
-      "description": "The game's production chains for every good with a price in this system: what it is made from, and what is made from it. Raw goods are made from nothing (the game lists MACHINERY for some extracted goods). Then where it is cheapest to buy and where it sells best, at the prices last seen, each with its trade volume: the most units one purchase or one sale at that market takes. The difference is what a unit earns before fuel; at 0 or below no market pays more than another charges. A trader buys a full hold in one purchase and sells it in one sale (D56), so the pair shown here is traded only when both volumes are at least the trader's free hold, or when the seller's supply is ABUNDANT (see Trade goods): then it carries the smaller volume, still in one purchase and one sale (D74). Another pair, with a smaller difference, may be traded instead. Which routes the bot trades, and in what order, is in the table below.",
+      "description": "The game's production chains for every good with a price in this system: what it is made from, and what is made from it. Raw goods are made from nothing (the game lists MACHINERY for some extracted goods). Then where it is cheapest to buy and where it sells best, at the prices last seen, each with its trade volume: the most units one purchase or one sale at that market takes. The difference is what a unit earns before fuel; at 0 or below no market pays more than another charges. A trader buys a full hold in one purchase and sells it in one sale (D56), so the pair shown here is traded only when both volumes are at least the trader's free hold, or when the seller's supply is ABUNDANT (see Trade goods): then it carries the smaller volume, still in one purchase and one sale (D74). Another pair, with a smaller difference, may be traded instead. Which routes the bot trades, and in what order, is in the table below; why it doesn't trade the other goods with a price gap, in the one under it.",
       "transformations": [
         {
           "id": "merge",
@@ -1409,7 +1409,7 @@
           "computed_columns": []
         }
       ],
-      "description": "The bot's own order: the trading plan's routes as its last pass with a free trader stored them (the bot's /status/trading-routes, through the SpaceTraders API data source, across every system its traders are in). First the routes traders hold, with the trader. Then the lucrative routes no trader holds, numbered best first: the order the plan hands routes out in, each to the free trader it suits best. How the plan ranks, for each free trader: every route from where the trader stands that earns at least Trade.MinProfitPerUnit a unit after the fuel for the whole trip (D14); its units are a full hold bought and sold at once, or, where the seller's supply is ABUNDANT, what both markets trade at once (D56, D74); the credits no other trip holds back must pay for them (D57). Among those, a route whose sell market makes a pricier good from the cargo (feeds) comes first (D15), then the most profit after fuel. Two traders never share a route (D18). A waiting route shows the figures of the trader it suits best, and at most 20 are listed, only from a pass when a trader was free; a held route keeps the figures it was chosen with. Could take it: the free traders it was lucrative for. As of: when the plan last changed this list.",
+      "description": "The bot's own order: the trading plan's routes as its last pass with a free trader stored them (the bot's /status/trading-routes, through the SpaceTraders API data source, across every system its traders are in). First the routes traders hold, with the trader. Then the lucrative routes no trader holds, numbered best first: the order the plan hands routes out in, each to the free trader it suits best. How the plan ranks, for each free trader: every route from where the trader stands that earns at least Trade.MinProfitPerUnit a unit after the fuel for the whole trip (D14); its units are a full hold bought and sold at once, or, where the seller's supply is ABUNDANT, what both markets trade at once (D56, D74); the credits no other trip holds back must pay for them (D57). Among those, a route whose sell market makes a pricier good from the cargo (feeds) comes first (D15), then the most profit after fuel. Two traders never share a route (D18). A waiting route shows the figures of the trader it suits best, and at most 20 are listed, only from a pass when a trader was free; a held route keeps the figures it was chosen with. Could take it: the free traders it was lucrative for. As of: when the plan last changed this list. Why the other goods with a price gap aren't traded: the table below.",
       "transformations": [
         {
           "id": "organize",
@@ -1612,6 +1612,223 @@
       }
     },
     {
+      "id": 17,
+      "type": "table",
+      "title": "Goods not traded, and why",
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "spacetraders-api"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 69
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "spacetraders-api"
+          },
+          "type": "json",
+          "source": "url",
+          "parser": "backend",
+          "format": "table",
+          "url": "/status/trading-routes",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "($rows := [$map(notTraded, function($g){ {\"good\": $g.tradeSymbol, \"check\": $g.reason, \"buyAt\": $g.buyWaypointSymbol, \"sellAt\": $g.sellWaypointSymbol, \"whyNot\": $g.why, \"asOf\": $g.judgedAt} })]; $count($rows) > 0 ? $rows : [])",
+          "columns": [
+            {
+              "selector": "good",
+              "text": "good",
+              "type": "string"
+            },
+            {
+              "selector": "check",
+              "text": "check",
+              "type": "string"
+            },
+            {
+              "selector": "buyAt",
+              "text": "buy at",
+              "type": "string"
+            },
+            {
+              "selector": "sellAt",
+              "text": "sell at",
+              "type": "string"
+            },
+            {
+              "selector": "whyNot",
+              "text": "why not",
+              "type": "string"
+            },
+            {
+              "selector": "asOf",
+              "text": "as of",
+              "type": "timestamp"
+            }
+          ],
+          "filters": [],
+          "computed_columns": []
+        }
+      ],
+      "description": "Each good with a price gap (a market in the system sells it for less than another pays for it) that no route in the table above carries, and why the trading plan doesn't trade it (D76): the first of its checks the good's route failed, for the free trader that got furthest with it, then the route with the largest price gap. The checks, in their order (the bot's /status/trading-routes, as TradeRoutePlanner.Rank runs them): the buy market in reach from where the trader is, refuelling at markets on the way; the sell market in reach from there; a full hold in one purchase and one sale, or, where the seller's supply is ABUNDANT, what both markets trade at once (D56, D74); the credits free for cargo pay for it with the trip's fuel (D56); at least Trade.MinProfitPerUnit a unit after fuel (D14). Below the listed routes: lucrative, but the 20 waiting routes the plan keeps rank higher. Why not: that check in a sentence, with the trader first and the figures. While every trader is on a trip the plan checks nothing, and the rows of its last pass with a free trader stay. As of: when that pass found it.",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "indexByName": {
+              "good": 0,
+              "check": 1,
+              "buy at": 2,
+              "sell at": 3,
+              "why not": 4,
+              "as of": 5
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "minWidth": 60
+          },
+          "noValue": "None: every good with a price gap is in the routes above, or no pass of the trading plan with a free trader has found one yet"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "good"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 220
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "check"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 190
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "buy_market_out_of_reach": {
+                        "text": "buy market out of reach",
+                        "index": 0
+                      },
+                      "sell_market_out_of_reach": {
+                        "text": "sell market out of reach",
+                        "index": 1
+                      },
+                      "not_full_hold": {
+                        "text": "no full hold",
+                        "index": 2
+                      },
+                      "too_few_credits": {
+                        "text": "too few credits",
+                        "index": 3
+                      },
+                      "not_lucrative": {
+                        "text": "too little profit",
+                        "index": 4
+                      },
+                      "below_the_listed_routes": {
+                        "text": "below the listed routes",
+                        "index": 5
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "buy at"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sell at"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "why not"
+            },
+            "properties": [
+              {
+                "id": "custom.minWidth",
+                "value": 300
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto",
+                  "wrapText": true
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "as of"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeFromNow"
+              },
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
       "id": 10,
       "type": "row",
       "title": "Market tree: all goods",
@@ -1620,7 +1837,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 69
+        "y": 81
       },
       "panels": [
         {
@@ -1635,7 +1852,7 @@
             "h": 16,
             "w": 24,
             "x": 0,
-            "y": 70
+            "y": 82
           },
           "targets": [
             {
@@ -1704,7 +1921,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 70
+        "y": 82
       },
       "description": "To see, over time, how many units of an input we sell to a market against what happens to the supply, trade volume and price of the goods it makes, since nobody knows how many units of input make one of output, or how fast. Pick the market at the top.",
       "panels": []
@@ -1721,7 +1938,7 @@
         "h": 10,
         "w": 8,
         "x": 0,
-        "y": 71
+        "y": 83
       },
       "interval": "1h",
       "targets": [
@@ -1786,7 +2003,7 @@
         "h": 10,
         "w": 8,
         "x": 8,
-        "y": 71
+        "y": 83
       },
       "targets": [
         {
@@ -1840,7 +2057,7 @@
         "h": 10,
         "w": 8,
         "x": 16,
-        "y": 71
+        "y": 83
       },
       "targets": [
         {
