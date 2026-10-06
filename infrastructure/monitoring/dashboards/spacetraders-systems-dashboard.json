@@ -1972,10 +1972,10 @@
             "type": "loki",
             "uid": "grafana-loki"
           },
-          "expr": "{namespace=\"spacetraders\"} | json EventKind, Plan, Reason, ResetDate, ShipName, message=\"[\\\"@m\\\"]\" | EventKind=~\"Jumped|SystemExplored|Charted\" or Plan=\"Explore\" or Reason=\"jump_refused\" | ResetDate=~\"$reset_date\" | line_format \"{{ if .ShipName }}[{{ .ShipName }}] {{ end }}{{ .message }}\""
+          "expr": "{namespace=\"spacetraders\"} | json EventKind, Plan, Reason, ResetDate, ShipName, message=\"[\\\"@m\\\"]\" | EventKind=~\"Jumped|SystemExplored|Charted|Warped|SystemsScanned\" or Plan=\"Explore\" or Reason=~\"jump_refused|warp_refused\" | ResetDate=~\"$reset_date\" | line_format \"{{ if .ShipName }}[{{ .ShipName }}] {{ end }}{{ .message }}\""
         }
       ],
-      "description": "The explore plan's journal: jumps (with what the antimatter cost), systems explored, charts with their rewards, the plan taking the command ship or an explorer and letting it go, the command ship fetching the first explorer and coming home, waits for credits, and jumps the API refused. A line about a ship starts with the bot's own name for it, in brackets (slice 2.14).",
+      "description": "The explore plan's journal: jumps (with what the antimatter cost), warps (slice 6.31: with the fuel and seconds each took against those the research note reckons), scans for the systems around an explorer, systems explored, charts with their rewards, the plan taking the command ship or an explorer and letting it go, the command ship fetching the first explorer and coming home, waits for credits, and jumps and warps the API refused. A line about a ship starts with the bot's own name for it, in brackets (slice 2.14).",
       "options": {
         "showTime": true,
         "showLabels": false,
