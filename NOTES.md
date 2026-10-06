@@ -1059,8 +1059,10 @@ that file's `resources:` block, then the numbers below.
   sustained load. The nodes have 4 cores each and were at most 37% busy over seven days (gembernode-01, where the bot runs: 29%).
 - **Memory.** The working set is 680–890 MiB across the last day's pods and flat: 780 MiB four minutes after a start, and an
   11.5-hour pod grew 21 MiB in ten hours. The highest peak was 892 MiB (87% of 1 GiB). The managed heap is only about 52 MiB and
-  the GC paused 1.4% of the time, so it isn't memory pressure inside the process: the rest is runtime and native memory,
-  reached at startup. A bigger limit is room the bot doesn't grow into by itself.
+  the GC paused 1.4% of the time: the rest is runtime and native memory, reached at startup. So the limit is room, not a
+  target. One thing a bigger limit can change: .NET's GC measures its memory load against the limit and turns aggressive
+  above 90% (`GCHighMemPercent`), which the 87% peak came close to, so with more room it may keep a little more heap. The heap is
+  small, so the effect should be small too; the check after the deploy shows it.
 - **Free memory on the nodes** (7.67 GiB each). Over 15 days the least available was 4.0 GiB on gembernode-01 and 3.7 and 3.6 GiB
   on the other two. In that time: no node-level OOM kill, at most 5 seconds of memory stall in a week, no evicted pod and no
   container OOMKilled. The memory limits on gembernode-01 total 2.2 GiB, and 3.2 GiB with this change (41% of the node). The other

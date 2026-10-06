@@ -109,7 +109,7 @@ spec:
             periodSeconds: 10
           # The CPU limit sits far above the mean use (about 0.26 cores) because the bot works in short
           # bursts: a 500m limit throttled it in about half of the 100 ms scheduling periods. Memory is
-          # about 0.8 GiB and flat, so the memory limit is room, not need (NOTES.md, 2026-10-06).
+          # about 0.8 GiB and flat, so the memory limit is room, not a need (NOTES.md, 2026-10-06).
           resources:
             requests:
               cpu: "100m"
