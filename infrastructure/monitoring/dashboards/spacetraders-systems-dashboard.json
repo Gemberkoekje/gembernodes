@@ -370,7 +370,7 @@
           "format": "table"
         }
       ],
-      "description": "Our probes in systems other than home, which keep those markets' prices fresh (slice 6.28, D97): home's markets get theirs first, then those of the explored systems within the trade reach (Trade.MaxHaulDistance jumps of home), then the others after the drones and cargo ships that take turns, as the credit reserve allows. Never bought where a shipyard has SHIP_PROBE at SCARCE.",
+      "description": "Our probes in systems other than home, which keep those markets' prices fresh (slice 6.28, D97). The next probe goes to a shipyard that sells SHIP_EXPLORER, wherever the gates reach it; then to a shipyard within the trade reach (Trade.MaxHaulDistance jumps of home); then to a market within it, home's first, then the nearest systems'; then, after the drones and cargo ships that take turns and as the credit reserve allows, to the shipyards and then the markets of the other explored systems (slice 6.32, D109, D111). A probe stays parked at a shipyard, so a purchase there needs no probe called (D110). Never bought where a shipyard has SHIP_PROBE at SCARCE.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -421,7 +421,7 @@
           "format": "table"
         }
       ],
-      "description": "Where the command ship is and what it does. It explores until the first explorer is bought, which it fetches from the shipyard that sells one, then jumps home and works there (slice 6.30, D98).",
+      "description": "Where the command ship is and what it does. It explores until the first explorer is bought, then jumps home and works there (slice 6.30, D98). It fetches an explorer, the first or a further one, from the shipyard that sells it when the purchase order and the credits allow it and no probe of ours is in that system or on its way there to answer the purchase's call, and comes home again once it is bought (slice 6.32, D108).",
       "transformations": [
         {
           "id": "organize",
@@ -524,7 +524,7 @@
           "format": "table"
         }
       ],
-      "description": "One explorer for every Explore.SystemsPerExplorer (10) systems left, rounded up, at most Explore.MaxExplorers (5) (D102). The first is bought before the probes, and the command ship fetches it; every further one after the drones and cargo ships that take turns, once a probe of ours is in the shipyard's system (see the purchase order on the SpaceTraders dashboard).",
+      "description": "One explorer for every Explore.SystemsPerExplorer (10) systems left, rounded up, at most Explore.MaxExplorers (5) (D102). The first is bought before the probes, every further one after the drones and cargo ships that take turns (see the purchase order on the SpaceTraders dashboard). A probe of ours in the shipyard's system, or on its way there, answers the purchase's call; with none, the command ship fetches it (slice 6.32, D108).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -830,7 +830,7 @@
           "format": "table"
         }
       ],
-      "description": "Every system the bot knows: what the explore plan knows of it, how many jumps from home, when it was explored, and what is there. probes: our probes there, which keep its markets' prices fresh (slice 6.28: home's markets first, then those of the explored systems the gates reach, the nearest first). oldest prices: how old the oldest prices of its markets are (the trade across systems of slice 6.29 counts only prices at most 30 minutes old, D96). Its best trade margin is per unit, before fuel.",
+      "description": "Every system the bot knows: what the explore plan knows of it, how many jumps from home, when it was explored, and what is there. probes: our probes there, which keep its markets' prices fresh (slices 6.28 and 6.32: the shipyards first, those that sell SHIP_EXPLORER first of all, then the markets, home's first, then those of the explored systems the gates reach, the nearest first). oldest prices: how old the oldest prices of its markets are (the trade across systems of slice 6.29 counts only prices at most 30 minutes old, D96). Its best trade margin is per unit, before fuel.",
       "transformations": [
         {
           "id": "merge",
@@ -1975,7 +1975,7 @@
           "expr": "{namespace=\"spacetraders\"} | json EventKind, Plan, Reason, ResetDate, ShipName, message=\"[\\\"@m\\\"]\" | EventKind=~\"Jumped|SystemExplored|Charted|Warped|SystemsScanned\" or Plan=\"Explore\" or Reason=~\"jump_refused|warp_refused\" | ResetDate=~\"$reset_date\" | line_format \"{{ if .ShipName }}[{{ .ShipName }}] {{ end }}{{ .message }}\""
         }
       ],
-      "description": "The explore plan's journal: jumps (with what the antimatter cost), warps (slice 6.31: with the fuel and seconds each took against those the research note reckons), scans for the systems around an explorer, systems explored, charts with their rewards, the plan taking the command ship or an explorer and letting it go, the command ship fetching the first explorer and coming home, waits for credits, and jumps and warps the API refused. A line about a ship starts with the bot's own name for it, in brackets (slice 2.14).",
+      "description": "The explore plan's journal: jumps (with what the antimatter cost), warps (slice 6.31: with the fuel and seconds each took against those the research note reckons), scans for the systems around an explorer, systems explored, charts with their rewards, the plan taking the command ship or an explorer and letting it go, the command ship fetching an explorer and coming home, waits for credits, and jumps and warps the API refused. A line about a ship starts with the bot's own name for it, in brackets (slice 2.14).",
       "options": {
         "showTime": true,
         "showLabels": false,
