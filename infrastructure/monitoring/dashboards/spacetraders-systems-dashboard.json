@@ -99,7 +99,7 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
+        "w": 3,
         "x": 0,
         "y": 0
       },
@@ -151,7 +151,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 4,
+        "x": 3,
         "y": 0
       },
       "targets": [
@@ -202,7 +202,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 7,
+        "x": 6,
         "y": 0
       },
       "targets": [
@@ -252,8 +252,8 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 10,
+        "w": 3,
+        "x": 9,
         "y": 0
       },
       "targets": [
@@ -303,8 +303,8 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 14,
+        "w": 3,
+        "x": 12,
         "y": 0
       },
       "targets": [
@@ -320,6 +320,57 @@
         }
       ],
       "description": "Credits the jumps cost: each buys one ANTIMATTER at the gate it leaves.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          },
+          "unit": "none",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value"
+      }
+    },
+    {
+      "id": 14,
+      "type": "stat",
+      "title": "Probes abroad",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 15,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(spacetraders_system_probes{namespace=\"spacetraders\", reset_date=~\"$reset_date\"} and on (system) (spacetraders_system_jumps_from_home{namespace=\"spacetraders\", reset_date=~\"$reset_date\"} > 0)) or vector(0)",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "Our probes in systems other than home, which keep those markets' prices fresh (slice 6.28, D97): home's markets get theirs first, then those of the explored systems within the trade reach (Trade.MaxHaulDistance jumps of home), then the others after the drones and cargo ships that take turns, as the credit reserve allows. Never bought where a shipyard has SHIP_PROBE at SCARCE.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -500,9 +551,29 @@
           "expr": "max by (system) (spacetraders_system_trade_margin{namespace=\"spacetraders\", system=~\"$system\", reset_date=~\"$reset_date\"})",
           "instant": true,
           "format": "table"
+        },
+        {
+          "refId": "J",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (system) (spacetraders_system_probes{namespace=\"spacetraders\", system=~\"$system\", reset_date=~\"$reset_date\"})",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "refId": "K",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (system) (time() - spacetraders_market_observed_timestamp_seconds{namespace=\"spacetraders\", system=~\"$system\", reset_date=~\"$reset_date\"})",
+          "instant": true,
+          "format": "table"
         }
       ],
-      "description": "Every system the bot knows: what the explore plan knows of it, how many jumps from home, when it was explored, and what is there. Its best trade margin is per unit, before fuel.",
+      "description": "Every system the bot knows: what the explore plan knows of it, how many jumps from home, when it was explored, and what is there. probes: our probes there, which keep its markets' prices fresh (slice 6.28: home's markets first, then those of the explored systems the gates reach, the nearest first). oldest prices: how old the oldest prices of its markets are (the trade across systems of slice 6.29 counts only prices at most 30 minutes old, D96). Its best trade margin is per unit, before fuel.",
       "transformations": [
         {
           "id": "merge",
@@ -522,11 +593,13 @@
               "Value #B": 3,
               "Value #C": 4,
               "Value #D": 5,
-              "Value #E": 6,
-              "Value #F": 7,
-              "Value #G": 8,
-              "Value #H": 9,
-              "Value #I": 10
+              "Value #J": 6,
+              "Value #K": 7,
+              "Value #E": 8,
+              "Value #F": 9,
+              "Value #G": 10,
+              "Value #H": 11,
+              "Value #I": 12
             },
             "renameByName": {
               "gate_state": "gate",
@@ -537,7 +610,9 @@
               "Value #F": "asteroids",
               "Value #G": "gas giants",
               "Value #H": "uncharted",
-              "Value #I": "best margin"
+              "Value #I": "best margin",
+              "Value #J": "probes",
+              "Value #K": "oldest prices"
             }
           }
         },
@@ -672,6 +747,60 @@
               {
                 "id": "unit",
                 "value": "none"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "probes"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "oldest prices"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 1800
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
               }
             ]
           },
