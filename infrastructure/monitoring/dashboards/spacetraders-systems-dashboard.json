@@ -1,7 +1,7 @@
 {
   "uid": "spacetraders-systems",
   "title": "SpaceTraders systems",
-  "description": "The systems the SpaceTraders bot knows, the command ship's exploring through jump gates, and what each system offers for mining, trading and ships (Gemberkoekje/projects SpaceTraders/PLAN.md slice 6.11).",
+  "description": "The systems the SpaceTraders bot knows, its exploring through jump gates, the command ship's and then the explorers', the uncharted waypoints they chart, and what each system offers for mining, trading and ships (Gemberkoekje/projects SpaceTraders/PLAN.md slices 6.11 and 6.30).",
   "tags": [
     "spacetraders"
   ],
@@ -217,7 +217,7 @@
           "format": "table"
         }
       ],
-      "description": "Known systems behind a built gate that the command ship hasn't explored yet.",
+      "description": "Known systems behind a built gate that no exploring ship has explored yet. Those within the trade reach of home (Trade.MaxHaulDistance jumps) are explored first (slice 6.30, D103).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -421,7 +421,7 @@
           "format": "table"
         }
       ],
-      "description": "Where the command ship is and what it does.",
+      "description": "Where the command ship is and what it does. It explores until the first explorer is bought, which it fetches from the shipyard that sells one, then jumps home and works there (slice 6.30, D98).",
       "transformations": [
         {
           "id": "organize",
@@ -448,6 +448,263 @@
       }
     },
     {
+      "id": 15,
+      "type": "stat",
+      "title": "Systems left",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 0,
+        "y": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max(spacetraders_explore_systems_left{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "The systems the explore plan knows, hasn't explored and reaches from home through built gates (slice 6.30, D102), as its last pass counted them: what the explorers are bought for.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          },
+          "unit": "none",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value"
+      }
+    },
+    {
+      "id": 16,
+      "type": "stat",
+      "title": "Explorers wanted",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 3,
+        "y": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max(spacetraders_explore_explorers_wanted{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "One explorer for every Explore.SystemsPerExplorer (10) systems left, rounded up, at most Explore.MaxExplorers (5) (D102). The first is bought before the probes, and the command ship fetches it; every further one after the drones and cargo ships that take turns, once a probe of ours is in the shipyard's system (see the purchase order on the SpaceTraders dashboard).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          },
+          "unit": "none",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value"
+      }
+    },
+    {
+      "id": 17,
+      "type": "stat",
+      "title": "Explorers",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 6,
+        "y": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "count(max by (ship) (spacetraders_ship_status_since_timestamp_seconds{namespace=\"spacetraders\", role=~\"(SHIP_)?EXPLORER\", reset_date=~\"$reset_date\"})) or vector(0)",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "The explorers the fleet has (SHIP_EXPLORER; EXPLORER after a restart). With no system left for it, an explorer trades where it is until one turns up (D102).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          },
+          "unit": "none",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value"
+      }
+    },
+    {
+      "id": 18,
+      "type": "stat",
+      "title": "Chart rewards (24h)",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 9,
+        "y": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(increase(spacetraders_credits_earned_total{namespace=\"spacetraders\", source=\"ChartReward\", reset_date=~\"$reset_date\"}[24h])) or vector(0)",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "What charting paid in the last 24 hours (slice 6.30, D99). An exploring ship charts every uncharted waypoint that can hold a market or shipyard (not asteroids or gas giants), the gate first; the reward is the credits after a chart less those before it. The Charted lines are in the exploring journal.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          },
+          "unit": "short",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value"
+      }
+    },
+    {
+      "id": 19,
+      "type": "table",
+      "title": "Explorers",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (ship, location, activity) (spacetraders_ship_info{namespace=\"spacetraders\", reset_date=~\"$reset_date\"} and on (ship) max by (ship) (spacetraders_ship_status_since_timestamp_seconds{namespace=\"spacetraders\", role=~\"(SHIP_)?EXPLORER\", reset_date=~\"$reset_date\"}))",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "description": "Where each explorer is and what it does: exploring a system, jumping towards one, or trading while no system is left for it (slice 6.30, D102). Each takes a system no other exploring ship has taken, those within the trade reach of home first (D103).",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true
+            },
+            "indexByName": {
+              "ship": 0,
+              "location": 1,
+              "activity": 2
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
       "id": 7,
       "type": "table",
       "title": "Systems",
@@ -459,7 +716,7 @@
         "h": 11,
         "w": 24,
         "x": 0,
-        "y": 4
+        "y": 8
       },
       "targets": [
         {
@@ -941,7 +1198,7 @@
         "h": 12,
         "w": 12,
         "x": 0,
-        "y": 15
+        "y": 19
       },
       "targets": [
         {
@@ -1145,7 +1402,7 @@
         "h": 12,
         "w": 12,
         "x": 12,
-        "y": 15
+        "y": 19
       },
       "targets": [
         {
@@ -1303,7 +1560,7 @@
         "h": 12,
         "w": 12,
         "x": 0,
-        "y": 27
+        "y": 31
       },
       "targets": [
         {
@@ -1491,7 +1748,7 @@
         "h": 12,
         "w": 12,
         "x": 12,
-        "y": 27
+        "y": 31
       },
       "targets": [
         {
@@ -1630,7 +1887,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 39
+        "y": 43
       },
       "targets": [
         {
@@ -1706,7 +1963,7 @@
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 49
+        "y": 53
       },
       "targets": [
         {
@@ -1715,10 +1972,10 @@
             "type": "loki",
             "uid": "grafana-loki"
           },
-          "expr": "{namespace=\"spacetraders\"} | json EventKind, Plan, Reason, ResetDate, ShipName, message=\"[\\\"@m\\\"]\" | EventKind=~\"Jumped|SystemExplored\" or Plan=\"Explore\" or Reason=\"jump_refused\" | ResetDate=~\"$reset_date\" | line_format \"{{ if .ShipName }}[{{ .ShipName }}] {{ end }}{{ .message }}\""
+          "expr": "{namespace=\"spacetraders\"} | json EventKind, Plan, Reason, ResetDate, ShipName, message=\"[\\\"@m\\\"]\" | EventKind=~\"Jumped|SystemExplored|Charted\" or Plan=\"Explore\" or Reason=\"jump_refused\" | ResetDate=~\"$reset_date\" | line_format \"{{ if .ShipName }}[{{ .ShipName }}] {{ end }}{{ .message }}\""
         }
       ],
-      "description": "The explore plan's journal: jumps (with what the antimatter cost), systems explored, the plan taking the command ship and bringing it home, waits for credits, and jumps the API refused. A line about a ship starts with the bot's own name for it, in brackets (slice 2.14).",
+      "description": "The explore plan's journal: jumps (with what the antimatter cost), systems explored, charts with their rewards, the plan taking the command ship or an explorer and letting it go, the command ship fetching the first explorer and coming home, waits for credits, and jumps the API refused. A line about a ship starts with the bot's own name for it, in brackets (slice 2.14).",
       "options": {
         "showTime": true,
         "showLabels": false,
