@@ -1347,7 +1347,7 @@
             "method": "GET",
             "data": ""
           },
-          "root_selector": "($asOf := updatedAt; $rows := [$map(routes, function($r){ {\"order\": $r.position, \"trader\": $r.status = \"Assigned\" ? $r.shipSymbol : \"waiting\", \"good\": $r.tradeSymbol, \"buyAt\": $r.buyWaypointSymbol, \"sellAt\": $r.sellWaypointSymbol, \"units\": $r.units, \"profit\": $r.expectedProfit, \"perUnit\": $r.profitPerUnit, \"feeds\": $r.feedsTradeSymbol, \"couldTakeIt\": $r.candidateShips, \"asOf\": $asOf} })]; $count($rows) > 0 ? $rows : [])",
+          "root_selector": "($asOf := updatedAt; $rows := [$map(routes, function($r){ {\"order\": $r.position, \"trader\": $r.status = \"Assigned\" ? $r.shipSymbol : \"waiting\", \"good\": $r.tradeSymbol, \"buyAt\": $r.buyWaypointSymbol, \"sellAt\": $r.sellWaypointSymbol, \"units\": $r.units, \"profit\": $r.expectedProfit, \"perUnit\": $r.profitPerUnit, \"minutes\": $r.expectedMinutes > 0 ? $r.expectedMinutes : null, \"perHour\": $r.expectedMinutes > 0 ? $r.creditsPerHour : null, \"feeds\": $r.feedsTradeSymbol, \"couldTakeIt\": $r.candidateShips, \"asOf\": $asOf} })]; $count($rows) > 0 ? $rows : [])",
           "columns": [
             {
               "selector": "order",
@@ -1390,6 +1390,16 @@
               "type": "number"
             },
             {
+              "selector": "minutes",
+              "text": "minutes",
+              "type": "number"
+            },
+            {
+              "selector": "perHour",
+              "text": "per hour",
+              "type": "number"
+            },
+            {
               "selector": "feeds",
               "text": "feeds",
               "type": "string"
@@ -1409,7 +1419,7 @@
           "computed_columns": []
         }
       ],
-      "description": "The bot's own order: the trading plan's routes as its last pass with a free trader stored them (the bot's /status/trading-routes, through the SpaceTraders API data source, across every system its traders are in). First the routes traders hold, with the trader. Then the lucrative routes no trader holds, numbered best first: the order the plan hands routes out in, each to the free trader it suits best. How the plan ranks, for each free trader: every route from where the trader stands that earns at least Trade.MinProfitPerUnit a unit after the fuel for the whole trip (D14); its units are a full hold bought and sold at once, or, where the seller's supply is ABUNDANT, what both markets trade at once (D56, D74); the credits no other trip holds back must pay for them (D57). Among those, a route whose sell market makes a pricier good from the cargo (feeds) comes first (D15), then the most profit after fuel. Two traders never share a route (D18). A waiting route shows the figures of the trader it suits best, and at most 20 are listed, only from a pass when a trader was free; a held route keeps the figures it was chosen with. Could take it: the free traders it was lucrative for. As of: when the plan last changed this list. Why the other goods with a price gap aren't traded: the table below.",
+      "description": "The bot's own order: the trading plan's routes as its last pass with a free trader stored them (the bot's /status/trading-routes, through the SpaceTraders API data source, across every system its traders are in). First the routes traders hold, with the trader. Then the lucrative routes no trader holds, numbered best first: the order the plan hands routes out in, each to the free trader it suits best. How the plan ranks, for each free trader: every route from where the trader stands that earns at least Trade.MinProfitPerUnit a unit after the fuel for the whole trip (D14); its units are as many as each still earn that, bought and sold in batches of each market's trade volume (D79); the credits no other trip holds back must pay for them (D57). Among those, the routes that feed a material the jump gate still needs come first (D89, D90), those to a market that exchanges the good last (D91), and otherwise the one that earns most per hour over the whole trip from where the trader is (minutes: the flight to the buy market and the haul in CRUISE, and a stop at each landing; D95), an end product's rate counted at half (D85). Two traders never share a route (D18), and one buyer at a time buys a good at a market (D80). A waiting route shows the figures of the trader it suits best, and at most 20 are listed, only from a pass when a trader was free; a held route keeps the figures it was chosen with. Could take it: the free traders it was lucrative for. As of: when the plan last changed this list. Why the other goods with a price gap aren't traded: the table below.",
       "transformations": [
         {
           "id": "organize",
@@ -1424,9 +1434,11 @@
               "units": 5,
               "profit after fuel": 6,
               "per unit": 7,
-              "feeds": 8,
-              "could take it": 9,
-              "as of": 10
+              "minutes": 8,
+              "per hour": 9,
+              "feeds": 10,
+              "could take it": 11,
+              "as of": 12
             },
             "renameByName": {}
           }
@@ -1553,6 +1565,46 @@
               {
                 "id": "custom.width",
                 "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "minutes"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              },
+              {
+                "id": "noValue",
+                "value": "—"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "per hour"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              },
+              {
+                "id": "noValue",
+                "value": "—"
               }
             ]
           },
