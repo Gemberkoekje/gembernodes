@@ -1020,3 +1020,25 @@ otherwise extra miners can be built."
 ### How it was tested
 
 - The dashboard JSON parses, and only the panel's description changed. `scripts/validate.py` runs in CI.
+
+## 2026-10-06 — SpaceTraders: trade routes per hour (slice 6.27)
+
+For the bot's slice 6.27 (Gemberkoekje/projects `SpaceTraders/PLAN.md`, decision D95, branch
+`claude/spacetraders-profit-per-hour`): the trading plan ranks its routes by what they earn an hour over the whole trip
+from where the trader is, within its order (the jump gate's materials first, exchanges last, end products at half). Asked
+on 2026-10-06: "I want a "profit per time unit" so the system can choose between a short route that pays less or a long
+route that pays more."
+
+- **"Trade routes, in the order traders take them"** (markets dashboard): two columns after "per unit", **minutes** (the
+  trip's time, one decimal) and **per hour** (the rate the plan ranks by), from the bot's `expectedMinutes` and
+  `creditsPerHour`. A route without a time (cargo a trader already held, or a bot without slice 6.27) shows "—" in both.
+  The description now states the plan's order as it is: as many units as each earn the minimum, in batches (D79); the
+  gate's materials first (D89, D90), exchanges last (D91), otherwise the most per hour (D95), an end product's rate at
+  half (D85); one buyer at a time (D80). It still said full holds (D56, D74) and the most profit after fuel.
+
+### How it was tested
+
+- The dashboard JSON parses. The table's JSONata expression, evaluated with jsonata 2 (JavaScript) against the
+  endpoint's answer with the new fields, without them (the bot as it runs now) and with no routes: the two columns
+  filled, "—" (null), and no rows. `scripts/validate.py` runs in CI.
+- Deploy it with the bot's build of slice 6.27; before that both columns show "—".
