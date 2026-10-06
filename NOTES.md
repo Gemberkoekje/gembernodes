@@ -1042,3 +1042,59 @@ route that pays more."
   endpoint's answer with the new fields, without them (the bot as it runs now) and with no routes: the two columns
   filled, "—" (null), and no rows. `scripts/validate.py` runs in CI.
 - Deploy it with the bot's build of slice 6.27; before that both columns show "—".
+
+## 2026-10-06 — SpaceTraders API: CPU limit 2 cores, memory limit 2 GiB
+
+Asked on 2026-10-06, after a watch on the bot found its CPU limit throttling it in 47% of the scheduling periods and its memory
+at 87% of the limit: "Can we up the allowed CPU usage, and can you investigate whether we have memory space to up that as
+well without running into issues?" Only the API container's limits change (`apps/spacetraders/deployment-api.yaml`): CPU
+500m → 2, memory 1Gi → 2Gi. Its requests (100m, 512Mi) and the web UI stay as they were. To understand this, start by reading
+that file's `resources:` block, then the numbers below.
+
+### What the numbers said (Prometheus, 2026-10-05 and 06)
+
+- **CPU.** The container uses 0.22–0.26 cores on average (p99 0.33, worst 0.39, over two-minute windows) yet was throttled in 47%
+  of its 100 ms scheduling periods over 24 hours (p99 71%). Throttled time is 7% of wall time at the median, 31% at the 99th
+  percentile and 50% at worst. So the bot works in short bursts over the 50 ms a 500m limit gives each period, not in a
+  sustained load. The nodes have 4 cores each and were at most 37% busy over seven days (gembernode-01, where the bot runs: 29%).
+- **Memory.** The working set is 680–890 MiB across the last day's pods and flat: 780 MiB four minutes after a start, and an
+  11.5-hour pod grew 21 MiB in ten hours. The highest peak was 892 MiB (87% of 1 GiB). The managed heap is only about 52 MiB and
+  the GC paused 1.4% of the time, so it isn't memory pressure inside the process: the rest is runtime and native memory,
+  reached at startup. A bigger limit is room the bot doesn't grow into by itself.
+- **Free memory on the nodes** (7.67 GiB each). Over 15 days the least available was 4.0 GiB on gembernode-01 and 3.7 and 3.6 GiB
+  on the other two. In that time: no node-level OOM kill, at most 5 seconds of memory stall in a week, no evicted pod and no
+  container OOMKilled. The memory limits on gembernode-01 total 2.2 GiB, and 3.2 GiB with this change (41% of the node). The other
+  nodes' limits already add up to 101% and 125% of their memory, and what they actually use is 54–62%. The namespace has no
+  quota or limit range, and the cluster has no admission policy engine.
+
+### Decisions
+
+- **2 cores, not 1.** It ends the throttling and costs nothing while the bot is quiet. .NET takes its processor count from the CPU
+  limit rounded up: 500m gave 1 (`system_runtime_dotnet_process_cpu_count`), 2 gives 2, so the thread pool starts with two
+  threads instead of one. Nothing in the bot reads the processor count, and Wolverine's default parallelism is the greater of the
+  processor count and 5 (the documentation of `Endpoint.MaxDegreeOfParallelism` in WolverineFx 6.44.0), so messages are
+  handled five at a time either way. `1000m` would double the quota without changing the count: the alternative if 2 is too much.
+- **2 GiB.** 2.2 times the highest peak. If the bot ever used all of it, the nodes would still have at least 2.5 GiB free, counted from
+  their worst moment of the last 15 days.
+
+### Gotchas
+
+- The pod restarts when this merges: `strategy: Recreate`, so about 90 seconds without the bot, like any deploy. The image doesn't
+  change, so there is no CI run to wait for.
+- The memory request (512Mi) is below what the bot uses (about 800 MiB): the scheduler books less than the bot takes, and under
+  memory pressure on its node the bot would be among the first to be evicted. Not changed, because the nodes have gigabytes spare;
+  raise it to about 1Gi if the cluster ever fills up. The CPU request (100m) is likewise below the mean use, which matters only
+  when a node's CPU is contended.
+- Prometheus scrapes once a minute, so the shortest rate window that works is 2m: bursts shorter than that show only in the
+  throttling counters.
+
+### How it was measured, and what to check after the deploy
+
+- Container, `container="spacetraders-api"`: `rate(container_cpu_usage_seconds_total[2m])`, throttled share
+  `rate(container_cpu_cfs_throttled_periods_total[2m]) / rate(container_cpu_cfs_periods_total[2m])`, throttled time
+  `rate(container_cpu_cfs_throttled_seconds_total[2m])`, `container_memory_working_set_bytes`; the .NET side
+  `system_runtime_gc_heap_size`, `system_runtime_dotnet_process_cpu_count`. Nodes: `node_memory_MemAvailable_bytes` (min over 15d),
+  `node_vmstat_oom_kill`, `node_pressure_memory_waiting_seconds_total`, and `kubectl describe node` (allocated resources).
+- After the deploy expect the throttled share to fall well under the 47% above and the working set to stay near 0.8 GiB. If memory
+  climbs instead, the 1 GiB limit was hiding a leak.
+- The manifest parses and `kubectl kustomize apps/spacetraders` renders with the new limits; `scripts/validate.py` runs in CI.
