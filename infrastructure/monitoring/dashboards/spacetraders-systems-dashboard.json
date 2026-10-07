@@ -217,7 +217,7 @@
           "format": "table"
         }
       ],
-      "description": "Known systems behind a built gate that no exploring ship has explored yet. They are explored ring by ring around home, each ring Trade.MaxHaulDistance jumps wide: 1 to 5 jumps first, then 6 to 10, then 11 to 15 (slice 6.33, D114; D103 explored the first ring first and the rest as one).",
+      "description": "Known systems behind a built gate that no exploring ship has explored yet. They are explored ring by ring around home, each ring Explore.RingWidth jumps wide (5): 1 to 5 jumps first, then 6 to 10, then 11 to 15 (slice 6.33, D114; D103 explored the first ring first and the rest as one). The rings were as wide as the trade reach, Trade.MaxHaulDistance, until slice 6.35 (D117).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -677,7 +677,7 @@
           "format": "table"
         }
       ],
-      "description": "Where each explorer is and what it does: exploring a system, jumping towards one, or trading while no system is left for it (slice 6.30, D102). Each takes a system no other exploring ship has taken, ring by ring around home, each ring the trade reach wide, the nearest first within a ring (slice 6.33, D114). A system behind a gate still under construction lies in the ring of its gate; one found by a scan, after every ring.",
+      "description": "Where each explorer is and what it does: exploring a system, jumping towards one, or trading while no system is left for it (slice 6.30, D102). A new explorer, or one back from a trade, waits where it is while the plan looks at the gates it has just learned of, rather than taking a trade (B76). Each takes a system no other exploring ship has taken, ring by ring around home, each ring Explore.RingWidth jumps wide (5; slice 6.35, D117), the nearest first within a ring (slice 6.33, D114). A system behind a gate still under construction lies in the ring of its gate; one found by a scan, after every ring.",
       "transformations": [
         {
           "id": "organize",
