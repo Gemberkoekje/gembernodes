@@ -217,7 +217,7 @@
           "format": "table"
         }
       ],
-      "description": "Known systems behind a built gate that no exploring ship has explored yet. Those within the trade reach of home (Trade.MaxHaulDistance jumps) are explored first (slice 6.30, D103).",
+      "description": "Known systems behind a built gate that no exploring ship has explored yet. They are explored ring by ring around home, each ring Trade.MaxHaulDistance jumps wide: 1 to 5 jumps first, then 6 to 10, then 11 to 15 (slice 6.33, D114; D103 explored the first ring first and the rest as one).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -524,7 +524,7 @@
           "format": "table"
         }
       ],
-      "description": "One explorer for every Explore.SystemsPerExplorer (10) systems left, rounded up, at most Explore.MaxExplorers (5) (D102). The first is bought before the probes, every further one after the drones and cargo ships that take turns (see the purchase order on the SpaceTraders dashboard). A probe of ours in the shipyard's system, or on its way there, answers the purchase's call; with none, the command ship fetches it (slice 6.32, D108).",
+      "description": "One explorer for every Explore.SystemsPerExplorer (10) systems left, rounded up, at most Explore.MaxExplorers (5) (D102). Every one is bought before the probes, at position 7 of the purchase order on the SpaceTraders dashboard (slice 6.33, D113; until then every further one came after the drones and cargo ships that take turns). A probe of ours in the shipyard's system, or on its way there, answers the purchase's call; with none, the command ship fetches it (slice 6.32, D108).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -677,7 +677,7 @@
           "format": "table"
         }
       ],
-      "description": "Where each explorer is and what it does: exploring a system, jumping towards one, or trading while no system is left for it (slice 6.30, D102). Each takes a system no other exploring ship has taken, those within the trade reach of home first (D103).",
+      "description": "Where each explorer is and what it does: exploring a system, jumping towards one, or trading while no system is left for it (slice 6.30, D102). Each takes a system no other exploring ship has taken, ring by ring around home, each ring the trade reach wide, the nearest first within a ring (slice 6.33, D114). A system behind a gate still under construction lies in the ring of its gate; one found by a scan, after every ring.",
       "transformations": [
         {
           "id": "organize",
