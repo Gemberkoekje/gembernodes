@@ -1136,3 +1136,17 @@ in Prometheus". Every series already carries its run's reset date (slice 2.13, D
   pickers chose 2026-10-04 and 2026-09-27, the shift came out at 670,500 s against the 670,620 s between the first samples,
   both panels drew the two runs from the same start, and the reverse (the older run under Reset, over its own dates) drew
   the newer run over it. The dashboard JSON parses; `scripts/validate.py` runs in CI.
+
+## 2026-10-09 — SpaceTraders: descriptions for slices 6.37–6.40
+
+For the bot's slices 6.37–6.40 (Gemberkoekje/projects `SpaceTraders/PLAN.md`, decisions D119–D122, branch
+`claude/laughing-babbage-f8yqdj`), the descriptions say what changes on the dashboards; no query changes.
+
+- **Purchase order** (SpaceTraders): position 12, `MiningAbroad`, a miner for a system abroad, last of all (D122); an ore
+  hound wherever a drone is bought, where the shipyard sells one (D120), the gate's miners included; an interceptor in a
+  probe's place (D119); no ship bought where its shipyard has it SCARCE, and no row for a plan whose ship is SCARCE
+  everywhere (D121).
+- **Probes abroad** (systems): the interceptors count with the probes (the bot's `FleetRoles.IsProbe` counts them), and
+  neither is bought at SCARCE.
+- **Shipyards** (markets): an interceptor's "can do" is Probe, as a probe's.
+- The dashboard JSON parses. Deploy with the bot's build of those slices; until then the text runs ahead of the bot.

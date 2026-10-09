@@ -370,7 +370,7 @@
           "format": "table"
         }
       ],
-      "description": "Our probes in systems other than home, which keep those markets' prices fresh (slice 6.28, D97). The next probe goes to a shipyard that sells SHIP_EXPLORER, wherever the gates reach it; then to a shipyard within the trade reach (Trade.MaxHaulDistance jumps of home); then to a market within it, home's first, then the nearest systems'; then, after the drones and cargo ships that take turns and as the credit reserve allows, to the shipyards and then the markets of the other explored systems (slice 6.32, D109, D111). A probe stays parked at a shipyard, so a purchase there needs no probe called (D110). Never bought where a shipyard has SHIP_PROBE at SCARCE.",
+      "description": "Our probes in systems other than home, and the interceptors bought in their place (slice 6.38, D119), which keep those markets' prices fresh (slice 6.28, D97). The next probe goes to a shipyard that sells SHIP_EXPLORER, wherever the gates reach it; then to a shipyard within the trade reach (Trade.MaxHaulDistance jumps of home); then to a market within it, home's first, then the nearest systems'; then, after the drones and cargo ships that take turns and as the credit reserve allows, to the shipyards and then the markets of the other explored systems (slice 6.32, D109, D111). A probe stays parked at a shipyard, so a purchase there needs no probe called (D110). A SHIP_INTERCEPTOR wherever a shipyard sells one, else a SHIP_PROBE; never bought where the shipyard has it SCARCE (D97, D121).",
       "fieldConfig": {
         "defaults": {
           "color": {
