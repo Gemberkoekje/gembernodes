@@ -1100,3 +1100,39 @@ that file's `resources:` block, then the numbers below.
 - After the deploy expect the throttled share to fall well under the 47% above and the working set to stay near 0.8 GiB. If memory
   climbs instead, the 1 GiB limit was hiding a leak.
 - The manifest parses and `kubectl kustomize apps/spacetraders` renders with the new limits; `scripts/validate.py` runs in CI.
+
+## 2026-10-09 — SpaceTraders: two runs on one chart (slice 2.19), and 31 days in Prometheus
+
+Asked on 2026-10-09 (Gemberkoekje/projects `SpaceTraders/PLAN.md` slice 2.19, decision D123): "If possible, I'd like the
+option to overlay 2 (weekly) runs, so I can compare the value curve and see if it becomes better", with "Picker + 31 days
+in Prometheus". Every series already carries its run's reset date (slice 2.13, D70), but each run shows on its own dates.
+
+- **"Compare with"**, the SpaceTraders dashboard's second picker: the runs Prometheus holds, the newest first, but the one
+  under Reset (`query_result` over `spacetraders_agent_credits`, 31 days either side of the time range's end, so the list
+  doesn't depend on the time range). It opens on the run before the one under Reset.
+- **"Total value, two runs"** and **"Value gained per hour, two runs"**, under Total value: the run under Reset as a solid
+  line, the compared run dashed and shifted so both runs start at the same moment. A run starts with its
+  first sample. The queries are Total value's top line and Value gained per hour's, with an `offset` on every selector of
+  the compared run.
+- **Two hidden variables**, `shift` and `shift_hour`: the seconds between the two runs' first samples (to 5 minutes:
+  `min_over_time(timestamp(...)[62d:5m] offset -31d)`), and that plus an hour. Negative when the compared run is the newer
+  one, which Prometheus allows since 2.33. With no run to compare with they are 1 and 3601: PromQL refuses `offset 0s`, and
+  the compared run's selectors (`reset_date="$compare_with", reset_date!=""`) then match nothing, the unlabelled data from
+  before slice 2.13 included.
+- **Prometheus keeps 31 days** (`server.retention: "31d"`; the chart's default was 15 days), like Loki, so runs up to about
+  four weeks back can be compared. The TSDB grows to about twice its size on the QNAP NFS share; the claim asks for 2Gi,
+  which the NFS driver most likely doesn't enforce. The older data stays until it is 31 days old: right after the deploy only
+  the last 15 days are there.
+- The Reset picker's description says how to lay two runs over each other.
+
+### How it was tested
+
+- `promtool test rules` (Prometheus 2.55.1, what chart 25.30.2 runs) against two synthetic runs and unlabelled older
+  data, the dashboard's own queries with the variables put in as Grafana does: 18 checks, including the newer run under
+  Compare with (a negative shift), a time range before the newer run began, no run to compare with, and a compared run that
+  had ended.
+- Grafana 11.6.1 against a local Prometheus holding a week-long run that ended two days ago and one that began 30 hours ago
+  (backfilled with `promtool tsdb create-blocks-from openmetrics`), looked at in a browser at desktop and phone width: the
+  pickers chose 2026-10-04 and 2026-09-27, the shift came out at 670,500 s against the 670,620 s between the first samples,
+  both panels drew the two runs from the same start, and the reverse (the older run under Reset, over its own dates) drew
+  the newer run over it. The dashboard JSON parses; `scripts/validate.py` runs in CI.
