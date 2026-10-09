@@ -618,6 +618,172 @@
       "description": "Stacked: the top line is the total value. Ships and equipment count at what was paid for them (starting ships at 0); cargo at the average sell price over the markets seen. A purchase moves value between bands and leaves the top line about level."
     },
     {
+      "id": 44,
+      "type": "timeseries",
+      "title": "Total value, two runs",
+      "description": "The total value of two runs: credits, plus what was paid for the ships and their equipment, plus the cargo at the average price markets pay, the top line of Total value. The dashed line is the run picked under Compare with, shifted so both runs start at the same moment (each run starts with its first sample): at each time it shows where that run stood as long after its own start (slice 2.19, D123). The dates follow the run under Reset; widen the time range to see more of both runs. Prometheus keeps 31 days, so runs up to about four weeks back can be compared. No dashed line: no other run is held, or the compared run hadn't got that far.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 20
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) + (sum(max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})) or vector(0)) + (sum(max by (ship, good) (spacetraders_ship_cargo_units{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) * on (good) group_left () avg by (good) (spacetraders_market_sell_price{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})) or vector(0))",
+          "legendFormat": "${reset_date}"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date=\"$compare_with\", reset_date!=\"\"} offset ${shift}s) + (sum(max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\", reset_date=\"$compare_with\", reset_date!=\"\"} offset ${shift}s)) or vector(0)) + (sum(max by (ship, good) (spacetraders_ship_cargo_units{namespace=\"spacetraders\", reset_date=\"$compare_with\", reset_date!=\"\"} offset ${shift}s) * on (good) group_left () avg by (good) (spacetraders_market_sell_price{namespace=\"spacetraders\", reset_date=\"$compare_with\", reset_date!=\"\"} offset ${shift}s)) or vector(0))",
+          "legendFormat": "${compare_with}, from the same start"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "lineWidth": 2,
+            "spanNulls": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "fill": "dash",
+                  "dash": [
+                    10,
+                    10
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 45,
+      "type": "timeseries",
+      "title": "Value gained per hour, two runs",
+      "description": "Total value now minus total value an hour earlier, for two runs, as Value gained per hour has it for one. The dashed line is the run picked under Compare with, shifted so both runs start at the same moment (each run starts with its first sample): at each time it shows where that run stood as long after its own start (slice 2.19, D123). The dates follow the run under Reset; widen the time range to see more of both runs. Prometheus keeps 31 days, so runs up to about four weeks back can be compared. No dashed line: no other run is held, or the compared run hadn't got that far.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "(max(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) + (sum(max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})) or vector(0)) + (sum(max by (ship, good) (spacetraders_ship_cargo_units{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) * on (good) group_left () avg by (good) (spacetraders_market_sell_price{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})) or vector(0))) - (max(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"} offset 1h) + (sum(max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"} offset 1h)) or vector(0)) + (sum(max by (ship, good) (spacetraders_ship_cargo_units{namespace=\"spacetraders\", reset_date=~\"$reset_date\"} offset 1h) * on (good) group_left () avg by (good) (spacetraders_market_sell_price{namespace=\"spacetraders\", reset_date=~\"$reset_date\"} offset 1h)) or vector(0)))",
+          "legendFormat": "${reset_date}"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "(max(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date=\"$compare_with\", reset_date!=\"\"} offset ${shift}s) + (sum(max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\", reset_date=\"$compare_with\", reset_date!=\"\"} offset ${shift}s)) or vector(0)) + (sum(max by (ship, good) (spacetraders_ship_cargo_units{namespace=\"spacetraders\", reset_date=\"$compare_with\", reset_date!=\"\"} offset ${shift}s) * on (good) group_left () avg by (good) (spacetraders_market_sell_price{namespace=\"spacetraders\", reset_date=\"$compare_with\", reset_date!=\"\"} offset ${shift}s)) or vector(0))) - (max(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date=\"$compare_with\", reset_date!=\"\"} offset ${shift_hour}s) + (sum(max by (ship) (spacetraders_ship_value_credits{namespace=\"spacetraders\", reset_date=\"$compare_with\", reset_date!=\"\"} offset ${shift_hour}s)) or vector(0)) + (sum(max by (ship, good) (spacetraders_ship_cargo_units{namespace=\"spacetraders\", reset_date=\"$compare_with\", reset_date!=\"\"} offset ${shift_hour}s) * on (good) group_left () avg by (good) (spacetraders_market_sell_price{namespace=\"spacetraders\", reset_date=\"$compare_with\", reset_date!=\"\"} offset ${shift_hour}s)) or vector(0)))",
+          "legendFormat": "${compare_with}, from the same start"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "lineWidth": 2,
+            "spanNulls": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "fill": "dash",
+                  "dash": [
+                    10,
+                    10
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
       "id": 37,
       "type": "timeseries",
       "title": "Profit per hour by activity",
@@ -629,7 +795,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 20
+        "y": 28
       },
       "interval": "1h",
       "targets": [
@@ -689,7 +855,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 28
+        "y": 36
       },
       "targets": [
         {
@@ -750,7 +916,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 28
+        "y": 36
       },
       "targets": [
         {
@@ -811,7 +977,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 46
       },
       "targets": [
         {
@@ -1028,7 +1194,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 47
+        "y": 55
       },
       "targets": [
         {
@@ -1203,7 +1369,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 55
+        "y": 63
       },
       "targets": [
         {
@@ -1503,7 +1669,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 65
+        "y": 73
       },
       "targets": [
         {
@@ -1527,7 +1693,7 @@
           "format": "table"
         }
       ],
-      "description": "The order ships are bought in (SpaceTraders slice 6.10b, D43): what each plan that buys ships would buy now. The lowest position is first in line: the credits are saved up for it, and the purchases after it wait until it is bought or no longer needed (the ships still work). A purchase that waits only for one of our ships to reach its shipyard (D30: a probe on its way, or the command ship fetching an explorer) lets the ones after it go first, each as long as it leaves the waiting one's credits needed (slice 6.36, D118). 1 Contract: the contract's drone. 2 Surveyor: a designated surveyor (D47). 3 Coverage: a drone per SCARCE or LIMITED mineral and area (D48, D53). 4 SurveyorPerArea: one more surveyor per area with mining drones (D55). 5 CargoShips: the next ship of Trade.ShipPurchases, saved up for. 6 Construction: the jump gate's next load of materials (D64), with the material as the ship type and its market as the shipyard; while the gate needs materials, what comes after waits. The Mining plan's SHIP_MINING_DRONE at this position is one of the gate's miners (slice 6.25, D92): one per ore every Mining.GateMinerIntervalMinutes (30) while a smelter that makes a metal for the gate's materials from the ore has it below HIGH. It waits while a load can be bought, and is bought while the load waits for SCARCE or LIMITED markets. 7 Explorer: every explorer the explore plan wants (slice 6.30, D98, D102: one for every Explore.SystemsPerExplorer systems left to explore, at most Explore.MaxExplorers), the further ones too since slice 6.33 (D113: \"I'd like Explorers (order 10) to go in front of probes (order 8)\"); a probe of ours in the shipyard's system, or on its way there, answers the purchase's call, else the command ship fetches it (slice 6.32, D108). 8 TimedCargoShip: one more cargo ship, the largest hold (D112), once a route has waited for it (D88) and Trade.ShipPurchaseIntervalMinutes (30) have passed since the Trading plan last bought a cargo ship; the credits are saved up for it, and the probes wait (slice 6.34, D116: \"once every half hour, money permitting, a trade ship is bought, independent on whether probes still need to be bought\"); while it only waits for one of our ships at its shipyard, the probes go meanwhile, leaving its credits needed (D118). 9 Probes: a probe per market (D29) of home and of the explored systems within the trade reach, Trade.MaxHaulDistance jumps of home (slice 6.28, D97); the shipyards first, those that sell SHIP_EXPLORER first of all, wherever the gates reach them (slice 6.32, D109, D111); 8 until slice 6.34. 10 Alternating: drones and cargo ships in turn; the cargo ship is the largest hold a shipyard within the trade reach lists, not SCARCE there, where a probe of ours answers the purchase's call (slice 6.33, D112); within the half hour after the Trading plan's last cargo ship, its next one stands here. 11 FarProbes: a probe per market of the other explored systems, last (D97), the shipyards first (slice 6.32, D109); the shipyard can be one abroad, where a probe of ours is. It was 11 until slice 6.33 moved the further explorers from 10 to 7 (D113), and is 11 again since slice 6.34 put TimedCargoShip at 8 (D116). credits needed is the price and the reserve a purchase leaves (D51). A plan that needs nothing has no row; No data: nothing to buy.",
+      "description": "The order ships are bought in (SpaceTraders slice 6.10b, D43): what each plan that buys ships would buy now. The lowest position is first in line: the credits are saved up for it, and the purchases after it wait until it is bought or no longer needed (the ships still work). A purchase that waits only for one of our ships to reach its shipyard (D30: a probe on its way, or the command ship fetching an explorer) lets the ones after it go first, each as long as it leaves the waiting one's credits needed (slice 6.36, D118). 1 Contract: the contract's drone, an ore hound where a shipyard at home sells one (slice 6.39, D120). 2 Surveyor: a designated surveyor (D47). 3 Coverage: a drone per SCARCE or LIMITED mineral and area (D48, D53). 4 SurveyorPerArea: one more surveyor per area with mining drones (D55). 5 CargoShips: the next ship of Trade.ShipPurchases, saved up for. 6 Construction: the jump gate's next load of materials (D64), with the material as the ship type and its market as the shipyard; while the gate needs materials, what comes after waits. The Mining plan's SHIP_ORE_HOUND or SHIP_MINING_DRONE at this position is one of the gate's miners (slice 6.25, D92): one per ore every Mining.GateMinerIntervalMinutes (30) while a smelter that makes a metal for the gate's materials from the ore has it below HIGH. It waits while a load can be bought, and is bought while the load waits for SCARCE or LIMITED markets. 7 Explorer: every explorer the explore plan wants (slice 6.30, D98, D102: one for every Explore.SystemsPerExplorer systems left to explore, at most Explore.MaxExplorers), the further ones too since slice 6.33 (D113: \"I'd like Explorers (order 10) to go in front of probes (order 8)\"); a probe of ours in the shipyard's system, or on its way there, answers the purchase's call, else the command ship fetches it (slice 6.32, D108). 8 TimedCargoShip: one more cargo ship, the largest hold (D112), once a route has waited for it (D88) and Trade.ShipPurchaseIntervalMinutes (30) have passed since the Trading plan last bought a cargo ship; the credits are saved up for it, and the probes wait (slice 6.34, D116: \"once every half hour, money permitting, a trade ship is bought, independent on whether probes still need to be bought\"); while it only waits for one of our ships at its shipyard, the probes go meanwhile, leaving its credits needed (D118). 9 Probes: a probe per market (D29), a SHIP_INTERCEPTOR wherever a shipyard sells one (slice 6.38, D119) of home and of the explored systems within the trade reach, Trade.MaxHaulDistance jumps of home (slice 6.28, D97); the shipyards first, those that sell SHIP_EXPLORER first of all, wherever the gates reach them (slice 6.32, D109, D111); 8 until slice 6.34. 10 Alternating: drones and cargo ships in turn; the cargo ship is the largest hold a shipyard within the trade reach lists, not SCARCE there, where a probe of ours answers the purchase's call (slice 6.33, D112); within the half hour after the Trading plan's last cargo ship, its next one stands here. 11 FarProbes: a probe per market of the other explored systems, last (D97), the shipyards first (slice 6.32, D109); the shipyard can be one abroad, where a probe of ours is. It was 11 until slice 6.33 moved the further explorers from 10 to 7 (D113), and is 11 again since slice 6.34 put TimedCargoShip at 8 (D116). 12 MiningAbroad: a miner for a system abroad, one per ore its fresh markets are short of, last of all (slice 6.40, D122: \"outside of the home area, mining is low priority, and should never be in the way of trading\"). Wherever a drone is bought, an ore hound where the shipyard sells one (D120); no ship is bought where its shipyard has it SCARCE (slice 6.37, D121), and a plan whose ship is SCARCE everywhere has no row. credits needed is the price and the reserve a purchase leaves (D51). A plan that needs nothing has no row; No data: nothing to buy.",
       "transformations": [
         {
           "id": "merge",
@@ -1628,7 +1794,7 @@
         "h": 10,
         "w": 8,
         "x": 0,
-        "y": 71
+        "y": 79
       },
       "targets": [
         {
@@ -1679,7 +1845,7 @@
         "h": 10,
         "w": 8,
         "x": 8,
-        "y": 71
+        "y": 79
       },
       "targets": [
         {
@@ -1744,7 +1910,7 @@
         "h": 10,
         "w": 8,
         "x": 16,
-        "y": 71
+        "y": 79
       },
       "targets": [
         {
@@ -1804,7 +1970,7 @@
         "h": 4,
         "w": 6,
         "x": 0,
-        "y": 81
+        "y": 89
       },
       "targets": [
         {
@@ -1849,7 +2015,7 @@
         "h": 4,
         "w": 6,
         "x": 6,
-        "y": 81
+        "y": 89
       },
       "targets": [
         {
@@ -1895,7 +2061,7 @@
         "h": 4,
         "w": 6,
         "x": 12,
-        "y": 81
+        "y": 89
       },
       "targets": [
         {
@@ -1941,7 +2107,7 @@
         "h": 4,
         "w": 6,
         "x": 18,
-        "y": 81
+        "y": 89
       },
       "targets": [
         {
@@ -1986,7 +2152,7 @@
         "h": 10,
         "w": 8,
         "x": 0,
-        "y": 85
+        "y": 93
       },
       "targets": [
         {
@@ -2051,7 +2217,7 @@
         "h": 10,
         "w": 8,
         "x": 8,
-        "y": 85
+        "y": 93
       },
       "targets": [
         {
@@ -2107,7 +2273,7 @@
         "h": 10,
         "w": 8,
         "x": 16,
-        "y": 85
+        "y": 93
       },
       "targets": [
         {
@@ -2161,7 +2327,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 95
+        "y": 103
       },
       "targets": [
         {
@@ -2197,7 +2363,7 @@
         "h": 7,
         "w": 14,
         "x": 0,
-        "y": 105
+        "y": 113
       },
       "targets": [
         {
@@ -2282,7 +2448,7 @@
         "h": 7,
         "w": 10,
         "x": 14,
-        "y": 105
+        "y": 113
       },
       "targets": [
         {
@@ -2343,7 +2509,7 @@
         "h": 8,
         "w": 6,
         "x": 0,
-        "y": 112
+        "y": 120
       },
       "targets": [
         {
@@ -2407,7 +2573,7 @@
         "h": 8,
         "w": 10,
         "x": 6,
-        "y": 112
+        "y": 120
       },
       "targets": [
         {
@@ -2544,7 +2710,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 112
+        "y": 120
       },
       "targets": [
         {
@@ -2604,7 +2770,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 120
+        "y": 128
       },
       "targets": [
         {
@@ -2748,7 +2914,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 130
+        "y": 138
       },
       "targets": [
         {
@@ -2809,7 +2975,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 130
+        "y": 138
       },
       "targets": [
         {
@@ -2899,7 +3065,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 140
+        "y": 148
       },
       "targets": [
         {
@@ -2960,7 +3126,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 140
+        "y": 148
       },
       "targets": [
         {
@@ -3026,7 +3192,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 150
+        "y": 158
       },
       "targets": [
         {
@@ -3101,7 +3267,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 150
+        "y": 158
       },
       "targets": [
         {
@@ -3140,7 +3306,7 @@
         "h": 20,
         "w": 24,
         "x": 0,
-        "y": 158
+        "y": 166
       },
       "targets": [
         {
@@ -3344,7 +3510,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 178
+        "y": 186
       },
       "targets": [
         {
@@ -3438,7 +3604,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 186
+        "y": 194
       },
       "targets": [
         {
@@ -3474,7 +3640,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 200
+        "y": 208
       },
       "targets": [
         {
@@ -3504,7 +3670,7 @@
       {
         "name": "reset_date",
         "label": "Reset",
-        "description": "The server reset whose run the dashboard shows, newest first (slice 2.13): every series carries it as reset_date and every log line as ResetDate, so runs never mix. Tick several to compare runs. Data from before slice 2.13 has no reset date and shows under none.",
+        "description": "The server reset whose run the dashboard shows, newest first (slice 2.13): every series carries it as reset_date and every log line as ResetDate, so runs never mix. Tick several to compare runs. To lay two runs over each other, pick one here and the other under Compare with (slice 2.19). Data from before slice 2.13 has no reset date and shows under none.",
         "type": "query",
         "datasource": {
           "type": "prometheus",
@@ -3515,6 +3681,63 @@
         "refresh": 2,
         "sort": 2,
         "multi": true,
+        "includeAll": false,
+        "options": [],
+        "current": {}
+      },
+      {
+        "name": "compare_with",
+        "label": "Compare with",
+        "description": "Another run to lay over the one picked under Reset on the \"two runs\" panels (slice 2.19, D123): the runs Prometheus holds, 31 days of them, the newest first, but the one under Reset. Its lines are shifted so both runs start at the same moment. Empty while Prometheus holds no other run.",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "query": "query_result(max by (reset_date) (max_over_time(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date!=\"\", reset_date!~\"$reset_date\"}[62d] offset -31d)))",
+        "regex": "/reset_date=\"([^\"]+)\"/",
+        "refresh": 2,
+        "sort": 2,
+        "multi": false,
+        "includeAll": false,
+        "options": [],
+        "current": {},
+        "definition": "query_result(max by (reset_date) (max_over_time(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date!=\"\", reset_date!~\"$reset_date\"}[62d] offset -31d)))"
+      },
+      {
+        "name": "shift",
+        "label": "Shift",
+        "description": "Hidden (slice 2.19, D123): the seconds from the first sample of the run under Compare with to the first sample of the run under Reset; the two runs panels read the compared run that much earlier, so both start at the same moment. 1 with no run to compare with: PromQL refuses an offset of 0.",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "query": "query_result((round(min(min_over_time(timestamp(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})[62d:5m] offset -31d)) - min(min_over_time(timestamp(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date=\"$compare_with\", reset_date!=\"\"})[62d:5m] offset -31d))) != 0) or vector(1))",
+        "definition": "query_result((round(min(min_over_time(timestamp(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})[62d:5m] offset -31d)) - min(min_over_time(timestamp(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date=\"$compare_with\", reset_date!=\"\"})[62d:5m] offset -31d))) != 0) or vector(1))",
+        "regex": "/\\} (-?[0-9]+)/",
+        "refresh": 2,
+        "hide": 2,
+        "multi": false,
+        "includeAll": false,
+        "options": [],
+        "current": {}
+      },
+      {
+        "name": "shift_hour",
+        "label": "Shift and an hour",
+        "description": "Hidden (slice 2.19, D123): the shift and an hour more, for the compared run's value an hour earlier. 3601 with no run to compare with.",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "query": "query_result((round(min(min_over_time(timestamp(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})[62d:5m] offset -31d)) - min(min_over_time(timestamp(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date=\"$compare_with\", reset_date!=\"\"})[62d:5m] offset -31d))) + 3600 != 0) or vector(3601))",
+        "definition": "query_result((round(min(min_over_time(timestamp(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})[62d:5m] offset -31d)) - min(min_over_time(timestamp(spacetraders_agent_credits{namespace=\"spacetraders\", reset_date=\"$compare_with\", reset_date!=\"\"})[62d:5m] offset -31d))) + 3600 != 0) or vector(3601))",
+        "regex": "/\\} (-?[0-9]+)/",
+        "refresh": 2,
+        "hide": 2,
+        "multi": false,
         "includeAll": false,
         "options": [],
         "current": {}

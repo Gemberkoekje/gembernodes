@@ -19,6 +19,10 @@ spec:
     prometheus-pushgateway:
       enabled: false
     server:
+      # 31 days, like Loki: the SpaceTraders dashboard lays two weekly runs over each other, and
+      # the run to compare with can be up to about four weeks back (SpaceTraders slice 2.19, D123).
+      # The chart's default is 15 days. The TSDB grows with it, on the QNAP NFS share.
+      retention: "31d"
       # Merged into the chart's pod securityContext (fsGroup 65534): only re-apply the group to
       # the TSDB on NFS when the volume root doesn't match, instead of to every file on each start.
       securityContext:
