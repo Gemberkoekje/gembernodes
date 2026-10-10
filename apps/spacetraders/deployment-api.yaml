@@ -50,7 +50,7 @@ spec:
               memory: "64Mi"
       containers:
         - name: spacetraders-api
-          image: ghcr.io/gemberkoekje/spacetraders-api:9ac6d028b4e69c51a8fd495e1866a9a3c35ef26a
+          image: ghcr.io/gemberkoekje/spacetraders-api:6d89c1d32e79e424140874e32944f507bfe49eaa
           imagePullPolicy: Always
           securityContext:
             allowPrivilegeEscalation: false
