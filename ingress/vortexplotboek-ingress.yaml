@@ -11,11 +11,20 @@ metadata:
     # ("upstream sent too big header"). Enlarge the header/response buffers.
     nginx.ingress.kubernetes.io/proxy-buffer-size: "32k"
     nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
-    # 2026-10-23: the app has moved to https://plotboek.the-vortex.nl/ (Portainer stack).
-    # This ingress now exists only to send the old URLs there. nginx answers the redirect
-    # itself and never proxies, which is why it keeps working with the deployment scaled
-    # to zero. Annotations are per-Ingress, so this covers both hosts below.
-    nginx.ingress.kubernetes.io/permanent-redirect: "https://plotboek.the-vortex.nl/"
+    # 2026-10-23: the app has moved to https://plotboek.the-vortex.nl/vortexplotboek (Portainer
+    # stack). This ingress now exists only to send the old URLs there. nginx answers the redirect
+    # itself and never proxies, which is why it keeps working with the deployment scaled to zero.
+    #
+    # The target deliberately has NO trailing slash. Under the /vortexplotboek rule nginx appends
+    # whatever follows the matched prefix, leading slash and all, so a trailing slash here turned
+    # /vortexplotboek/Plotboek?Jaar=2026 into https://plotboek.the-vortex.nl//Plotboek?Jaar=2026 -
+    # a double slash, and a 404. Without it the deep link survives intact, and the app carries it
+    # through its login redirect as returnUrl.
+    #
+    # The / rule on vortexplotboek.gemberkoekje.nl behaves differently: it appends nothing and
+    # always returns the bare target, so that host lands on the app root whatever the path was.
+    # Annotations are per-Ingress, so one value has to serve both rules.
+    nginx.ingress.kubernetes.io/permanent-redirect: "https://plotboek.the-vortex.nl/vortexplotboek"
 spec:
   ingressClassName: nginx-public
   tls:
