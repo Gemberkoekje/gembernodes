@@ -4,7 +4,10 @@ metadata:
   name: vortexplotboek
   namespace: vortexplotboek
 spec:
-  replicas: 1
+  # 2026-10-23: scaled to zero. The app runs on the Hetzner host as a Portainer stack at
+  # https://plotboek.the-vortex.nl/ and its database was migrated there on 2026-10-19.
+  # Left at 0 rather than deleted so the manifests and their history stay available.
+  replicas: 0
   selector:
     matchLabels:
       app: vortexplotboek
