@@ -5,6 +5,10 @@ metadata:
   namespace: vortexplotboek
 spec:
   schedule: "0 * * * *"
+  # 2026-10-23: suspended along with the deployment. The service it POSTs to has no
+  # endpoints while replicas is 0, so every hourly run would fail. The equivalent
+  # schedule now belongs on the Portainer host.
+  suspend: true
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3

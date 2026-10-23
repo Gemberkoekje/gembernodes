@@ -11,6 +11,11 @@ metadata:
     # ("upstream sent too big header"). Enlarge the header/response buffers.
     nginx.ingress.kubernetes.io/proxy-buffer-size: "32k"
     nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
+    # 2026-10-23: the app has moved to https://plotboek.the-vortex.nl/ (Portainer stack).
+    # This ingress now exists only to send the old URLs there. nginx answers the redirect
+    # itself and never proxies, which is why it keeps working with the deployment scaled
+    # to zero. Annotations are per-Ingress, so this covers both hosts below.
+    nginx.ingress.kubernetes.io/permanent-redirect: "https://plotboek.the-vortex.nl/"
 spec:
   ingressClassName: nginx-public
   tls:
