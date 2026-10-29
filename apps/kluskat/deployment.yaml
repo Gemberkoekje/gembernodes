@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kluskat
+  namespace: kluskat
+spec:
+  replicas: 1
+  # One pod on purpose: the skip window and the seed assume a single writer, and two replicas
+  # would buy nothing for one user.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: kluskat
+  template:
+    metadata:
+      labels:
+        app: kluskat
+    spec:
+      imagePullSecrets:
+        - name: ghcr-login
+      containers:
+        - name: kluskat
+          image: ghcr.io/gemberkoekje/kluskat:440705834b7fdf544d83fd238aa69e63d64a5112
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Production
+            - name: ASPNETCORE_HTTP_PORTS
+              value: "8080"
+            - name: ConnectionStrings__Postgres
+              valueFrom:
+                secretKeyRef:
+                  name: kluskat-secrets
+                  key: ConnectionStrings__Postgres
+            - name: Auth__Password
+              valueFrom:
+                secretKeyRef:
+                  name: kluskat-secrets
+                  key: Auth__Password
+          # /healthz is anonymous and touches nothing. The first start also creates the Marten
+          # schema and seeds the chore list, hence the generous startup window.
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 3
+            failureThreshold: 40
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 25m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 384Mi

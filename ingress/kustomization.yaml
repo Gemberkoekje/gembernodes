@@ -12,3 +12,4 @@ resources:
   - hackerminigames-ingress.yaml
   - dungeontable-ingress.yaml
   - spacetraders-ingress.yaml
+  - kluskat-ingress.yaml
