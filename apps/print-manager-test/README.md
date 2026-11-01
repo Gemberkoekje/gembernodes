@@ -12,15 +12,14 @@ docker compose version are described in that repository's `deploy/README.md`.
 - State is on `print-manager-test-data-qnap` (`/data`): `config.yaml`, `env`, `outbox/`, `spool/`,
   `fake-printer-a/`, `fake-printer-b/`. Nothing prunes the fake-printer folders.
 
-Before the first deploy, in 1Password vault Gembercluster:
+Before the first deploy, in 1Password vault Gembercluster, item `print-manager-test-secrets`:
+fields `VOID_PLIN`, `VOID_PASSWORD` (the test void login).
 
-- `print-manager-test-secrets`: fields `VOID_PLIN`, `VOID_PASSWORD` (the test void login).
-- `gitlab-login`: field `.dockerconfigjson` for registry.gitlab.com, from a GitLab deploy token
-  with `read_registry` on vortexadventures/print-manager.
-
-The image tag in `deployment.yaml` (three `image:` lines) is the one the manual `build-and-push`
-job in print-manager's GitLab CI prints. The PR image check can't see a private GitLab image and
-only warns, so merge after the job has pushed it.
+The image comes from Gemberkoekje/print-manager, the private GitHub copy of
+vortexadventures/print-manager: pushing tag `v1.2.3` there publishes
+`ghcr.io/gemberkoekje/print-manager:1.2.3`. To update the desk, put the new version into the three
+`image:` lines of `deployment.yaml`. The PR image check can't see a private image and only warns,
+so merge after the release has finished.
 
 Never set `replicas` above 1: two desks would print the same cards twice. Keep
 `PRINT_MANAGER_VOID_HOST_LOCK` and `VOID_BASE_URL` in the pod spec, not on the volume: the lock is

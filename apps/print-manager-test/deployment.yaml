@@ -1,8 +1,8 @@
 # print-manager TEST desk: CUPS + print-manager (container `desk`) and two fake HP LaserJet 4250s
 # (scripts/fake-jetdirect.py) in the same pod, so CUPS reaches them on 127.0.0.2:9100 (Printer A)
 # and 127.0.0.1:9100 (Printer B) as it would reach the real ones on the printer LAN. The image is
-# built by the manual build-and-push job in vortexadventures/print-manager (Dockerfile,
-# deploy/README.md there).
+# released from Gemberkoekje/print-manager, the private GitHub copy of
+# vortexadventures/print-manager (Dockerfile, deploy/README.md there).
 #
 # This desk marks cards and packs printed in void, which takes them off that void's queue. It must
 # only ever talk to the test void: PRINT_MANAGER_VOID_HOST_LOCK below makes print-manager refuse
@@ -29,14 +29,14 @@ spec:
         app: print-manager-test
     spec:
       imagePullSecrets:
-        - name: gitlab-login
+        - name: ghcr-login
       # Service links would put PRINT_MANAGER_TEST_* variables next to print-manager's own
       # PRINT_MANAGER_* settings; it reads none of those names, but keep its environment clean.
       enableServiceLinks: false
       containers:
         - name: desk
-          # Set to the tag the build-and-push job prints ("Pushed image: ...").
-          image: registry.gitlab.com/vortexadventures/print-manager:0.1.0-2
+          # A release of Gemberkoekje/print-manager: git tag v0.1.0 is image tag 0.1.0.
+          image: ghcr.io/gemberkoekje/print-manager:0.1.0
           imagePullPolicy: IfNotPresent
           # Runs as root: cupsd needs it (it drops to lp for filters), the pmspool backend runs as
           # root, and print-manager calls lpadmin. No privileged mode or extra capabilities.
@@ -98,7 +98,7 @@ spec:
         # then http://localhost:8100/ (Printer B: Special tray, cards) and :8101 (Printer A: White).
         # Root only for SNMP on udp/161, which is how CUPS sees jams, empty trays and offline.
         - name: printer-b
-          image: registry.gitlab.com/vortexadventures/print-manager:0.1.0-2
+          image: ghcr.io/gemberkoekje/print-manager:0.1.0
           imagePullPolicy: IfNotPresent
           command: ["python3", "/opt/print-manager/scripts/fake-jetdirect.py",
                     "--bind", "127.0.0.1", "--control-port", "8100", "--out", "/data/fake-printer-b"]
@@ -118,7 +118,7 @@ spec:
             - name: data
               mountPath: /data
         - name: printer-a
-          image: registry.gitlab.com/vortexadventures/print-manager:0.1.0-2
+          image: ghcr.io/gemberkoekje/print-manager:0.1.0
           imagePullPolicy: IfNotPresent
           command: ["python3", "/opt/print-manager/scripts/fake-jetdirect.py",
                     "--bind", "127.0.0.2", "--control-port", "8101", "--out", "/data/fake-printer-a"]
