@@ -13,7 +13,9 @@ docker compose version are described in that repository's `deploy/README.md`.
   `fake-printer-a/`, `fake-printer-b/`. Nothing prunes the fake-printer folders.
 
 Before the first deploy, in 1Password vault Gembercluster, item `print-manager-test-secrets`:
-fields `VOID_PLIN`, `VOID_PASSWORD` (the test void login).
+fields `VOID_PLIN`, `VOID_PASSWORD`. This is a local VOID password, not an ERU or OAuth login: sign
+in to https://test-void-api.the-vortex.nl/admin with ERU and set one under Access control >
+Password. The PLIN needs Infobalie or higher in ERU.
 
 The image comes from Gemberkoekje/print-manager, the private GitHub copy of
 vortexadventures/print-manager: pushing tag `v1.2.3` there publishes
