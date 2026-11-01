@@ -1,0 +1,15 @@
+# The test desk's state: config.yaml and env (what /printers and /admin save), outbox/, the LAN
+# spool (spool/lan) and what the fake printers "printed" (fake-printer-a/, fake-printer-b/).
+# Nothing prunes the fake-printer folders; empty them when they get big.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: print-manager-test-data-qnap
+  namespace: print-manager-test
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: qnap-nfs
+  resources:
+    requests:
+      storage: 2Gi

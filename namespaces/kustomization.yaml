@@ -22,3 +22,4 @@ resources:
 - reflector-namespace.yaml
 - traefik-namespace.yaml
 - tailscale-namespace.yaml
+- print-manager-test-namespace.yaml
