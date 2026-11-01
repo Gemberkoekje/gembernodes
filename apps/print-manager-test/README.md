@@ -7,8 +7,8 @@ docker compose version are described in that repository's `deploy/README.md`.
 - Dashboard: http://192.168.1.233/ (LAN only; includes /admin with the void login).
 - LAN printers: `http://192.168.1.233:631/printers/Vortex_White` (also Vortex_Special,
   Vortex_Extra_1, Vortex_Extra_2), added by URL.
-- Fake printer pages: `kubectl -n print-manager-test port-forward deploy/print-manager-test 8100 8101`,
-  then http://localhost:8100/ (Printer B: Special tray, cards) and http://localhost:8101/ (Printer A).
+- Fake printer pages: http://192.168.1.233:8100/ (Printer B: Special tray, cards) and
+  http://192.168.1.233:8101/ (Printer A). LAN only, no login.
 - State is on `print-manager-test-data-qnap` (`/data`): `config.yaml`, `env`, `outbox/`, `spool/`,
   `fake-printer-a/`, `fake-printer-b/`. Nothing prunes the fake-printer folders.
 

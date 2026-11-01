@@ -93,15 +93,19 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
-        # Fake printers. Their web pages stay on 127.0.0.1 inside the pod:
-        #   kubectl -n print-manager-test port-forward deploy/print-manager-test 8100 8101
-        # then http://localhost:8100/ (Printer B: Special tray, cards) and :8101 (Printer A: White).
+        # Fake printers. Their web pages are on the LAN through the Service: :8100 is Printer B
+        # (Special tray, cards) and :8101 is Printer A (White). Port 9100 and SNMP stay on loopback
+        # inside the pod, so only CUPS can reach those, as on the printer LAN.
         # Root only for SNMP on udp/161, which is how CUPS sees jams, empty trays and offline.
         - name: printer-b
           image: ghcr.io/gemberkoekje/print-manager:0.1.0
           imagePullPolicy: IfNotPresent
           command: ["python3", "/opt/print-manager/scripts/fake-jetdirect.py",
-                    "--bind", "127.0.0.1", "--control-port", "8100", "--out", "/data/fake-printer-b"]
+                    "--bind", "127.0.0.1", "--control-bind", "0.0.0.0", "--control-port", "8100",
+                    "--out", "/data/fake-printer-b"]
+          ports:
+            - name: printer-b-web
+              containerPort: 8100
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -121,7 +125,11 @@ spec:
           image: ghcr.io/gemberkoekje/print-manager:0.1.0
           imagePullPolicy: IfNotPresent
           command: ["python3", "/opt/print-manager/scripts/fake-jetdirect.py",
-                    "--bind", "127.0.0.2", "--control-port", "8101", "--out", "/data/fake-printer-a"]
+                    "--bind", "127.0.0.2", "--control-bind", "0.0.0.0", "--control-port", "8101",
+                    "--out", "/data/fake-printer-a"]
+          ports:
+            - name: printer-a-web
+              containerPort: 8101
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
