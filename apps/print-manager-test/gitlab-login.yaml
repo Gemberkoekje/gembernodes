@@ -1,0 +1,12 @@
+# Pull secret for registry.gitlab.com/vortexadventures/print-manager. The kubelet only uses a pull
+# secret of type dockerconfigjson, hence `type`. The 1Password item needs one field named
+# .dockerconfigjson holding {"auths":{"registry.gitlab.com":{"auth":"<base64 user:token>"}}},
+# from a GitLab deploy token with read_registry on the print-manager project.
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+type: kubernetes.io/dockerconfigjson
+metadata:
+  name: gitlab-login
+  namespace: print-manager-test
+spec:
+  itemPath: "vaults/Gembercluster/items/gitlab-login"

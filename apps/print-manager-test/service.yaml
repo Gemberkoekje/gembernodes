@@ -1,0 +1,21 @@
+# LAN only (the router forwards 80/443 to .230, not here). Port 80 is the dashboard, including
+# /admin with the void login: anyone on the LAN can open it, as on the NanoPi desk. Port 631 is IPP
+# for the Vortex_* shares: add http://192.168.1.233:631/printers/Vortex_White by URL (no Bonjour).
+apiVersion: v1
+kind: Service
+metadata:
+  name: print-manager-test
+  namespace: print-manager-test
+  annotations:
+    metallb.io/loadBalancerIPs: 192.168.1.233
+spec:
+  type: LoadBalancer
+  selector:
+    app: print-manager-test
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+    - name: ipp
+      port: 631
+      targetPort: 631
