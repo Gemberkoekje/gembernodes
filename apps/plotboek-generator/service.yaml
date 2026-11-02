@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: plotboek-generator-service
+  namespace: plotboek-generator
+spec:
+  type: ClusterIP
+  selector:
+    app: plotboek-generator
+  ports:
+    - port: 80
+      targetPort: 8080

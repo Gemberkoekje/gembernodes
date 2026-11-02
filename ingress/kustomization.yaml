@@ -13,3 +13,4 @@ resources:
   - dungeontable-ingress.yaml
   - spacetraders-ingress.yaml
   - kluskat-ingress.yaml
+  - plotboek-generator-ingress.yaml

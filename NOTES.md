@@ -1150,3 +1150,52 @@ For the bot's slices 6.37–6.40 (Gemberkoekje/projects `SpaceTraders/PLAN.md`, 
   neither is bought at SCARCE.
 - **Shipyards** (markets): an interceptor's "can do" is Probe, as a probe's.
 - The dashboard JSON parses. Deploy with the bot's build of those slices; until then the text runs ahead of the bot.
+
+## 2026-11-02 — Plotboek Generator demo on plotboek.gemberkoekje.nl; vortexplotboek down to its redirect
+
+Asked on 2026-11-02 (Gemberkoekje/plotboek-generator, phase 5 of the generic split): a public demo of the
+now-open-source Plotboek Generator, at plotboek.gemberkoekje.nl with gemberkoekje.nl/plotboek redirecting there.
+Visitors read only, the owner grants write access to whoever asks, and a filled example comes back every night.
+The vortexplotboek leftovers go, except the redirect.
+
+To understand this, start by reading [apps/plotboek-generator/README.md](apps/plotboek-generator/README.md), then
+[apps/plotboek-generator/deployment.yaml](apps/plotboek-generator/deployment.yaml) and
+[ingress/plotboek-generator-ingress.yaml](ingress/plotboek-generator-ingress.yaml).
+
+- **The app** (`apps/plotboek-generator`, namespace `plotboek-generator`): image
+  `ghcr.io/gemberkoekje/plotboek-generator:1.1.0`, the first release with demo mode. Google sign-in;
+  `Authentication__DefaultRole=Reader` makes everyone who signs in a Reader (sees everything, changes nothing);
+  `Demo__Enabled=true` gives the banner, the example plotboek on the first start, and `POST /api/demo/reset`.
+  `Localization__DefaultCulture=en` with `SupportedCultures=en,nl`: English by default, Dutch for a Dutch
+  browser or through the switcher; the example data and the Word export are English.
+  It runs as UID 1654 (the .NET image's `app` user) since the image itself runs as root.
+- **The nightly reset** (`reset-cronjob.yaml`, 04:00 Europe/Amsterdam): curl with `Demo__ResetApiKey`. It wipes every
+  event and plot document, removes visitors' accounts and writes the example again. Admins (`Authentication__Admins`)
+  and everyone with an override role keep their account, so write access granted on the Admin page lasts.
+- **No volume for the data-protection keys**: a redeploy signs everyone out, which a demo can live with, and a volume
+  on the NFS share would need write access for UID 1654. The nightly reset doesn't restart the pod.
+- **Ingress**: `plotboek.gemberkoekje.nl` with the 32k proxy buffers every OIDC app here needs, and a second Ingress
+  that redirects `gemberkoekje.nl/plotboek` (nginx answers it; the target has no trailing slash, as with vortexplotboek).
+- **vortexplotboek**: the deployment (replicas 0), the suspended sync cronjob, its seven OnePasswordItems and its
+  data-protection PVC are gone; Flux prunes them. Left: the namespace, `vortexplotboek-service` and
+  `ingress/vortexplotboek-ingress.yaml`, which still redirects the old URLs to plotboek.the-vortex.nl.
+- **Error alerting**: the error-log alert and dashboard watched the `vortexplotboek` namespace, which logs nothing any
+  more; they watch `plotboek-generator` instead.
+
+### Left for the owner
+
+- Before merging: release 1.1.0 (CI's image check fails until it exists), then steps 1–4 of the README: the database,
+  the Google client, the 1Password item and the DNS name.
+- After merging: dump and drop the old `vortexplotboek` database on the shared PostgreSQL once nothing needs it.
+- The 1Password items `postgress-vortexplotboek-secret`, `oauth-google-vortexplotboek-secret`,
+  `oauth-microsoft-vortexplotboek-secret`, `oauth-google-refreshtoken`, `sync-api-key` and `gemini-secret` are no
+  longer used by the cluster. Check whether the Portainer stack on plotboek.the-vortex.nl still reads them before
+  deleting them. Keep `bearer-secret` and `discord-secret`: ebi-cs-api and armabotcs use them too.
+
+### How it was tested
+
+- The product side: 1390 specs in the plotboek-generator repository, plus the demo host against a local PostgreSQL 18.
+  On first start it wrote 1 plotboek, 7 paginas, 1 plotlijn, 5 dummy spelleiders and 5 domains (8 streams, 107 events).
+  The reset answered 401 to a missing or wrong key and `{"removedAccounts":1}` to the right one: the visitor went, the
+  editor and the admin stayed, and the same example came back. A second reset removed nothing.
+- Every changed kustomization renders with `kubectl kustomize` (apps, ingress, namespaces, infrastructure/pvcs). `scripts/validate.py` was not run locally (no kubeconform here); CI runs it on the pull request.

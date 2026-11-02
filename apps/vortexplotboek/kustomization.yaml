@@ -1,11 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - deployment.yaml
-  - discord-secret.yaml
-  - postgress-secret.yaml
+  # 2026-11-02: only the Service is left. ingress/vortexplotboek-ingress.yaml redirects the old
+  # URLs to plotboek.the-vortex.nl and needs a backend to name; it never proxies to it, so the
+  # Service has no pods behind it.
   - vortexplotboek-service.yaml
-  - bearer-secret.yaml
-  - oauth-secret.yaml
-  - sync-cronjob.yaml
-  - gemini-secret.yaml
