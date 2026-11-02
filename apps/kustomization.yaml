@@ -16,4 +16,5 @@ resources:
   - dungeontable
   - spacetraders
   - kluskat
+  - plotboek-generator
   - print-manager-test

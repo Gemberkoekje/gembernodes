@@ -53,7 +53,7 @@ data:
                 datasourceUid: grafana-loki
                 model:
                   refId: A
-                  expr: 'sum by (namespace) (count_over_time({namespace=~"armabotcs|ebi-cs-api|vortexplotboek|cov-website|file-server"} |~ `(?i)error` [5m]))'
+                  expr: 'sum by (namespace) (count_over_time({namespace=~"armabotcs|ebi-cs-api|plotboek-generator|cov-website|file-server"} |~ `(?i)error` [5m]))'
                   queryType: instant
               - refId: B
                 relativeTimeRange:
@@ -62,7 +62,7 @@ data:
                 datasourceUid: grafana-loki
                 model:
                   refId: B
-                  expr: 'topk by (namespace) (1, sum by (namespace, line) (count_over_time({namespace=~"armabotcs|ebi-cs-api|vortexplotboek|cov-website|file-server"} |~ `(?i)error` | label_format line=`{{ regexReplaceAll "(?s)^(.{300}).+$" __line__ "${1}…" }}` [5m])))'
+                  expr: 'topk by (namespace) (1, sum by (namespace, line) (count_over_time({namespace=~"armabotcs|ebi-cs-api|plotboek-generator|cov-website|file-server"} |~ `(?i)error` | label_format line=`{{ regexReplaceAll "(?s)^(.{300}).+$" __line__ "${1}…" }}` [5m])))'
                   queryType: instant
               - refId: C
                 datasourceUid: "__expr__"

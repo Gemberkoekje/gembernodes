@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: demo-reset
+  namespace: plotboek-generator
+spec:
+  # Every night: all plots back to the example and visitors' accounts removed. Admins, and everyone
+  # an admin gave a role by hand, keep theirs.
+  schedule: "0 4 * * *"
+  timeZone: Europe/Amsterdam
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: demo-reset
+              image: curlimages/curl:8.5.0
+              env:
+                - name: RESET_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: plotboek-generator-secrets
+                      key: Demo__ResetApiKey
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  curl -sf --max-time 300 -X POST \
+                    http://plotboek-generator-service.plotboek-generator.svc.cluster.local/api/demo/reset \
+                    -H "X-Api-Key: ${RESET_API_KEY}"

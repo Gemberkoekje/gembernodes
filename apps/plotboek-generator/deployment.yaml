@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plotboek-generator
+  namespace: plotboek-generator
+spec:
+  replicas: 1
+  # One pod: the nightly reset and the first start's example assume a single writer.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: plotboek-generator
+  template:
+    metadata:
+      labels:
+        app: plotboek-generator
+    spec:
+      imagePullSecrets:
+        - name: ghcr-login
+      # The image runs as root by default; 1654 is the "app" user every .NET runtime image has.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1654
+        runAsGroup: 1654
+      containers:
+        - name: plotboek-generator
+          image: ghcr.io/gemberkoekje/plotboek-generator:1.1.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Production
+            - name: ASPNETCORE_HTTP_PORTS
+              value: "8080"
+            # English for visitors from anywhere, Dutch for whoever's browser asks for it or picks it
+            # in the menu. The example data and the Word export follow the default.
+            - name: Localization__DefaultCulture
+              value: en
+            - name: Localization__SupportedCultures
+              value: en,nl
+            - name: ConnectionStrings__Postgres
+              valueFrom:
+                secretKeyRef:
+                  name: plotboek-generator-secrets
+                  key: ConnectionStrings__Postgres
+            # Sign-in with Google. Google sends no roles, so everyone gets the default role below;
+            # the admins are listed by address, and an admin grants write access by hand.
+            - name: Authentication__Oidc__Providers__0__Scheme
+              value: Google
+            - name: Authentication__Oidc__Providers__0__DisplayName
+              value: Google
+            - name: Authentication__Oidc__Providers__0__Authority
+              value: https://accounts.google.com
+            - name: Authentication__Oidc__Providers__0__ClientId
+              valueFrom:
+                secretKeyRef:
+                  name: plotboek-generator-secrets
+                  key: Oidc__Google__ClientId
+            - name: Authentication__Oidc__Providers__0__ClientSecret
+              valueFrom:
+                secretKeyRef:
+                  name: plotboek-generator-secrets
+                  key: Oidc__Google__ClientSecret
+            - name: Authentication__Admins
+              valueFrom:
+                secretKeyRef:
+                  name: plotboek-generator-secrets
+                  key: Authentication__Admins
+            # Whoever signs in reads everything and changes nothing.
+            - name: Authentication__DefaultRole
+              value: Reader
+            # The banner on every page, the example on the first start, and POST /api/demo/reset.
+            - name: Demo__Enabled
+              value: "true"
+            - name: Demo__ResetApiKey
+              valueFrom:
+                secretKeyRef:
+                  name: plotboek-generator-secrets
+                  key: Demo__ResetApiKey
+            # Where visitors ask for write access; the banner leaves the link out while it is empty.
+            - name: Branding__ContactUrl
+              valueFrom:
+                secretKeyRef:
+                  name: plotboek-generator-secrets
+                  key: Branding__ContactUrl
+                  optional: true
+          # The data-protection keys stay in the container: a redeploy signs everyone out, which a
+          # demo can live with. A volume would need write access for user 1654 on the NFS share.
+          # /health is anonymous and touches nothing. The first start creates the Marten schema and
+          # writes the example, hence the generous startup window.
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 3
+            failureThreshold: 40
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 25m
+              memory: 192Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

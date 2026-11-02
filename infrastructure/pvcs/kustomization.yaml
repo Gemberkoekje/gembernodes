@@ -6,5 +6,4 @@ resources:
 - grafana.yaml
 - prometheus.yaml
 - adventureengine.yaml
-- vortexplotboek.yaml
 - print-manager-test.yaml
