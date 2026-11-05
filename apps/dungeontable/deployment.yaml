@@ -45,9 +45,13 @@ spec:
             requests:
               memory: "512Mi"
               cpu: "250m"
+            # Two cores, not 500m: one change on the DM screen re-renders the DM screen and the
+            # projector, and on a large level that took up to half a second of CPU, more than the
+            # 50 ms a 500m limit allows per 100 ms period, so the pod was throttled in bursts while
+            # the table waited (NOTES.md, 2026-11-05).
             limits:
               memory: "1Gi"
-              cpu: "500m"
+              cpu: "2"
           env:
             - name: DOTNET_ENVIRONMENT
               value: "Production"

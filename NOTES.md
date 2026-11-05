@@ -1199,3 +1199,44 @@ To understand this, start by reading [apps/plotboek-generator/README.md](apps/pl
   The reset answered 401 to a missing or wrong key and `{"removedAccounts":1}` to the right one: the visitor went, the
   editor and the admin stayed, and the same example came back. A second reset removed nothing.
 - Every changed kustomization renders with `kubectl kustomize` (apps, ingress, namespaces, infrastructure/pvcs). `scripts/validate.py` was not run locally (no kubeconform here); CI runs it on the pull request.
+
+## 2026-11-05 — DungeonTable: CPU limit 2 cores
+
+Asked on 2026-11-05, after the player view lagged seconds behind the DM screen at the table: "increase the CPU limit as I
+should have CPU to spare." Only the container's CPU limit changes (`apps/dungeontable/deployment.yaml`): 500m → 2. Its
+requests (250m, 512Mi) and its memory limit (1Gi) stay as they were. To understand this, start by reading that file's
+`resources:` block, then the numbers below.
+
+### What the numbers said (a local run, not Prometheus)
+
+- Measured on a copy of DungeonTable 1.7.0 running the campaign's largest level (138×177 squares, half of it revealed), in a
+  cgroup with the same quota as the pod (50 ms per 100 ms period), with a DM screen and a player view open.
+- One move of the projector's frame cost the server 60–560 ms of CPU (median 170 ms), and dragging the party token 30
+  squares cost 1.4–2.2 s. Each change re-renders the DM screen as well as the projector, and the DM screen's renders
+  dominate. Bursts like these run past the 50 ms a period allows: the cgroup was throttled in 25–40% of its periods
+  during the runs.
+- The same 500m limit throttled the SpaceTraders bot in 47% of its periods (2026-10-06, above); the nodes have 4 cores
+  each and were at most 37% busy over seven days then.
+- Throttling alone did not reproduce the seconds of lag at the table: the rest is the DM screen's traffic over a phone
+  hotspot and the projector laptop redrawing the map, which DungeonTable addresses itself. The limit is the part this
+  repository owns.
+
+### Decisions
+
+- **2 cores, as for SpaceTraders.** It ends the throttling and costs nothing while nobody is at the table. .NET takes its
+  processor count from the limit rounded up, so the thread pool starts with two threads instead of one. Nothing in
+  DungeonTable reads the processor count.
+- **The request stays at 250m.** The app is idle except during a session, so the scheduler need not book more.
+
+### Gotchas
+
+- The pod restarts when this merges (rolling update), and every open DM screen and player view reconnects to the new pod.
+  The table's state is in PostgreSQL and comes back, but don't merge it during a session.
+
+### What to check after the deploy
+
+- Container `container="dungeontable"`: the throttled share
+  `rate(container_cpu_cfs_throttled_periods_total[2m]) / rate(container_cpu_cfs_periods_total[2m])` during a session should
+  be near zero. (The pod exports no metrics of its own; these come from the kubelet.)
+- The manifest parses (PyYAML). `scripts/validate.py` and `kubectl kustomize` were not run locally (no flux, kubeconform or
+  kubectl here); CI runs the validation on the pull request.
