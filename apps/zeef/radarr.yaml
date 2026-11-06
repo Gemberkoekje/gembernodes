@@ -1,0 +1,144 @@
+# Radarr. Films: picks releases (TRaSH formats via Recyclarr), grabs them through qBittorrent
+# and hardlinks finished films into /data/Movies.
+# Its database is in the shared PostgreSQL (radarr-main, radarr-log); settings via RADARR__* env vars.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: radarr
+  namespace: zeef
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: radarr
+  template:
+    metadata:
+      labels:
+        app: radarr
+    spec:
+      # No fsGroup: the kubelet would chown every file on /data, which is the media library.
+      # The image drops to PUID/PGID itself.
+      enableServiceLinks: false
+      initContainers:
+        # Start only once PostgreSQL answers, instead of crash-looping through a reboot.
+        - name: wait-for-postgres
+          image: postgres:17-alpine
+          command:
+            - sh
+            - -c
+            - until pg_isready -h postgresql.flux-system.svc.cluster.local -p 5432 -t 2; do echo "waiting for postgres"; sleep 2; done
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+      containers:
+        - name: radarr
+          image: lscr.io/linuxserver/radarr:6.4.4.10685-ls325
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "100"
+            - name: UMASK
+              value: "002"
+            - name: TZ
+              value: Europe/Amsterdam
+            - name: RADARR__POSTGRES__HOST
+              value: postgresql.flux-system.svc.cluster.local
+            - name: RADARR__POSTGRES__PORT
+              value: "5432"
+            - name: RADARR__POSTGRES__USER
+              value: radarr
+            - name: RADARR__POSTGRES__MAINDB
+              value: radarr-main
+            - name: RADARR__POSTGRES__LOGDB
+              value: radarr-log
+            - name: RADARR__POSTGRES__PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: zeef-stack
+                  key: RADARR__POSTGRES__PASSWORD
+            # The API key comes from 1Password, so Prowlarr, Recyclarr, Cleanuparr and Zeef use
+            # the same value without anyone copying it out of a UI.
+            - name: RADARR__AUTH__APIKEY
+              valueFrom:
+                secretKeyRef:
+                  name: zeef-stack
+                  key: RADARR__AUTH__APIKEY
+            # A login page for every request; the user is created on the first visit.
+            - name: RADARR__AUTH__METHOD
+              value: Forms
+            - name: RADARR__AUTH__REQUIRED
+              value: Enabled
+            - name: RADARR__LOG__ANALYTICSENABLED
+              value: "False"
+          ports:
+            - name: http
+              containerPort: 7878
+          # /ping touches the database, so it only gates readiness; liveness stays a TCP check
+          # (a PostgreSQL outage must not restart a healthy pod). The first start runs the
+          # database migrations, hence the generous startup window.
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 60
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 768Mi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: radarr-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: multimedia
+---
+# LAN and tailnet only, on the shared 192.168.1.234 (the router forwards nothing to it).
+# In-cluster clients use radarr.zeef.svc.cluster.local:7878.
+apiVersion: v1
+kind: Service
+metadata:
+  name: radarr
+  namespace: zeef
+  annotations:
+    metallb.io/loadBalancerIPs: 192.168.1.234
+    metallb.io/allow-shared-ip: zeef-lan
+spec:
+  type: LoadBalancer
+  allocateLoadBalancerNodePorts: false
+  selector:
+    app: radarr
+  ports:
+    - name: http
+      port: 7878
+      targetPort: http

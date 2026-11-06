@@ -1,0 +1,125 @@
+# Recyclarr: every night it pushes the TRaSH Guides' quality profiles, custom formats and quality
+# definitions into Sonarr and Radarr. That is the "no junk" filter for films and series: it rejects
+# CAM/TS releases, low-quality groups and bad encodes, and ranks good groups higher. Existing custom
+# formats with the same names are replaced, so no state has to survive between runs.
+# Run it now: kubectl -n zeef create job --from=cronjob/recyclarr recyclarr-manual
+#
+# Naming is not synced from here: Recyclarr only offers the guide's naming presets, and the library
+# uses its own "Title (Year)" layout. It is set once in Sonarr/Radarr (projects Zeef/DEPLOY.md).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: recyclarr-config
+  namespace: zeef
+data:
+  recyclarr.yml: |
+    # yaml-language-server: $schema=https://schemas.recyclarr.dev/v8/config-schema.json
+    sonarr:
+      series:
+        base_url: http://sonarr.zeef.svc.cluster.local:8989
+        api_key: !env_var SONARR_API_KEY
+        quality_definition:
+          type: series
+        quality_profiles:
+          - trash_id: 72dae194fc92bf828f32cde7744e51a1  # WEB-1080p
+            reset_unmatched_scores:
+              enabled: true
+        # As the guide's web-1080p template.
+        custom_format_groups:
+          add:
+            - trash_id: 158188097a58d7687dee647e04af0da3  # [Optional] Golden Rule HD
+            - trash_id: 74aff4168620ed49dcc67e92b2c2a5b4  # [Optional] Language Profiles
+            - trash_id: 85fae4a2294965b75710ef2989c850eb  # [Streaming Services] HD/UHD boost
+            - trash_id: 59c3af66780d08332fdc64e68297098f  # [Unwanted] Unwanted Formats
+        media_management:
+          propers_and_repacks: do_not_prefer
+
+    radarr:
+      movies:
+        base_url: http://radarr.zeef.svc.cluster.local:7878
+        api_key: !env_var RADARR_API_KEY
+        quality_definition:
+          type: movie
+        quality_profiles:
+          - trash_id: d1d67249d3890e49bc12e275d989a7e9  # HD Bluray + WEB
+            reset_unmatched_scores:
+              enabled: true
+        # As the guide's hd-bluray-web template.
+        custom_format_groups:
+          add:
+            - trash_id: f8bf8eab4617f12dfdbd16303d8da245  # [Optional] Golden Rule HD
+            - trash_id: a3ac6af01d78e4f21fcb75f601ac96df  # [Unwanted] Unwanted Formats
+        media_management:
+          propers_and_repacks: do_not_prefer
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: recyclarr
+  namespace: zeef
+spec:
+  schedule: "30 5 * * *"
+  timeZone: Europe/Amsterdam
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 1800
+      template:
+        spec:
+          restartPolicy: Never
+          enableServiceLinks: false
+          containers:
+            - name: recyclarr
+              image: ghcr.io/recyclarr/recyclarr:8.8.1
+              imagePullPolicy: IfNotPresent
+              # The image's entrypoint runs the given command once instead of its cron daemon.
+              args: ["sync"]
+              securityContext:
+                runAsNonRoot: true
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+              env:
+                - name: TZ
+                  value: Europe/Amsterdam
+                - name: RECYCLARR_CONFIG_DIR
+                  value: /config
+                - name: RECYCLARR_DATA_DIR
+                  value: /work
+                - name: SONARR_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: zeef-stack
+                      key: SONARR__AUTH__APIKEY
+                - name: RADARR_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: zeef-stack
+                      key: RADARR__AUTH__APIKEY
+              volumeMounts:
+                # /config stays writable (an emptyDir); only recyclarr.yml comes from the ConfigMap.
+                - name: config
+                  mountPath: /config
+                - name: config-file
+                  mountPath: /config/recyclarr.yml
+                  subPath: recyclarr.yml
+                - name: work
+                  mountPath: /work
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 384Mi
+          volumes:
+            - name: config
+              emptyDir: {}
+            - name: config-file
+              configMap:
+                name: recyclarr-config
+            - name: work
+              emptyDir: {}

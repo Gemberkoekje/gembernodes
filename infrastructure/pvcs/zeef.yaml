@@ -1,0 +1,114 @@
+# Zeef's storage. The QNAP "Multimedia" share is the media library itself (Movies/, TV Shows/),
+# so the volume for it is static and can never take the share with it:
+#   - persistentVolumeReclaimPolicy Retain: deleting the claim never makes the CSI driver remove
+#     the directory (with Delete it would remove the whole share);
+#   - Flux never prunes the PV or its claim, even if this file is removed;
+#   - mountPermissions "0": the driver never chmods the share's root.
+# Pods that mount it must not set fsGroup either (see apps/zeef/README.md).
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: multimedia-nfs
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  capacity:
+    storage: 10Ti
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  mountOptions:
+    - nfsvers=4.1
+  csi:
+    driver: nfs.csi.k8s.io
+    # Any value unique among the cluster's PVs; for a static volume it is only an ID.
+    volumeHandle: 192.168.1.211#Multimedia##
+    volumeAttributes:
+      server: 192.168.1.211
+      share: /Multimedia
+      mountPermissions: "0"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: multimedia
+  namespace: zeef
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  accessModes:
+    - ReadWriteMany
+  # Empty class plus volumeName: bind to the PV above, never provision a new volume.
+  storageClassName: ""
+  volumeName: multimedia-nfs
+  resources:
+    requests:
+      storage: 10Ti
+---
+# Small config volumes. The Servarr apps and Cleanuparr keep their databases in the shared
+# PostgreSQL (SQLite on NFS corrupts); these hold config.xml, logs and cover images.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: qbittorrent-config
+  namespace: zeef
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: qnap-nfs
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sonarr-config
+  namespace: zeef
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: qnap-nfs
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: radarr-config
+  namespace: zeef
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: qnap-nfs
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prowlarr-config
+  namespace: zeef
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: qnap-nfs
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cleanuparr-config
+  namespace: zeef
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: qnap-nfs
+  resources:
+    requests:
+      storage: 1Gi

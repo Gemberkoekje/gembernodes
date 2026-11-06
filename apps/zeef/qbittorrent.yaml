@@ -1,0 +1,132 @@
+# qBittorrent: the torrent engine behind Sonarr, Radarr and (from phase 2) Zeef.
+# Downloads go to /data/@Downloads on the QNAP Multimedia share; Sonarr/Radarr hardlink finished
+# files into Movies/ and TV Shows/ on the same share. Settings live in its WebUI (see README.md).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qbittorrent
+  namespace: zeef
+spec:
+  replicas: 1
+  # One writer for its config and resume data; two pods would also be the same peer twice.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: qbittorrent
+  template:
+    metadata:
+      labels:
+        app: qbittorrent
+    spec:
+      # No fsGroup: the kubelet would chown every file on /data, which is the media library.
+      # The image drops to PUID/PGID itself.
+      enableServiceLinks: false
+      containers:
+        - name: qbittorrent
+          image: lscr.io/linuxserver/qbittorrent:5.3.0_v2.1.2-ls486
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "100"
+            - name: UMASK
+              value: "002"
+            - name: TZ
+              value: Europe/Amsterdam
+            - name: WEBUI_PORT
+              value: "8080"
+            # The peer port, exposed on 192.168.1.235 (see the qbittorrent-peers Service).
+            - name: TORRENTING_PORT
+              value: "49160"
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: peers-tcp
+              containerPort: 49160
+              protocol: TCP
+            - name: peers-udp
+              containerPort: 49160
+              protocol: UDP
+          # The WebUI has no anonymous health endpoint; a listening port is enough.
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 36
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: qbittorrent-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: multimedia
+---
+# WebUI, LAN and tailnet only: 192.168.1.234 is shared by all of Zeef's web UIs, and the router
+# forwards nothing to it. In-cluster clients use qbittorrent.zeef.svc.cluster.local:8080.
+apiVersion: v1
+kind: Service
+metadata:
+  name: qbittorrent
+  namespace: zeef
+  annotations:
+    metallb.io/loadBalancerIPs: 192.168.1.234
+    metallb.io/allow-shared-ip: zeef-lan
+spec:
+  type: LoadBalancer
+  allocateLoadBalancerNodePorts: false
+  selector:
+    app: qbittorrent
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+# The peer port: the only part of Zeef the internet reaches (the router forwards TCP+UDP 49160
+# here). It speaks BitTorrent only; there is no web UI behind it. Local keeps the peers' real
+# addresses. Remove this Service and the router forward once the VPN sidecar is added.
+apiVersion: v1
+kind: Service
+metadata:
+  name: qbittorrent-peers
+  namespace: zeef
+  annotations:
+    metallb.io/loadBalancerIPs: 192.168.1.235
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  allocateLoadBalancerNodePorts: false
+  selector:
+    app: qbittorrent
+  ports:
+    - name: peers-tcp
+      port: 49160
+      targetPort: peers-tcp
+      protocol: TCP
+    - name: peers-udp
+      port: 49160
+      targetPort: peers-udp
+      protocol: UDP

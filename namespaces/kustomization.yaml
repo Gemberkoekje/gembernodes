@@ -19,6 +19,7 @@ resources:
 - dungeontable-namespace.yaml
 - spacetraders-namespace.yaml
 - kluskat-namespace.yaml
+- zeef-namespace.yaml
 - plotboek-generator-namespace.yaml
 - reflector-namespace.yaml
 - traefik-namespace.yaml

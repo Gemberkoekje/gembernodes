@@ -1240,3 +1240,26 @@ requests (250m, 512Mi) and its memory limit (1Gi) stay as they were. To understa
   be near zero. (The pod exports no metrics of its own; these come from the kubelet.)
 - The manifest parses (PyYAML). `scripts/validate.py` and `kubectl kustomize` were not run locally (no flux, kubeconform or
   kubectl here); CI runs the validation on the pull request.
+
+## 2026-11-06 — Zeef phase 0, and CI: app-defined YAML tags in ConfigMaps
+
+To understand this, start by reading `apps/zeef/README.md`, then `infrastructure/pvcs/zeef.yaml` and
+the `EmbeddedLoader` in `scripts/validate.py`. The design and runbook are in Gemberkoekje/projects
+`Zeef/DESIGN.md`, `Zeef/DEPLOY.md` and `Zeef/NOTES.md`.
+
+- **Zeef phase 0** (PR #115) adds Download Station's replacement in namespace `zeef`: qBittorrent,
+  Prowlarr, Sonarr, Radarr, Cleanuparr and a nightly Recyclarr CronJob.
+  - The web UIs are LAN/Tailscale only, on MetalLB `192.168.1.234`. qBittorrent's peer port is on
+    `192.168.1.235`.
+  - The QNAP `Multimedia` share is a static PV with `Retain` and Flux pruning disabled, mounted
+    without `fsGroup`.
+  - The prerequisites (NFS export, databases, 1Password item `zeef-stack`) must exist before the
+    merge.
+- **CI: local tags are allowed in ConfigMap contents.** The first run failed on Recyclarr's
+  `!env_var` in `apps/zeef/recyclarr.yaml`: PyYAML's safe loader has no constructor for tags it
+  doesn't know.
+  - Recyclarr resolves `!env_var`, `!secret` and `!file` itself when it reads its config, so the YAML
+    is valid. `scripts/validate.py` now parses ConfigMap contents with `EmbeddedLoader`, which reads
+    any `!tag` as the plain value it tags.
+  - Syntax errors and duplicate keys (also inside tagged mappings) are still errors.
+  - The repository's own manifests still go through the strict loader.
