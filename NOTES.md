@@ -1289,3 +1289,40 @@ To understand this, read the `startupProbe`/`livenessProbe` comments in
   - Checked by rendering chart 18.5.14 with the new values (`helm template`).
 - **What merging does.** PostgreSQL restarts once, with the preStop fast shutdown, so no crash
   recovery. Every app on it blips for about a minute.
+
+## 2026-11-06 — LAN names: <app>.lan.gemberkoekje.nl for the internal UIs
+
+To understand this, read `infrastructure/lan-proxy/Caddyfile` (the names), then `caddy.yaml`.
+
+Asked: easier names than IP:port for every internal UI, Grafana included.
+
+- **DNS** (the user's zone at the registrar):
+  - `*.lan.gemberkoekje.nl` and `lan.gemberkoekje.nl` are A records to **192.168.1.236**.
+  - The more specific wildcard wins over `*.gemberkoekje.nl`, which points at the public IP.
+  - A private address can't be reached from the internet, so the names work only at home and over
+    Tailscale (the subnet router routes `192.168.1.224/28`).
+- **The switchboard:**
+  - Caddy 2.11.9, 2 replicas, namespace `lan-proxy`, LoadBalancer `192.168.1.236:80`, which the
+    router doesn't forward.
+  - It routes by host name to each app's ClusterIP Service. Plain HTTP, like the IP:port addresses
+    it replaces.
+  - The config is a kustomize `configMapGenerator`, so a change rolls the pods.
+- **The names:**
+
+  | Name | Goes to |
+  |---|---|
+  | `lan.gemberkoekje.nl` | Start page with links |
+  | `seerr.`, `jellyfin.`, `sonarr.`, `radarr.`, `prowlarr.`, `qbittorrent.`, `cleanuparr.` | The Zeef apps |
+  | `grafana.` | Grafana; `/` redirects to `/grafana/` |
+
+  Each is `<name>.lan.gemberkoekje.nl`. Unknown names get a 404.
+- **Grafana's `domain` is now `grafana.lan.gemberkoekje.nl`,** so alert-email links use the name.
+  `http://192.168.1.230/grafana` (grafana-internal on ingress-nginx) keeps working until
+  ingress-nginx is removed. Then the name is the only route, and `grafana-internal-ingress.yaml`
+  can go.
+- **Jellyfin's `JELLYFIN_PublishedServerUrl`** is `http://jellyfin.lan.gemberkoekje.nl`.
+- **Tested:** `caddy validate` with the pinned image, and a local run. Start page 200, Grafana
+  302 to `/grafana/`, unknown host 404, `/healthz` 200.
+- **Gotcha to watch:** some home routers block public DNS answers that contain private addresses
+  ("DNS rebind protection"). If the names fail at home but work over Tailscale on mobile data,
+  allow `lan.gemberkoekje.nl` in the router's rebind exception list.

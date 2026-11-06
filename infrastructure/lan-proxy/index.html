@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gembercluster thuis</title>
+<style>
+  :root { color-scheme: light dark; --card: #f4f4f5; --text: #18181b; --muted: #71717a; --accent: #2563eb; }
+  @media (prefers-color-scheme: dark) { :root { --card: #27272a; --text: #f4f4f5; --muted: #a1a1aa; --accent: #60a5fa; } }
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 2rem 1rem; color: var(--text); }
+  main { max-width: 44rem; margin: 0 auto; }
+  h1 { font-size: 1.5rem; margin: 0 0 .25rem; }
+  p.lead { color: var(--muted); margin: 0 0 1.5rem; }
+  h2 { font-size: .85rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 1.5rem 0 .5rem; }
+  ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); gap: .5rem; }
+  a { display: block; padding: .75rem 1rem; border-radius: .5rem; background: var(--card); color: var(--text); text-decoration: none; }
+  a:hover, a:focus { outline: 2px solid var(--accent); }
+  a strong { display: block; }
+  a span { color: var(--muted); font-size: .85rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Gembercluster thuis</h1>
+  <p class="lead">Alleen bereikbaar thuis en via Tailscale.</p>
+
+  <h2>Kijken en aanvragen</h2>
+  <ul>
+    <li><a href="http://jellyfin.lan.gemberkoekje.nl"><strong>Jellyfin</strong><span>Films en series kijken</span></a></li>
+    <li><a href="http://seerr.lan.gemberkoekje.nl"><strong>Seerr</strong><span>Films en series aanvragen</span></a></li>
+  </ul>
+
+  <h2>Downloads (achter de schermen)</h2>
+  <ul>
+    <li><a href="http://sonarr.lan.gemberkoekje.nl"><strong>Sonarr</strong><span>Series</span></a></li>
+    <li><a href="http://radarr.lan.gemberkoekje.nl"><strong>Radarr</strong><span>Films</span></a></li>
+    <li><a href="http://prowlarr.lan.gemberkoekje.nl"><strong>Prowlarr</strong><span>Indexers</span></a></li>
+    <li><a href="http://qbittorrent.lan.gemberkoekje.nl"><strong>qBittorrent</strong><span>Torrents</span></a></li>
+    <li><a href="http://cleanuparr.lan.gemberkoekje.nl"><strong>Cleanuparr</strong><span>Malware en vastgelopen downloads</span></a></li>
+  </ul>
+
+  <h2>Cluster</h2>
+  <ul>
+    <li><a href="http://grafana.lan.gemberkoekje.nl"><strong>Grafana</strong><span>Dashboards en alerts</span></a></li>
+  </ul>
+</main>
+</body>
+</html>

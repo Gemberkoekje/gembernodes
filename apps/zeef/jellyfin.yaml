@@ -75,7 +75,7 @@ spec:
               value: Europe/Amsterdam
             # The address clients are told to use (LAN, or Tailscale away from home).
             - name: JELLYFIN_PublishedServerUrl
-              value: http://192.168.1.234:8096
+              value: http://jellyfin.lan.gemberkoekje.nl
           ports:
             - name: http
               containerPort: 8096

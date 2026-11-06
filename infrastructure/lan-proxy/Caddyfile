@@ -1,0 +1,55 @@
+# Friendly names for the cluster's internal web UIs: <app>.lan.gemberkoekje.nl.
+# DNS: *.lan.gemberkoekje.nl and lan.gemberkoekje.nl point at 192.168.1.236 (a private address),
+# which the router doesn't forward, so these names only work at home and over Tailscale (whose
+# subnet router routes 192.168.1.224/28). Plain HTTP, like the IP:port addresses they replace.
+{
+	auto_https off
+	admin off
+	http_port 8080
+}
+
+# The start page with links to everything below.
+http://lan.gemberkoekje.nl {
+	root * /srv
+	file_server
+}
+
+http://seerr.lan.gemberkoekje.nl {
+	reverse_proxy seerr.zeef.svc.cluster.local:5055
+}
+
+http://jellyfin.lan.gemberkoekje.nl {
+	reverse_proxy jellyfin.zeef.svc.cluster.local:8096
+}
+
+http://sonarr.lan.gemberkoekje.nl {
+	reverse_proxy sonarr.zeef.svc.cluster.local:8989
+}
+
+http://radarr.lan.gemberkoekje.nl {
+	reverse_proxy radarr.zeef.svc.cluster.local:7878
+}
+
+http://prowlarr.lan.gemberkoekje.nl {
+	reverse_proxy prowlarr.zeef.svc.cluster.local:9696
+}
+
+http://qbittorrent.lan.gemberkoekje.nl {
+	reverse_proxy qbittorrent.zeef.svc.cluster.local:8080
+}
+
+http://cleanuparr.lan.gemberkoekje.nl {
+	reverse_proxy cleanuparr.zeef.svc.cluster.local:11011
+}
+
+# Grafana serves from /grafana/ (serve_from_sub_path); the bare name lands there.
+http://grafana.lan.gemberkoekje.nl {
+	redir / /grafana/ 302
+	reverse_proxy grafana.monitoring.svc.cluster.local:80
+}
+
+# Any other name, and the kubelet's health check (which uses the pod IP).
+http://:8080 {
+	respond /healthz "ok" 200
+	respond "Unknown name. The list is at http://lan.gemberkoekje.nl" 404
+}

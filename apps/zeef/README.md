@@ -8,7 +8,7 @@ quality rules via a nightly Recyclarr job. Downloads land on the QNAP **Multimed
 
 ## Where it is reachable
 
-**LAN and Tailscale only, like Grafana.** All web UIs share `192.168.1.234`, and the router
+**LAN and Tailscale only, like Grafana.** Friendly names: `http://<app>.lan.gemberkoekje.nl` (start page `http://lan.gemberkoekje.nl`, see `infrastructure/lan-proxy`). All web UIs share `192.168.1.234`, and the router
 forwards nothing to it. Away from home, the Tailscale subnet router already routes `.224/28`.
 
 | Port | App |
