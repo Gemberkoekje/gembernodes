@@ -1263,3 +1263,29 @@ the `EmbeddedLoader` in `scripts/validate.py`. The design and runbook are in Gem
     any `!tag` as the plain value it tags.
   - Syntax errors and duplicate keys (also inside tagged mappings) are still errors.
   - The repository's own manifests still go through the strict loader.
+
+## 2026-11-06 — PostgreSQL restart loop: startup probe, slower liveness
+
+To understand this, read the `startupProbe`/`livenessProbe` comments in
+`infrastructure/postgresql/postgresql-release.yaml`.
+
+- **What happened.** From about 13:09 CET, PostgreSQL was in a restart loop. Every app on the
+  shared database lost it: armabotcs and curatool crash-looped, Grafana errored, and the Zeef apps
+  logged connection failures.
+  - The QNAP was extremely slow at the time. The end-of-recovery checkpoint wrote 8 MB in 20 s.
+    The user had just grown the Multimedia volume from 496 GB to 3.1 TB, which very likely put
+    background I/O on the same disks.
+  - Each start syncs the data directory over NFS (~30 s), replays the WAL, then runs the
+    end-of-recovery checkpoint.
+  - The chart's default liveness probe (initialDelay 30 s, 6 × 10 s) killed it during that
+    checkpoint four times in a row. Every kill forced the next start into a new recovery.
+  - It came back at 13:29:48, when one checkpoint finished just in time.
+- **Fix.**
+  - `primary.startupProbe` is enabled with 90 × 10 s = 15 minutes, the HelmRelease timeout.
+    Liveness and readiness only start once it passes.
+  - Liveness now allows 18 × 10 s (3 minutes, with a 10 s timeout) without an answer, instead of
+    60 s. A restart doesn't help a database that is stalled on slow storage; it only adds a crash
+    recovery.
+  - Checked by rendering chart 18.5.14 with the new values (`helm template`).
+- **What merging does.** PostgreSQL restarts once, with the preStop fast shutdown, so no crash
+  recovery. Every app on it blips for about a minute.
