@@ -1,0 +1,130 @@
+# Seerr (formerly Jellyseerr): the request page for films and series. Search, "request", status,
+# and "already available" from Jellyfin; requests go to Radarr and Sonarr. Phase 1 of Zeef
+# (projects Zeef/DESIGN.md), chosen over a home-built search box on 2026-11-06. Sign-in is with
+# the Jellyfin account; the UI language can be set to Nederlands.
+# Its database is in the shared PostgreSQL (database seerr); /app/config keeps settings.json and
+# logs. It doesn't mount the media share, so fsGroup on its own config volume is fine here.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seerr
+  namespace: zeef
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: seerr
+  template:
+    metadata:
+      labels:
+        app: seerr
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      enableServiceLinks: false
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:17-alpine
+          command:
+            - sh
+            - -c
+            - until pg_isready -h postgresql.flux-system.svc.cluster.local -p 5432 -t 2; do echo "waiting for postgres"; sleep 2; done
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+      containers:
+        - name: seerr
+          image: seerr/seerr:v3.5.1
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          env:
+            - name: TZ
+              value: Europe/Amsterdam
+            - name: PORT
+              value: "5055"
+            - name: LOG_LEVEL
+              value: info
+            - name: DB_TYPE
+              value: postgres
+            - name: DB_HOST
+              value: postgresql.flux-system.svc.cluster.local
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              value: seerr
+            - name: DB_NAME
+              value: seerr
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: zeef-stack
+                  key: SEERR__DB_PASS
+          ports:
+            - name: http
+              containerPort: 5055
+          # /api/v1/status is anonymous. The first start runs the database migrations.
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 120
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/v1/status
+              port: http
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 768Mi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: seerr-config
+---
+# LAN and tailnet only, on the shared 192.168.1.234 (the router forwards nothing to it).
+apiVersion: v1
+kind: Service
+metadata:
+  name: seerr
+  namespace: zeef
+  annotations:
+    metallb.io/loadBalancerIPs: 192.168.1.234
+    metallb.io/allow-shared-ip: zeef-lan
+spec:
+  type: LoadBalancer
+  allocateLoadBalancerNodePorts: false
+  selector:
+    app: seerr
+  ports:
+    - name: http
+      port: 5055
+      targetPort: http

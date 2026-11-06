@@ -145,3 +145,17 @@ spec:
   resources:
     requests:
       storage: 5Gi
+---
+# Seerr's settings.json and logs. Its database is in the shared PostgreSQL (database seerr).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: seerr-config
+  namespace: zeef
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: qnap-nfs
+  resources:
+    requests:
+      storage: 1Gi
