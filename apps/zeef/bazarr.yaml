@@ -4,6 +4,29 @@
 # where Jellyfin and Kodi pick them up. It can also sync a subtitle to the audio track (ffsubsync).
 # Added 2026-11-06, after anime releases arrived without subtitles (raws, French-only, ToonsHub).
 # Its database is in the shared PostgreSQL (database bazarr); /config keeps config.yaml and logs.
+# Bazarr's post-processing command runs this after each subtitle download:
+#   /scripts/jellyfin-notify.sh "{{episode}}"
+# It tells Jellyfin to re-read that video, so the new subtitle shows up at once instead of at
+# Jellyfin's 12-hourly library scan. Bazarr sees the share at /data, Jellyfin at /media.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bazarr-scripts
+  namespace: zeef
+data:
+  jellyfin-notify.sh: |
+    #!/bin/sh
+    # $1: the video's path as Bazarr sees it (/data/...).
+    [ -n "$JELLYFIN__APIKEY" ] || exit 0
+    path="/media/${1#/data/}"
+    # JSON-escape backslashes and double quotes in the path.
+    esc=$(printf '%s' "$path" | sed 's/\\/\\\\/g; s/"/\\"/g')
+    curl -s -m 10 -o /dev/null -w '%{http_code}\n' -X POST \
+      -H "Authorization: MediaBrowser Token=\"$JELLYFIN__APIKEY\"" \
+      -H "Content-Type: application/json" \
+      -d "{\"Updates\":[{\"Path\":\"$esc\",\"UpdateType\":\"Modified\"}]}" \
+      http://jellyfin.zeef.svc.cluster.local:8096/Library/Media/Updated
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -74,9 +97,9 @@ spec:
                 secretKeyRef:
                   name: zeef-stack
                   key: BAZARR__POSTGRES__PASSWORD
-            # For Bazarr's post-processing command, which tells Jellyfin about a new subtitle
-            # right away (Jellyfin's own library scan only runs every 12 hours). Optional: without
-            # it the subtitle shows up after that scan.
+            # For /scripts/jellyfin-notify.sh (Bazarr's post-processing command), which tells
+            # Jellyfin about a new subtitle right away. Optional: without it the subtitle shows up
+            # at Jellyfin's 12-hourly library scan.
             - name: JELLYFIN__APIKEY
               valueFrom:
                 secretKeyRef:
@@ -107,6 +130,9 @@ spec:
             # The same path as in Sonarr and Radarr, so their file paths need no mapping.
             - name: data
               mountPath: /data
+            - name: scripts
+              mountPath: /scripts
+              readOnly: true
           resources:
             requests:
               cpu: 100m
@@ -121,6 +147,10 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: multimedia
+        - name: scripts
+          configMap:
+            name: bazarr-scripts
+            defaultMode: 0755
 ---
 # LAN and tailnet only, on the shared 192.168.1.234 (the router forwards nothing to it).
 apiVersion: v1
