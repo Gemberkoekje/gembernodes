@@ -1323,6 +1323,14 @@ Asked: easier names than IP:port for every internal UI, Grafana included.
 - **Jellyfin's `JELLYFIN_PublishedServerUrl`** is `http://jellyfin.lan.gemberkoekje.nl`.
 - **Tested:** `caddy validate` with the pinned image, and a local run. Start page 200, Grafana
   302 to `/grafana/`, unknown host 404, `/healthz` 200.
+- **Live test (2026-11-06, after PR #124):** all nine names answer through 192.168.1.236. Each app
+  lands on its login page, Grafana on `/grafana/login`, and the start page gives 200.
+- **Gotcha: the old wildcard answer stays cached.** `*.gemberkoekje.nl` (the public IP) had a
+  24-hour TTL. Resolvers that looked a `.lan` name up before the new records existed keep the old
+  answer until it expires; the router (192.168.1.1) and Google (8.8.8.8) had the new one at once.
+  - On 2026-11-06, Cloudflare (1.1.1.1) still served the public IP, and that PC uses 1.1.1.1 first.
+  - Cloudflare's cache can be purged per name at https://one.one.one.one/purge-cache/.
+  - A device's own cache needs `ipconfig /flushdns`, or airplane mode on a phone.
 - **Gotcha to watch:** some home routers block public DNS answers that contain private addresses
   ("DNS rebind protection"). If the names fail at home but work over Tailscale on mobile data,
   allow `lan.gemberkoekje.nl` in the router's rebind exception list.
