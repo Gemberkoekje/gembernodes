@@ -19,6 +19,7 @@ forwards nothing to it. Away from home, the Tailscale subnet router already rout
 | `:8080` | qBittorrent |
 | `:11011` | Cleanuparr |
 | `:8096` | Jellyfin |
+| `:5055` | Seerr (request films and series) |
 | `:80` | (Zeef, phase 1) |
 
 The only thing the internet reaches is qBittorrent's peer port, `192.168.1.235:49160` (TCP and
@@ -79,12 +80,21 @@ CREATE ROLE cleanuparr LOGIN;
 \password cleanuparr
 CREATE DATABASE cleanuparr OWNER cleanuparr;
 
+-- Seerr (added with the Seerr manifest; create it before that merges).
+CREATE ROLE seerr LOGIN;
+\password seerr
+CREATE DATABASE seerr OWNER seerr;
+REVOKE CONNECT, TEMPORARY ON DATABASE seerr FROM PUBLIC;
+
 -- Every login may connect to a new database; only its owner may connect to these.
 REVOKE CONNECT, TEMPORARY ON DATABASE "sonarr-main", "sonarr-log", "radarr-main", "radarr-log",
   "prowlarr-main", "prowlarr-log", cleanuparr FROM PUBLIC;
 ```
 
 Make each password with `openssl rand -hex 24`. The apps create their own tables on first start.
+`\password` is a psql command. In DBeaver or another GUI, write `CREATE ROLE seerr LOGIN PASSWORD
+'<hex>';` instead, and run the script with auto-commit on (`CREATE DATABASE` refuses to run inside a
+transaction).
 
 ### 3. The 1Password item
 
@@ -99,6 +109,9 @@ Item **`zeef-stack`** in the Gembercluster vault, with exactly these field label
 | `PROWLARR__AUTH__APIKEY` | `openssl rand -hex 16` |
 | `PROWLARR__POSTGRES__PASSWORD` | prowlarr's password |
 | `CLEANUPARR__POSTGRES__PASSWORD` | cleanuparr's password |
+| `SEERR__DB_PASS` | seerr's password (Seerr) |
+| `QBITTORRENT__PASSWORD` | the qBittorrent WebUI password (for later use) |
+| `JELLYFIN__APIKEY` | a Jellyfin API key (weekly backup job; optional) |
 
 A missing field keeps that pod in `CreateContainerConfigError`. The API keys are set from here, so
 Prowlarr, Recyclarr, Cleanuparr and (later) Zeef use them without anyone copying keys out of a UI.

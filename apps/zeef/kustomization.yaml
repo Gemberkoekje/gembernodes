@@ -12,3 +12,4 @@ resources:
   - cleanuparr.yaml
   - recyclarr.yaml
   - jellyfin.yaml
+  - seerr.yaml
