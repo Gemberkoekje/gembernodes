@@ -1355,3 +1355,38 @@ The `.lan` names timed out in the user's Chrome/Edge while they worked in a plai
 - Tested locally with the pinned image as UID 1000:
   - http: start page 200, Grafana 302, `/healthz` 200;
   - https: 302 to `http://<same host><same path>`, and a strict TLS client gets "untrusted root".
+
+## 2026-11-06 — LAN names on https with a Let's Encrypt certificate
+
+To understand this, read `configuration/certissuer-lan.yaml`, then
+`infrastructure/lan-proxy/{certificate,restart}.yaml` and the Caddyfile.
+
+- **Why.** The http fallback (PR #126) wasn't enough. The apex `gemberkoekje.nl` (`/plotboek`,
+  `/grafana`, `/fileserver` through Traefik) sends `Strict-Transport-Security: max-age=15724800;
+  includeSubDomains` (`configuration/traefik-hsts.yaml`, inherited from ingress-nginx's default).
+  Chrome stores that for the whole domain and then refuses plain http, with no click-through, for
+  every subdomain, `*.lan` included.
+- **The certificate.** One Let's Encrypt certificate for `lan.gemberkoekje.nl` and
+  `*.lan.gemberkoekje.nl`.
+  - DNS-01 through cert-manager's built-in acme-dns solver: Vimexx, the DNS host, has no API that
+    lego/libdns/cert-manager support.
+  - At Vimexx, `_acme-challenge.lan.gemberkoekje.nl` is a CNAME to
+    `1ee25716-1338-4406-8711-63284c80bb70.auth.acme-dns.io`.
+  - The account is in 1Password `acme-dns-lan` (field `acmedns.json`, synced into the
+    `cert-manager` namespace).
+  - DNSSEC stays on.
+  - The first issue (PR #127) took about 2.5 minutes, valid until 2027-02-04; renewal is due
+    2027-01-05.
+- **Caddy:**
+  - All names are on https with that certificate, and http redirects to https (308).
+  - The secret is a directory mount, so renewals update the files.
+  - Caddy doesn't reload certificate files, so CronJob `caddy-restart` (Mondays 04:15) does a
+    rolling restart. Its ServiceAccount may only get/patch the `caddy` Deployment.
+- **Links that moved to https:** the start page, Grafana's `root_url`
+  (`https://grafana.lan.gemberkoekje.nl/grafana/`) and Jellyfin's published URL.
+- **Tested locally** with a stand-in self-signed certificate: http → https 308 with path and query
+  kept, start page 200 with https links, Grafana → `/grafana/`, unknown `.lan` name 404,
+  `/healthz` 200. Server-side strict dry-runs and `flux build` pass.
+- **Dependency:** the public acme-dns service at auth.acme-dns.io. If it ever disappears,
+  renewals fail, and the certificate shows "not Ready" a month before it expires. Then self-host
+  acme-dns, or move the challenge CNAME to another provider.

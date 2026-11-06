@@ -1,0 +1,86 @@
+# Caddy reads its certificate files only at start. cert-manager renews lan-wildcard-tls 30 days
+# before it expires and the kubelet updates the mounted files, so a weekly rolling restart (2
+# replicas, no downtime) makes Caddy serve the renewed certificate well before the old one lapses.
+# The ServiceAccount may only get and patch the caddy Deployment in this namespace.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: caddy-restart
+  namespace: lan-proxy
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: caddy-restart
+  namespace: lan-proxy
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    resourceNames: ["caddy"]
+    verbs: ["get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: caddy-restart
+  namespace: lan-proxy
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: caddy-restart
+subjects:
+  - kind: ServiceAccount
+    name: caddy-restart
+    namespace: lan-proxy
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: caddy-restart
+  namespace: lan-proxy
+spec:
+  schedule: "15 4 * * 1"
+  timeZone: Europe/Amsterdam
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 600
+      template:
+        spec:
+          serviceAccountName: caddy-restart
+          restartPolicy: Never
+          enableServiceLinks: false
+          securityContext:
+            runAsUser: 65532
+            runAsGroup: 65532
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: restart
+              image: registry.k8s.io/kubectl:v1.37.2
+              imagePullPolicy: IfNotPresent
+              # The image's entrypoint is kubectl.
+              args: ["-n", "lan-proxy", "rollout", "restart", "deployment/caddy"]
+              env:
+                - name: HOME
+                  value: /tmp
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  memory: 128Mi
+          volumes:
+            - name: tmp
+              emptyDir: {}
