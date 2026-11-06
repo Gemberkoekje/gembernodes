@@ -1312,7 +1312,7 @@ Asked: easier names than IP:port for every internal UI, Grafana included.
   | Name | Goes to |
   |---|---|
   | `lan.gemberkoekje.nl` | Start page with links |
-  | `seerr.`, `jellyfin.`, `sonarr.`, `radarr.`, `prowlarr.`, `qbittorrent.`, `cleanuparr.` | The Zeef apps |
+  | `seerr.`, `jellyfin.`, `sonarr.`, `radarr.`, `prowlarr.`, `qbittorrent.`, `cleanuparr.`, `maintainerr.` | The Zeef apps (`maintainerr.` added the same day) |
   | `grafana.` | Grafana; `/` redirects to `/grafana/` |
 
   Each is `<name>.lan.gemberkoekje.nl`. Unknown names get a 404.

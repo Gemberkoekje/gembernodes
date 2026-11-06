@@ -13,3 +13,4 @@ resources:
   - recyclarr.yaml
   - jellyfin.yaml
   - seerr.yaml
+  - maintainerr.yaml
