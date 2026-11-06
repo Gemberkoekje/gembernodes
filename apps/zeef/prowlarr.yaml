@@ -74,9 +74,10 @@ spec:
                 secretKeyRef:
                   name: zeef-stack
                   key: PROWLARR__AUTH__APIKEY
-            # A login page for every request; the user is created on the first visit.
-            - name: PROWLARR__AUTH__METHOD
-              value: Forms
+            # Login always required. The method is deliberately not set here: with it preset, the
+            # app skips its first-run "Authentication Required" screen, which is where the user is
+            # created, and shows a login page nobody can pass. On the first visit choose Forms
+            # and create the user; the app saves the method in config.xml itself.
             - name: PROWLARR__AUTH__REQUIRED
               value: Enabled
             - name: PROWLARR__LOG__ANALYTICSENABLED
