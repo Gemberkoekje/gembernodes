@@ -85,13 +85,14 @@ spec:
             - name: http
               containerPort: 9696
           # /ping touches the database, so it only gates readiness; liveness stays a TCP check
-          # (a PostgreSQL outage must not restart a healthy pod). The first start runs the
-          # database migrations, hence the generous startup window.
+          # (a PostgreSQL outage must not restart a healthy pod). The first start on an empty
+          # database runs ~250 migrations, which took over 5 minutes on 2026-11-06 (PostgreSQL's
+          # data is on NFS); a major upgrade can take as long. Hence 20 minutes to start.
           startupProbe:
             tcpSocket:
               port: http
             periodSeconds: 5
-            failureThreshold: 60
+            failureThreshold: 240
           livenessProbe:
             tcpSocket:
               port: http
