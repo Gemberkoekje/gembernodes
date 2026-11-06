@@ -31,12 +31,15 @@ spec:
           type: RuntimeDefault
       enableServiceLinks: false
       initContainers:
+        # -U is required here: this pod runs as UID 1000, which has no entry in the image's
+        # /etc/passwd, and without a user name pg_isready gives up with "no attempt" instead of
+        # connecting (the Servarr pods run their init step as root, so it never showed there).
         - name: wait-for-postgres
           image: postgres:17-alpine
           command:
             - sh
             - -c
-            - until pg_isready -h postgresql.flux-system.svc.cluster.local -p 5432 -t 2; do echo "waiting for postgres"; sleep 2; done
+            - until pg_isready -U postgres -h postgresql.flux-system.svc.cluster.local -p 5432 -t 2; do echo "waiting for postgres"; sleep 2; done
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
