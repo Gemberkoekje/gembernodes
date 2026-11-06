@@ -84,6 +84,12 @@ spec:
               value: Enabled
             - name: SONARR__LOG__ANALYTICSENABLED
               value: "False"
+            # The apps start at "debug": ~11 log lines a second for Sonarr while it weighs
+            # releases, each written to /config on the QNAP's synced, single-disk volume. That
+            # slowed release processing to about one per second (2026-11-06). Info is the normal
+            # level; debug can be switched on in the UI for troubleshooting.
+            - name: SONARR__LOG__LEVEL
+              value: info
           ports:
             - name: http
               containerPort: 8989
