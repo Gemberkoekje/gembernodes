@@ -18,6 +18,7 @@ forwards nothing to it. Away from home, the Tailscale subnet router already rout
 | `:9696` | Prowlarr |
 | `:8080` | qBittorrent |
 | `:11011` | Cleanuparr |
+| `:8096` | Jellyfin |
 | `:80` | (Zeef, phase 1) |
 
 The only thing the internet reaches is qBittorrent's peer port, `192.168.1.235:49160` (TCP and
@@ -30,6 +31,10 @@ UDP, forwarded by the router). It speaks BitTorrent and has no web UI behind it.
 - **The `multimedia-nfs` PV stays `Retain`, with Flux pruning disabled** (`infrastructure/pvcs/zeef.yaml`).
   With `Delete`, removing the claim could make the CSI driver delete the whole share.
 - **Nothing goes into `ingress/`.** No public route, ever.
+- **Jellyfin's `/config` is on `local-path`, not NFS** (SQLite; Jellyfin 12 supports nothing else).
+  The pod is tied to the node that first ran it. Its weekly backups (CronJob `jellyfin-backup`,
+  database + subtitles, newest four kept) land on the `jellyfin-backup` claim on the QNAP once
+  `JELLYFIN__APIKEY` is in the `zeef-stack` item.
 - **Image tags stay pinned.** Bump them deliberately. The Servarr apps migrate their databases on
   start, so read the release notes before a major version (Sonarr 5 is in development).
 

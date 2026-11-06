@@ -112,3 +112,36 @@ spec:
   resources:
     requests:
       storage: 1Gi
+---
+# Jellyfin's settings, users, watched status and artwork live in SQLite, and Jellyfin 12 supports
+# nothing else. SQLite on NFS corrupts, so this claim is on local-path, the disk of whichever node
+# first runs the pod. The pod stays on that node from then on, and is away while kured reboots it.
+# Jellyfin's scheduled backups go to jellyfin-backup on the QNAP. Flux never prunes this claim:
+# with local-path's Delete policy, removing it would delete the data.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-config
+  namespace: zeef
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jellyfin-backup
+  namespace: zeef
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: qnap-nfs
+  resources:
+    requests:
+      storage: 5Gi
