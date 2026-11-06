@@ -1334,3 +1334,24 @@ Asked: easier names than IP:port for every internal UI, Grafana included.
 - **Gotcha to watch:** some home routers block public DNS answers that contain private addresses
   ("DNS rebind protection"). If the names fail at home but work over Tailscale on mobile data,
   allow `lan.gemberkoekje.nl` in the router's rebind exception list.
+
+## 2026-11-06 — LAN names: port 443 answers, so browsers fall back to http
+
+The `.lan` names timed out in the user's Chrome/Edge while they worked in a plain http client.
+"HTTPS Upgrades" make those browsers try https first for any http:// address, and port 443 on
+192.168.1.236 gave no answer at all (the Service only had port 80), so the attempt hung.
+
+- Caddy now also listens on 8443 (Service port 443) with a certificate from its own internal CA
+  (`tls internal`, `skip_install_trust`). It only redirects to the same address on http
+  (`redir http://{host}{uri}`). An untrusted certificate makes the browser fall back to http at
+  once. Someone who types `https://` gets a warning, then the redirect.
+- `auto_https disable_redirects` instead of `off`: certificates for the https block, and no
+  http→https redirects.
+- Real certificates need DNS-01, and the domain's DNS (Vimexx, `ns.zxcs.*`) has no API that
+  lego/libdns/cert-manager support. Moving DNS to Cloudflare was considered and dropped: Vimexx has
+  DNSSEC on and no self-service way to turn it off. If the lock icon is ever wanted, the
+  low-hassle route is cert-manager's acme-dns solver plus one CNAME `_acme-challenge.lan` at
+  Vimexx (DNSSEC can stay on).
+- Tested locally with the pinned image as UID 1000:
+  - http: start page 200, Grafana 302, `/healthz` 200;
+  - https: 302 to `http://<same host><same path>`, and a strict TLS client gets "untrusted root".

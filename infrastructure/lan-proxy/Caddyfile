@@ -2,10 +2,23 @@
 # DNS: *.lan.gemberkoekje.nl and lan.gemberkoekje.nl point at 192.168.1.236 (a private address),
 # which the router doesn't forward, so these names only work at home and over Tailscale (whose
 # subnet router routes 192.168.1.224/28). Plain HTTP, like the IP:port addresses they replace.
+#
+# Port 443 answers too, with a certificate from Caddy's own (untrusted) CA, only to redirect to
+# http. Chrome and Edge try https first for any http:// address ("HTTPS Upgrades"). While 443 gave
+# no answer at all, that attempt hung and the page timed out (2026-11-06); an untrusted certificate
+# makes the browser fall back to http at once. Real certificates need a DNS API, which Vimexx lacks.
 {
-	auto_https off
+	auto_https disable_redirects
+	skip_install_trust
 	admin off
 	http_port 8080
+	https_port 8443
+}
+
+# Every name on https: redirect to the same address on http.
+https://lan.gemberkoekje.nl, https://*.lan.gemberkoekje.nl {
+	tls internal
+	redir http://{host}{uri} 302
 }
 
 # The start page with links to everything below.
