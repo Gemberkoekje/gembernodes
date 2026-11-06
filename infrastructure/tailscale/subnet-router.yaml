@@ -1,5 +1,6 @@
 # A Tailscale subnet router: devices on the tailnet reach the cluster's LAN addresses through this
-# pod, so Grafana is at http://192.168.1.230/grafana from anywhere, the same URL as at home.
+# pod, so the internal UIs (http://lan.gemberkoekje.nl and its <app>.lan names on 192.168.1.236,
+# Grafana included) work from anywhere, with the same URLs as at home.
 # It runs in the cluster rather than on the nodes so it can be deployed and fixed through Git when
 # nobody can reach the LAN. Setup in Tailscale and 1Password: NOTES.md, 2026-10-04.
 apiVersion: apps/v1
