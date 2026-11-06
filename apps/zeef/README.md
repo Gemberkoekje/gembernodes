@@ -1,14 +1,14 @@
 # Zeef
 
 Download Station's replacement: films and series via Radarr and Sonarr, torrents via qBittorrent,
-indexers via Prowlarr, malware and stalled-download cleanup via Cleanuparr, and the TRaSH Guides'
-quality rules via a nightly Recyclarr job. Downloads land on the QNAP **Multimedia** share
+indexers via Prowlarr, malware and stalled-download cleanup via Cleanuparr, English subtitles via
+Bazarr, and the TRaSH Guides' quality rules via a nightly Recyclarr job. Downloads land on the QNAP **Multimedia** share
 (`/data` in every pod). Design and runbook: Gemberkoekje/projects `Zeef/DESIGN.md` and
 `Zeef/DEPLOY.md`. The Zeef app itself (one Dutch search box in front of all this) follows in phase 1.
 
 ## Where it is reachable
 
-**LAN and Tailscale only, like Grafana.** Friendly names: `http://<app>.lan.gemberkoekje.nl` (start page `http://lan.gemberkoekje.nl`, see `infrastructure/lan-proxy`). All web UIs share `192.168.1.234`, and the router
+**LAN and Tailscale only, like Grafana.** Friendly names: `https://<app>.lan.gemberkoekje.nl` (start page `https://lan.gemberkoekje.nl`, see `infrastructure/lan-proxy`). All web UIs share `192.168.1.234`, and the router
 forwards nothing to it. Away from home, the Tailscale subnet router already routes `.224/28`.
 
 | Port | App |
@@ -21,6 +21,7 @@ forwards nothing to it. Away from home, the Tailscale subnet router already rout
 | `:8096` | Jellyfin |
 | `:5055` | Seerr (request films and series) |
 | `:6246` | Maintainerr (cleanup of watched media) |
+| `:6767` | Bazarr (English subtitles) |
 | `:80` | (Zeef, phase 1) |
 
 The only thing the internet reaches is qBittorrent's peer port, `192.168.1.235:49160` (TCP and
@@ -87,6 +88,12 @@ CREATE ROLE seerr LOGIN;
 CREATE DATABASE seerr OWNER seerr;
 REVOKE CONNECT, TEMPORARY ON DATABASE seerr FROM PUBLIC;
 
+-- Bazarr (added with the Bazarr manifest; create it before that merges).
+CREATE ROLE bazarr LOGIN;
+\password bazarr
+CREATE DATABASE bazarr OWNER bazarr;
+REVOKE CONNECT, TEMPORARY ON DATABASE bazarr FROM PUBLIC;
+
 -- Every login may connect to a new database; only its owner may connect to these.
 REVOKE CONNECT, TEMPORARY ON DATABASE "sonarr-main", "sonarr-log", "radarr-main", "radarr-log",
   "prowlarr-main", "prowlarr-log", cleanuparr FROM PUBLIC;
@@ -111,8 +118,9 @@ Item **`zeef-stack`** in the Gembercluster vault, with exactly these field label
 | `PROWLARR__POSTGRES__PASSWORD` | prowlarr's password |
 | `CLEANUPARR__POSTGRES__PASSWORD` | cleanuparr's password |
 | `SEERR__DB_PASS` | seerr's password (Seerr) |
+| `BAZARR__POSTGRES__PASSWORD` | bazarr's password (Bazarr) |
 | `QBITTORRENT__PASSWORD` | the qBittorrent WebUI password (for later use) |
-| `JELLYFIN__APIKEY` | a Jellyfin API key (weekly backup job; optional) |
+| `JELLYFIN__APIKEY` | a Jellyfin API key (weekly backup job and Bazarr's post-processing; optional) |
 
 A missing field keeps that pod in `CreateContainerConfigError`. The API keys are set from here, so
 Prowlarr, Recyclarr, Cleanuparr and (later) Zeef use them without anyone copying keys out of a UI.

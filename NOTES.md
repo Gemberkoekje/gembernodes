@@ -1390,3 +1390,27 @@ To understand this, read `configuration/certissuer-lan.yaml`, then
 - **Dependency:** the public acme-dns service at auth.acme-dns.io. If it ever disappears,
   renewals fail, and the certificate shows "not Ready" a month before it expires. Then self-host
   acme-dns, or move the challenge CNAME to another provider.
+
+## 2026-11-06 — Zeef: Bazarr for English subtitles
+
+To understand this, read `apps/zeef/bazarr.yaml`, then the Bazarr rows in `apps/zeef/README.md`.
+
+Asked: "make sure non-English series get English subtitles, even downloaded separately". Anime
+releases had arrived without English subtitles: ToonsHub Amazon rips with no subtitle tracks,
+RawsPlease raws, and French-only (VOSTFR, Tsundere-Raws) releases.
+
+- **Bazarr** (`lscr.io/linuxserver/bazarr:v1.6.2-ls371`, the newest stable tag on 2026-11-06):
+  - It reads the library through Sonarr and Radarr and fetches missing English subtitles as
+    `.en.srt` next to the video.
+  - It mounts the library at `/data`, the same path as Sonarr and Radarr, so no path mapping is
+    needed. It runs as PUID 1000 / PGID 100 with UMASK 002, and has no `fsGroup`, like the others.
+- **Database:** the shared PostgreSQL, database `bazarr`, via `POSTGRES_ENABLED` / `POSTGRES_*`
+  (Bazarr's wiki: these take precedence over `config.yaml`). Bazarr creates its tables but not the
+  database, so README step 2 must run before the merge. Password in `zeef-stack` field
+  `BAZARR__POSTGRES__PASSWORD`.
+- **`JELLYFIN__APIKEY` (optional)** is passed in for a post-processing command. It tells Jellyfin
+  about a new subtitle at once; otherwise Jellyfin only sees it at its 12-hourly scan.
+- **Reachable at** `192.168.1.234:6767` and `https://bazarr.lan.gemberkoekje.nl`, with a link on
+  the start page.
+- **Setup after the deploy** is in Gemberkoekje/projects `Zeef/DEPLOY.md`: login, Sonarr/Radarr,
+  the English language profile, providers, and the post-processing command.

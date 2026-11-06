@@ -160,6 +160,20 @@ spec:
     requests:
       storage: 1Gi
 ---
+# Bazarr's config.yaml, logs and cache. Its database is in the shared PostgreSQL (database bazarr).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: bazarr-config
+  namespace: zeef
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: qnap-nfs
+  resources:
+    requests:
+      storage: 1Gi
+---
 # Maintainerr's rules, collections and history: SQLite only (no PostgreSQL support), so this is on
 # local-path like Jellyfin's config, never NFS. Flux never prunes it (local-path deletes data with
 # the claim). Losing it means re-creating the cleanup rules, nothing else.

@@ -1,0 +1,172 @@
+# Bazarr: English subtitles for everything that isn't in English. It reads the library through
+# Sonarr and Radarr, searches subtitle sites (OpenSubtitles.com, Animetosho, ...) for episodes and
+# films without English audio or English subtitles, and saves them as `.en.srt` next to the video,
+# where Jellyfin and Kodi pick them up. It can also sync a subtitle to the audio track (ffsubsync).
+# Added 2026-11-06, after anime releases arrived without subtitles (raws, French-only, ToonsHub).
+# Its database is in the shared PostgreSQL (database bazarr); /config keeps config.yaml and logs.
+# Bazarr's post-processing command runs this after each subtitle download:
+#   /scripts/jellyfin-notify.sh "{{episode}}"
+# It tells Jellyfin to re-read that video, so the new subtitle shows up at once instead of at
+# Jellyfin's 12-hourly library scan. Bazarr sees the share at /data, Jellyfin at /media.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bazarr-scripts
+  namespace: zeef
+data:
+  jellyfin-notify.sh: |
+    #!/bin/sh
+    # $1: the video's path as Bazarr sees it (/data/...).
+    [ -n "$JELLYFIN__APIKEY" ] || exit 0
+    path="/media/${1#/data/}"
+    # JSON-escape backslashes and double quotes in the path.
+    esc=$(printf '%s' "$path" | sed 's/\\/\\\\/g; s/"/\\"/g')
+    curl -s -m 10 -o /dev/null -w '%{http_code}\n' -X POST \
+      -H "Authorization: MediaBrowser Token=\"$JELLYFIN__APIKEY\"" \
+      -H "Content-Type: application/json" \
+      -d "{\"Updates\":[{\"Path\":\"$esc\",\"UpdateType\":\"Modified\"}]}" \
+      http://jellyfin.zeef.svc.cluster.local:8096/Library/Media/Updated
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bazarr
+  namespace: zeef
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: bazarr
+  template:
+    metadata:
+      labels:
+        app: bazarr
+    spec:
+      # No fsGroup: the kubelet would chown every file on /data, which is the media library.
+      # The image drops to PUID/PGID itself, and writes the subtitle files as that user.
+      enableServiceLinks: false
+      initContainers:
+        # Start only once PostgreSQL answers, instead of crash-looping through a reboot.
+        - name: wait-for-postgres
+          image: postgres:17-alpine
+          command:
+            - sh
+            - -c
+            - until pg_isready -U postgres -h postgresql.flux-system.svc.cluster.local -p 5432 -t 2; do echo "waiting for postgres"; sleep 2; done
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+      containers:
+        - name: bazarr
+          image: lscr.io/linuxserver/bazarr:v1.6.2-ls371
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "100"
+            - name: UMASK
+              value: "002"
+            - name: TZ
+              value: Europe/Amsterdam
+            # PostgreSQL instead of SQLite on NFS. These take precedence over config.yaml. Bazarr
+            # creates its tables in the (empty) database on first start.
+            - name: POSTGRES_ENABLED
+              value: "true"
+            - name: POSTGRES_HOST
+              value: postgresql.flux-system.svc.cluster.local
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_DATABASE
+              value: bazarr
+            - name: POSTGRES_USERNAME
+              value: bazarr
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: zeef-stack
+                  key: BAZARR__POSTGRES__PASSWORD
+            # For /scripts/jellyfin-notify.sh (Bazarr's post-processing command), which tells
+            # Jellyfin about a new subtitle right away. Optional: without it the subtitle shows up
+            # at Jellyfin's 12-hourly library scan.
+            - name: JELLYFIN__APIKEY
+              valueFrom:
+                secretKeyRef:
+                  name: zeef-stack
+                  key: JELLYFIN__APIKEY
+                  optional: true
+          ports:
+            - name: http
+              containerPort: 6767
+          # The first start creates the schema in PostgreSQL (on NFS), so allow it time.
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 120
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            # The same path as in Sonarr and Radarr, so their file paths need no mapping.
+            - name: data
+              mountPath: /data
+            - name: scripts
+              mountPath: /scripts
+              readOnly: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: bazarr-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: multimedia
+        - name: scripts
+          configMap:
+            name: bazarr-scripts
+            defaultMode: 0755
+---
+# LAN and tailnet only, on the shared 192.168.1.234 (the router forwards nothing to it).
+apiVersion: v1
+kind: Service
+metadata:
+  name: bazarr
+  namespace: zeef
+  annotations:
+    metallb.io/loadBalancerIPs: 192.168.1.234
+    metallb.io/allow-shared-ip: zeef-lan
+spec:
+  type: LoadBalancer
+  allocateLoadBalancerNodePorts: false
+  selector:
+    app: bazarr
+  ports:
+    - name: http
+      port: 6767
+      targetPort: http
