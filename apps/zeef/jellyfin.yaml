@@ -1,0 +1,228 @@
+# Jellyfin: one always-on media library for the phone, Kodi on the PC (Jellyfin for Kodi add-on)
+# and the browser. Design: Gemberkoekje/projects Zeef/DESIGN.md section 12.
+#   - Settings, users and watched status: SQLite in /config on local-path (never NFS).
+#   - Media: the Multimedia share, read-only. Sonarr/Radarr own the files and notify Jellyfin after
+#     each import (Connect > Emby / Jellyfin), so real-time monitoring stays off (it doesn't work
+#     over NFS anyway).
+#   - The nodes' i3-4160 has no GPU passed through: clients should direct-play. /cache (transcodes)
+#     is a capped emptyDir so a runaway transcode can't fill the node's disk.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellyfin
+  namespace: zeef
+spec:
+  replicas: 1
+  # One writer for the SQLite database; the local-path volume can only be on one node anyway.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: jellyfin
+  template:
+    metadata:
+      labels:
+        app: jellyfin
+    spec:
+      # Runs as the library's owner. No fsGroup: the kubelet would chown every file on the
+      # Multimedia share (mounted read-only here, but the rule holds for every pod that mounts it).
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 100
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      enableServiceLinks: false
+      initContainers:
+        # The backup volume is mounted inside /config (Jellyfin's backup path is fixed at
+        # /config/data/backups). Left alone, the container runtime creates /config/data as root
+        # and Jellyfin (UID 1000) can't write its databases there. This hands those folders, and
+        # the backup volume's root, to UID 1000. Only these directories, never recursively.
+        - name: own-dirs
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - mkdir -p /config/data/backups && chown 1000:100 /config /config/data /config/data/backups /backups && chmod 775 /config/data /backups
+          securityContext:
+            runAsUser: 0
+            runAsNonRoot: false
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+              add: ["CHOWN", "FOWNER"]
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: backup
+              mountPath: /backups
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+      containers:
+        - name: jellyfin
+          image: jellyfin/jellyfin:12.4.20261026-211555
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          env:
+            - name: TZ
+              value: Europe/Amsterdam
+            # The address clients are told to use (LAN, or Tailscale away from home).
+            - name: JELLYFIN_PublishedServerUrl
+              value: http://192.168.1.234:8096
+          ports:
+            - name: http
+              containerPort: 8096
+          # /health is anonymous and answers "Healthy". The first start creates and migrates the
+          # database, hence the generous startup window; liveness stays a TCP check.
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 120
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: cache
+              mountPath: /cache
+            # Jellyfin writes its backups to <data>/backups; this puts them on the QNAP.
+            - name: backup
+              mountPath: /config/data/backups
+            - name: media
+              mountPath: /media
+              readOnly: true
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: "3"
+              memory: 2Gi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: jellyfin-config
+        - name: cache
+          emptyDir:
+            sizeLimit: 8Gi
+        - name: backup
+          persistentVolumeClaim:
+            claimName: jellyfin-backup
+        - name: media
+          persistentVolumeClaim:
+            claimName: multimedia
+            readOnly: true
+---
+# LAN and tailnet only, on the shared 192.168.1.234 (the router forwards nothing to it).
+# Sonarr/Radarr use jellyfin.zeef.svc.cluster.local:8096.
+apiVersion: v1
+kind: Service
+metadata:
+  name: jellyfin
+  namespace: zeef
+  annotations:
+    metallb.io/loadBalancerIPs: 192.168.1.234
+    metallb.io/allow-shared-ip: zeef-lan
+spec:
+  type: LoadBalancer
+  allocateLoadBalancerNodePorts: false
+  selector:
+    app: jellyfin
+  ports:
+    - name: http
+      port: 8096
+      targetPort: http
+---
+# Weekly backup of Jellyfin's database (users, watched status, settings) and subtitles. Jellyfin 12
+# has no scheduled backup of its own, so this asks its API for one; the archive lands on the
+# jellyfin-backup volume on the QNAP. Artwork is left out (Jellyfin fetches it again). Keeps the
+# newest four. Until a Jellyfin API key is in the zeef-stack item (field JELLYFIN__APIKEY,
+# made in Dashboard > API Keys after the first-run wizard) the job does nothing and succeeds.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: jellyfin-backup
+  namespace: zeef
+spec:
+  schedule: "0 4 * * 0"
+  timeZone: Europe/Amsterdam
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 1800
+      template:
+        spec:
+          restartPolicy: Never
+          enableServiceLinks: false
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 100
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: backup
+              image: curlimages/curl:8.23.0
+              imagePullPolicy: IfNotPresent
+              command:
+                - sh
+                - -c
+                - |
+                  set -eu
+                  if [ -z "${JELLYFIN_API_KEY:-}" ]; then
+                    echo "No JELLYFIN__APIKEY in the zeef-stack item yet; nothing to back up."
+                    exit 0
+                  fi
+                  curl -fsS --max-time 1500 -X POST \
+                    -H "Authorization: MediaBrowser Token=\"$JELLYFIN_API_KEY\"" \
+                    -H "Content-Type: application/json" \
+                    -d '{"Database":true,"Subtitles":true,"Metadata":false,"Trickplay":false}' \
+                    http://jellyfin.zeef.svc.cluster.local:8096/Backup/Create
+                  echo
+                  ls -1t /backups/jellyfin-backup-*.zip 2>/dev/null | tail -n +5 | while read -r old; do
+                    echo "removing old backup $old"
+                    rm -f -- "$old"
+                  done
+                  ls -l /backups
+              env:
+                - name: JELLYFIN_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: zeef-stack
+                      key: JELLYFIN__APIKEY
+                      optional: true
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+              volumeMounts:
+                - name: backups
+                  mountPath: /backups
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 16Mi
+                limits:
+                  memory: 64Mi
+          volumes:
+            - name: backups
+              persistentVolumeClaim:
+                claimName: jellyfin-backup

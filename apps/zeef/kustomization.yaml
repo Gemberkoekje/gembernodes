@@ -11,3 +11,4 @@ resources:
   - radarr.yaml
   - cleanuparr.yaml
   - recyclarr.yaml
+  - jellyfin.yaml
