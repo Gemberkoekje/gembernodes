@@ -11,8 +11,9 @@ Needs PyYAML, and flux, kubeconform and helm on PATH (.github/workflows/validate
    Flux version in gotk-components.yaml, and the CRD catalog for the other custom resources.
 4. Flux references resolve (sourceRefs, chartRefs, dependsOn, valuesFrom), and every manifest is
    applied by some Kustomization (a warning: commenting an app out of a kustomization is allowed).
-5. YAML/JSON embedded in ConfigMaps parses, and Grafana's provisioning fits together: alert rules
-   use data sources and dashboards that exist, and policies use contact points that exist.
+5. YAML/JSON embedded in ConfigMaps parses (local tags such as Recyclarr's `!env_var` are allowed
+   there), and Grafana's provisioning fits together: alert rules use data sources and dashboards
+   that exist, and policies use contact points that exist.
 6. Every HelmRelease renders with its chart and values (`helm template`), as helm-controller does,
    and the result passes kubeconform. Top-level values the chart doesn't have are a warning, and so
    is a chart registry that stays busy (rate limit, server error), since that is not this repo's fault.
@@ -88,6 +89,27 @@ class Loader(yaml.SafeLoader):
 
 def yaml_docs(text):
     return [d for d in yaml.load_all(text, Loader) if isinstance(d, dict)]
+
+
+class EmbeddedLoader(Loader):
+    """Loader for YAML stored in ConfigMaps. Apps define their own local tags there (Recyclarr's
+    `!env_var`, `!secret` and `!file`), which the app resolves when it reads the file. They parse
+    as the plain node they tag, so syntax and duplicate keys are still checked."""
+
+
+def _construct_local_tag(loader, suffix, node):
+    if isinstance(node, yaml.ScalarNode):
+        return loader.construct_scalar(node)
+    if isinstance(node, yaml.SequenceNode):
+        return loader.construct_sequence(node, deep=True)
+    return loader.construct_mapping(node, deep=True)
+
+
+EmbeddedLoader.add_multi_constructor("!", _construct_local_tag)
+
+
+def embedded_yaml_docs(text):
+    return [d for d in yaml.load_all(text, EmbeddedLoader) if isinstance(d, dict)]
 
 
 def parse_error(exc):
@@ -253,7 +275,7 @@ def check_embedded_and_grafana(objects, origin):
             if not key.endswith((".yaml", ".yml", ".json")):
                 continue
             try:
-                docs = [json.loads(text)] if key.endswith(".json") else yaml_docs(text)
+                docs = [json.loads(text)] if key.endswith(".json") else embedded_yaml_docs(text)
             except (yaml.YAMLError, json.JSONDecodeError) as exc:
                 message, line = parse_error(exc)
                 report("error", f"ConfigMap {o['metadata']['name']}, {key} (line {line}): {message}", file)
