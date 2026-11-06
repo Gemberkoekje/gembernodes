@@ -5,6 +5,7 @@ namespace: lan-proxy
 
 resources:
   - caddy.yaml
+  - certificate.yaml
 
 configMapGenerator:
   - name: caddy-config

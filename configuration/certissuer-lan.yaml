@@ -1,0 +1,37 @@
+# Let's Encrypt for the internal names (*.lan.gemberkoekje.nl), which the internet can't reach, so
+# HTTP-01 is impossible and the domain's DNS host (Vimexx) has no API for DNS-01. Instead the
+# challenge is delegated: at Vimexx, _acme-challenge.lan.gemberkoekje.nl is a CNAME to an account
+# on the public acme-dns service (auth.acme-dns.io), whose TXT record cert-manager sets through
+# acme-dns's API. DNSSEC on the zone is unaffected. Why HTTPS at all: the apex sends HSTS with
+# includeSubDomains (traefik-hsts.yaml), so browsers refuse plain http for every subdomain.
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-lan
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: Arie_Hofland@hotmail.com
+    privateKeySecretRef:
+      name: letsencrypt-lan
+    solvers:
+      - selector:
+          dnsZones:
+            - lan.gemberkoekje.nl
+        dns01:
+          acmeDNS:
+            host: https://auth.acme-dns.io
+            accountSecretRef:
+              name: acme-dns-lan
+              key: acmedns.json
+---
+# The acme-dns account (username, password, fulldomain, subdomain), keyed by domain as cert-manager
+# expects. A ClusterIssuer reads secrets from cert-manager's own namespace.
+# Field used (exact label): acmedns.json (the single-line JSON written at registration).
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: acme-dns-lan
+  namespace: cert-manager
+spec:
+  itemPath: "vaults/Gembercluster/items/acme-dns-lan"
