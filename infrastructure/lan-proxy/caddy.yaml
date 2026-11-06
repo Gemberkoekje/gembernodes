@@ -71,6 +71,11 @@ spec:
               mountPath: /data
             - name: xdg-config
               mountPath: /config
+            # The Let's Encrypt certificate (certificate.yaml); a directory mount, so the kubelet
+            # updates the files on renewal (restart.yaml makes Caddy reload them weekly).
+            - name: certs
+              mountPath: /certs
+              readOnly: true
           resources:
             requests:
               cpu: 10m
@@ -88,6 +93,9 @@ spec:
           emptyDir: {}
         - name: xdg-config
           emptyDir: {}
+        - name: certs
+          secret:
+            secretName: lan-wildcard-tls
 ---
 apiVersion: v1
 kind: Service
@@ -105,7 +113,6 @@ spec:
     - name: http
       port: 80
       targetPort: http
-    # Only so browsers that try https first get an answer (see the Caddyfile); it redirects to http.
     - name: https
       port: 443
       targetPort: https
