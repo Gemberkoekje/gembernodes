@@ -42,6 +42,10 @@ http://cleanuparr.lan.gemberkoekje.nl {
 	reverse_proxy cleanuparr.zeef.svc.cluster.local:11011
 }
 
+http://maintainerr.lan.gemberkoekje.nl {
+	reverse_proxy maintainerr.zeef.svc.cluster.local:6246
+}
+
 # Grafana serves from /grafana/ (serve_from_sub_path); the bare name lands there.
 http://grafana.lan.gemberkoekje.nl {
 	redir / /grafana/ 302

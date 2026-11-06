@@ -1,0 +1,94 @@
+# Maintainerr: rule-based cleanup ("looks and smells like Seerr, does the opposite"). Rules such as
+# "season fully watched in Jellyfin and untouched for 30 days" collect items in a "Leaving soon"
+# collection for a grace period, then delete them through Sonarr/Radarr (which also unmonitor them,
+# so the gap-fill doesn't fetch them again; deleted files go to their 7-day recycle bin).
+# It works only through the Jellyfin, Sonarr, Radarr and Seerr APIs, so it doesn't mount the media
+# share. Its SQLite database is on local-path (no PostgreSQL support), like Jellyfin's config.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maintainerr
+  namespace: zeef
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: maintainerr
+  template:
+    metadata:
+      labels:
+        app: maintainerr
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      enableServiceLinks: false
+      containers:
+        - name: maintainerr
+          image: ghcr.io/maintainerr/maintainerr:3.32.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          env:
+            - name: TZ
+              value: Europe/Amsterdam
+          ports:
+            - name: http
+              containerPort: 6246
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 120
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 30
+          # The image's own check: OK only while its database answers.
+          readinessProbe:
+            exec:
+              command: ["/opt/app/healthcheck.sh"]
+            periodSeconds: 30
+            timeoutSeconds: 10
+          volumeMounts:
+            - name: data
+              mountPath: /opt/data
+          resources:
+            requests:
+              cpu: 50m
+              memory: 192Mi
+            limits:
+              cpu: "1"
+              memory: 768Mi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: maintainerr-data
+---
+# LAN and tailnet only, on the shared 192.168.1.234; friendly name maintainerr.lan.gemberkoekje.nl.
+apiVersion: v1
+kind: Service
+metadata:
+  name: maintainerr
+  namespace: zeef
+  annotations:
+    metallb.io/loadBalancerIPs: 192.168.1.234
+    metallb.io/allow-shared-ip: zeef-lan
+spec:
+  type: LoadBalancer
+  allocateLoadBalancerNodePorts: false
+  selector:
+    app: maintainerr
+  ports:
+    - name: http
+      port: 6246
+      targetPort: http

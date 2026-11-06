@@ -20,6 +20,7 @@ forwards nothing to it. Away from home, the Tailscale subnet router already rout
 | `:11011` | Cleanuparr |
 | `:8096` | Jellyfin |
 | `:5055` | Seerr (request films and series) |
+| `:6246` | Maintainerr (cleanup of watched media) |
 | `:80` | (Zeef, phase 1) |
 
 The only thing the internet reaches is qBittorrent's peer port, `192.168.1.235:49160` (TCP and
