@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: charactercreator-ingress
+  namespace: charactercreator
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx-public
+  tls:
+  - hosts:
+    - charactercreator.gemberkoekje.nl
+    secretName: charactercreator-tls
+  rules:
+  - host: charactercreator.gemberkoekje.nl
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: charactercreator-service
+            port:
+              number: 80
