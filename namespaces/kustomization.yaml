@@ -20,6 +20,7 @@ resources:
 - spacetraders-namespace.yaml
 - kluskat-namespace.yaml
 - charactercreator-namespace.yaml
+- bygalacticaccord-namespace.yaml
 - zeef-namespace.yaml
 - lan-proxy-namespace.yaml
 - plotboek-generator-namespace.yaml
