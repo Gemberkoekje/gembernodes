@@ -21,8 +21,8 @@ spec:
         - name: ghcr-login
       containers:
         - name: charactercreator
-          # The sha of the first image "Build and Push CharacterCreator" pushes (projects main).
-          image: ghcr.io/gemberkoekje/charactercreator:PENDING-FIRST-BUILD
+          # A sha "Build and Push CharacterCreator" has pushed from projects main (README, Deploying).
+          image: ghcr.io/gemberkoekje/charactercreator:eb5a4c9b6296066e899a6a5e9d969ad5ef9f7444
           imagePullPolicy: IfNotPresent
           securityContext:
             runAsNonRoot: true
