@@ -22,7 +22,7 @@ spec:
       containers:
         - name: charactercreator
           # A sha "Build and Push CharacterCreator" has pushed from projects main (README, Deploying).
-          image: ghcr.io/gemberkoekje/charactercreator:146c30761498a9350927ef86bbe80d240061357d
+          image: ghcr.io/gemberkoekje/charactercreator:bedca69dca3dee4841574f7dd1c7c617eb014583
           imagePullPolicy: IfNotPresent
           securityContext:
             runAsNonRoot: true
