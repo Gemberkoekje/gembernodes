@@ -21,7 +21,7 @@ spec:
       containers:
         - name: bygalacticaccord
           # A sha the "CI - By Galactic Accord" workflow has pushed from projects main (README, Deploying).
-          image: ghcr.io/gemberkoekje/bygalacticaccord:SET-TO-A-PROJECTS-MAIN-SHA
+          image: ghcr.io/gemberkoekje/bygalacticaccord:5e7f9a3b6ba6a48baab9c8c183069190c8bbae11
           imagePullPolicy: IfNotPresent
           securityContext:
             runAsNonRoot: true
