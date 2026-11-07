@@ -14,4 +14,5 @@ resources:
   - spacetraders-ingress.yaml
   - kluskat-ingress.yaml
   - charactercreator-ingress.yaml
+  - bygalacticaccord-ingress.yaml
   - plotboek-generator-ingress.yaml

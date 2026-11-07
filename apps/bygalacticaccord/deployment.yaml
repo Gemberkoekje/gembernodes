@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bygalacticaccord
+  namespace: bygalacticaccord
+spec:
+  replicas: 1
+  # Stateless (nginx serving files; the game runs in the browser), so the default rolling update
+  # replaces the pod without a gap.
+  selector:
+    matchLabels:
+      app: bygalacticaccord
+  template:
+    metadata:
+      labels:
+        app: bygalacticaccord
+    spec:
+      # Mirrored into every namespace by Reflector (infrastructure/reflector/ghcr-login.yaml).
+      imagePullSecrets:
+        - name: ghcr-login
+      containers:
+        - name: bygalacticaccord
+          # A sha the "CI - By Galactic Accord" workflow has pushed from projects main (README, Deploying).
+          image: ghcr.io/gemberkoekje/bygalacticaccord:5e7f9a3b6ba6a48baab9c8c183069190c8bbae11
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: http
+              containerPort: 8080
+          # /healthz is answered by nginx itself and touches nothing.
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+          # Static files only: measured at about 3 MiB with one worker (the image sizes its workers
+          # to the CPU limit).
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 250m
+              memory: 64Mi
