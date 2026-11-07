@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: charactercreator
+  namespace: charactercreator
+spec:
+  replicas: 1
+  # One pod on purpose: the first start seeds a ruleset when none is published, and two pods
+  # starting together could both seed. A demo needs no second replica.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: charactercreator
+  template:
+    metadata:
+      labels:
+        app: charactercreator
+    spec:
+      imagePullSecrets:
+        - name: ghcr-login
+      containers:
+        - name: charactercreator
+          # The sha of the first image "Build and Push CharacterCreator" pushes (projects main).
+          image: ghcr.io/gemberkoekje/charactercreator:PENDING-FIRST-BUILD
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Production
+            - name: ASPNETCORE_HTTP_PORTS
+              value: "8080"
+            - name: ConnectionStrings__Postgres
+              valueFrom:
+                secretKeyRef:
+                  name: charactercreator-secrets
+                  key: ConnectionStrings__Postgres
+            # Sign-in through the Vortex ERU with vortex-dev, a public client (no secret). It works
+            # once the demo's redirect URIs are on vortex-dev (README.md, step 3); until then the
+            # build screen works and signing in fails at Keycloak.
+            - name: Keycloak__Issuer
+              value: https://auth.the-vortex.nl/realms/vortex
+            - name: Keycloak__ClientId
+              value: vortex-dev
+            # VOID's develop instance; the trailing slash is required.
+            - name: Void__BaseUrl
+              value: https://test-void-api.the-vortex.nl/
+          # /healthz is anonymous and touches nothing. The first start also creates the Marten
+          # schema and seeds the ruleset, hence the generous startup window.
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 3
+            failureThreshold: 40
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+          # The PDF is made in the pod; the build screen itself runs in the browser.
+          resources:
+            requests:
+              cpu: 25m
+              memory: 160Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
