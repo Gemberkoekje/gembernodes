@@ -12,6 +12,10 @@ It lives here only until Thorfgin has seen it; then it moves to Vortex's own hos
 
 ### 1. Database and login on the shared PostgreSQL
 
+In DBeaver: open [create-database.sql](create-database.sql) on a connection to the database
+`postgres` as `postgres`, with auto-commit on, and follow its steps (it makes the password too).
+Or in psql:
+
 ```bash
 psql -h 192.168.1.232 -U postgres -d postgres
 ```
