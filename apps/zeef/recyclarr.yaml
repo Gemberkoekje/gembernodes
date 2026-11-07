@@ -18,22 +18,61 @@ data:
       series:
         base_url: http://sonarr.zeef.svc.cluster.local:8989
         api_key: !env_var SONARR_API_KEY
+        # Sonarr has one size table. It stays the guide's series table, except that the qualities
+        # only the anime profile allows get the guide's anime minimum (5 MB/min): anime comes
+        # mostly as Blu-ray/DVD encodes (often HEVC), far smaller than the live-action minimum
+        # (50.4 MB/min for Bluray-1080p). The WEB-1080p profile allows none of these qualities, so
+        # live-action series are unaffected. DVD/480p have no row in the series table.
         quality_definition:
           type: series
+          qualities:
+            - name: Bluray-1080p
+              min: 5
+            - name: Bluray-1080p Remux
+              min: 5
+            - name: Bluray-720p
+              min: 5
         quality_profiles:
           - trash_id: 72dae194fc92bf828f32cde7744e51a1  # WEB-1080p
             reset_unmatched_scores:
               enabled: true
-        # As the guide's web-1080p template.
+          # Anime (2026-11-07). The series profile above allows only WEB-1080p and rejects x265,
+          # which shuts out most anime: older shows exist only as Blu-ray/DVD (Clannad, Strawberry
+          # Marshmallow: 0 of 300+ releases acceptable), and SubsPlease names no source, so Sonarr
+          # reads it as HDTV-1080p. This profile allows Blu-ray, WEB/HDTV and DVD and ranks the
+          # guide's anime release-group tiers (raws, LQ groups and dub-only releases score low).
+          # - min_format_score 0 instead of the guide's 100: an untiered fansub group is still
+          #   better than nothing (Bazarr adds English subtitles if it has none).
+          # - No upgrades: the first acceptable release stays, as with Cleanuparr's Seeker
+          #   (proactive upgrade searches off), so files aren't replaced by ever larger ones.
+          - trash_id: 20e0fc959f1f1704bed501f23bdae76f  # [Anime] Remux-1080p
+            reset_unmatched_scores:
+              enabled: true
+            min_format_score: 0
+            upgrade:
+              allowed: false
+        # As the guide's web-1080p template. Each group is pinned to WEB-1080p with
+        # assign_scores_to: without it a group scores every profile, and Golden Rule HD's
+        # x265 (HD) -10000 would reject the HEVC releases the anime profile is for.
         custom_format_groups:
           add:
             - trash_id: 158188097a58d7687dee647e04af0da3  # [Optional] Golden Rule HD
+              assign_scores_to:
+                - trash_id: 72dae194fc92bf828f32cde7744e51a1  # WEB-1080p
             - trash_id: 74aff4168620ed49dcc67e92b2c2a5b4  # [Optional] Language Profiles
+              assign_scores_to:
+                - trash_id: 72dae194fc92bf828f32cde7744e51a1  # WEB-1080p
             - trash_id: 85fae4a2294965b75710ef2989c850eb  # [Streaming Services] HD/UHD boost
+              assign_scores_to:
+                - trash_id: 72dae194fc92bf828f32cde7744e51a1  # WEB-1080p
             - trash_id: 59c3af66780d08332fdc64e68297098f  # [Unwanted] Unwanted Formats
+              assign_scores_to:
+                - trash_id: 72dae194fc92bf828f32cde7744e51a1  # WEB-1080p
             # Releases with an audio-description track or a sign-language interpreter in the
             # picture score -10000, so they're only taken when nothing else exists (2026-11-06).
             - trash_id: bad5bc85573a0134e1e1987c46f67e98  # [Optional] Accessibility
+              assign_scores_to:
+                - trash_id: 72dae194fc92bf828f32cde7744e51a1  # WEB-1080p
               select:
                 - 44ccbcbc74506f208973e1463b11705f  # WiTH AD
                 - c196536ea8122397c5854040d01f2aa7  # WiTH ASL
