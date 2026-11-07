@@ -1414,3 +1414,42 @@ RawsPlease raws, and French-only (VOSTFR, Tsundere-Raws) releases.
   the start page.
 - **Setup after the deploy** is in Gemberkoekje/projects `Zeef/DEPLOY.md`: login, Sonarr/Radarr,
   the English language profile, providers, and the post-processing command.
+
+## 2026-11-07 — Zeef: a TRaSH anime profile in Recyclarr
+
+To understand this, read the `sonarr:` section of `apps/zeef/recyclarr.yaml`.
+
+Asked: fix the cause instead of searching by hand. 80 missing anime episodes were in no download
+queue. Read-only release searches showed why:
+- **Clannad and Strawberry Marshmallow** (2005–2007) exist only as Blu-ray or DVD releases: 0 of
+  300+ releases acceptable.
+  - The series profile WEB-1080p allows only WEBDL/WEBRip-1080p.
+  - The series size table wants 50.4 MB/min for Bluray-1080p, so an 11 GB HEVC season is "too
+    small".
+  - Golden Rule HD scores x265 at -10000.
+- **Dr. STONE:** SubsPlease names no source, so Sonarr parses its releases as HDTV-1080p, which
+  WEB-1080p doesn't allow either.
+
+The fix:
+- **Profile `[Anime] Remux-1080p`** (TRaSH, trash_id 20e0fc959f1f1704bed501f23bdae76f).
+  - It allows Blu-ray, WEB/HDTV, 720p/480p and DVD, and ranks the anime BD/Web group tiers.
+  - Raws, LQ groups, VOSTFR, dub-only and AV1 score -10000.
+  - Changed from the guide: `min_format_score: 0` instead of 100, so untiered fansub groups are
+    allowed (Bazarr adds English subtitles where needed), and upgrades are off, as with Cleanuparr's
+    proactive upgrade searches.
+- **The size table stays `series`.** Recyclarr's per-quality `qualities:` overrides set Bluray-720p,
+  Bluray-1080p and Bluray-1080p Remux to the anime minimum of 5 MB/min. WEB-1080p allows none of
+  these, so live-action series are unaffected.
+- **`assign_scores_to: WEB-1080p` on every explicitly added CF group.** Without it Recyclarr scores
+  a group into every guide-backed profile, and Golden Rule HD's x265 (HD) -10000 would land in the
+  anime profile.
+- **Checked:** `recyclarr sync sonarr --preview` (8.8.1, run locally against the live Sonarr). It
+  creates the anime profile and 37 custom formats, changes the three size minimums, and leaves
+  WEB-1080p unchanged (41 CFs unchanged).
+- **After the merge:**
+  - run the Recyclarr job once;
+  - move the anime-type series to the new profile, and set Seerr's anime profile to it, so new anime
+    requests use it;
+  - Cleanuparr's Seeker: "Proactive search" on, with "Use cutoff" and "Use custom format score" off.
+    That searches only for missing items, one at a time, at most once a week per item. Those
+    are the automatic retries that were missing.
