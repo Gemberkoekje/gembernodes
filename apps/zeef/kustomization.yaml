@@ -15,3 +15,5 @@ resources:
   - seerr.yaml
   - maintainerr.yaml
   - bazarr.yaml
+  - audiobookshelf.yaml
+  - audiobookrequest.yaml

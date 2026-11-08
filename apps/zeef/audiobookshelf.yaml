@@ -1,0 +1,155 @@
+# Audiobookshelf: the audiobook library, Jellyfin's counterpart for books. Web player plus the
+# Audiobookshelf apps on the phone, with chapters and progress kept in step across devices.
+#   - Settings, users and listening progress: SQLite in /config on local-path (never NFS), like
+#     Jellyfin. The pod stays on the node that first ran it.
+#   - Covers, cache, logs and its own scheduled backups: /metadata on the QNAP (qnap-nfs).
+#   - Books: the Multimedia share, read-only, library folder /media/Audiobooks. qBittorrent owns
+#     those files (AudioBookRequest grabs through Prowlarr into the category "audiobooks", saved
+#     in /data/Audiobooks) and keeps seeding them, so Audiobookshelf must never rewrite them.
+#     "Store covers/metadata with item" stay off (the defaults) for the same reason.
+#   - /metadata/streams (transcodes for players that can't direct-play) is a capped emptyDir, so
+#     a runaway transcode can't fill the QNAP volume.
+# Setup after the first deploy: Gemberkoekje/projects Zeef/DEPLOY.md, part D.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: audiobookshelf
+  namespace: zeef
+spec:
+  replicas: 1
+  # One writer for the SQLite database; the local-path volume can only be on one node anyway.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: audiobookshelf
+  template:
+    metadata:
+      labels:
+        app: audiobookshelf
+    spec:
+      # The image runs as root unless told otherwise; this runs it as the library's owner. No
+      # fsGroup: the kubelet would chown every file on the Multimedia share (mounted read-only
+      # here, but the rule holds for every pod that mounts it).
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 100
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      enableServiceLinks: false
+      initContainers:
+        # Without fsGroup nothing hands the two volumes to UID 1000 (the qnap-nfs directory is
+        # made by the CSI driver, not by UID 1000), as with Jellyfin's backup volume. This sets
+        # the owner of their roots only, never recursively.
+        - name: own-dirs
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - chown 1000:100 /config /metadata && chmod 775 /config /metadata
+          securityContext:
+            runAsUser: 0
+            runAsNonRoot: false
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+              add: ["CHOWN", "FOWNER"]
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: metadata
+              mountPath: /metadata
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+      containers:
+        - name: audiobookshelf
+          image: ghcr.io/advplyr/audiobookshelf:2.37.2
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          env:
+            - name: TZ
+              value: Europe/Amsterdam
+            # The image listens on 80, which a non-root process can't open. 13378 is
+            # Audiobookshelf's own default outside Docker.
+            - name: PORT
+              value: "13378"
+          ports:
+            - name: http
+              containerPort: 13378
+          # /healthcheck is anonymous and answers 200 without touching the database. The first
+          # start creates the database and an upgrade migrates it, hence the generous startup
+          # window; liveness stays a TCP check.
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 120
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /healthcheck
+              port: http
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: metadata
+              mountPath: /metadata
+            - name: streams
+              mountPath: /metadata/streams
+            - name: media
+              mountPath: /media
+              readOnly: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 192Mi
+            limits:
+              cpu: "2"
+              memory: 1Gi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: audiobookshelf-config
+        - name: metadata
+          persistentVolumeClaim:
+            claimName: audiobookshelf-metadata
+        - name: streams
+          emptyDir:
+            sizeLimit: 4Gi
+        - name: media
+          persistentVolumeClaim:
+            claimName: multimedia
+            readOnly: true
+---
+# LAN and tailnet only, on the shared 192.168.1.234 (the router forwards nothing to it).
+# Friendly name audiobookshelf.lan.gemberkoekje.nl, which is also the server address for the apps.
+# AudioBookRequest uses audiobookshelf.zeef.svc.cluster.local:13378.
+apiVersion: v1
+kind: Service
+metadata:
+  name: audiobookshelf
+  namespace: zeef
+  annotations:
+    metallb.io/loadBalancerIPs: 192.168.1.234
+    metallb.io/allow-shared-ip: zeef-lan
+spec:
+  type: LoadBalancer
+  allocateLoadBalancerNodePorts: false
+  selector:
+    app: audiobookshelf
+  ports:
+    - name: http
+      port: 13378
+      targetPort: http

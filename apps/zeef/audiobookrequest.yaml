@@ -1,0 +1,142 @@
+# AudioBookRequest: the request page for audiobooks, Seerr's counterpart for books. Search
+# (Audible's catalogue), "request", and "already in the library" from Audiobookshelf. With
+# auto-download on, a request from a "trusted" user or an admin is grabbed at once; other users'
+# requests wait for an admin. The grab goes through Prowlarr, which sends the release to
+# qBittorrent under its own download client's category "audiobooks", which qBittorrent saves in
+# /data/Audiobooks, the Audiobookshelf library. AudioBookRequest has no import step and never
+# touches the files, so it doesn't mount the media share.
+# Its database is in the shared PostgreSQL (database audiobookrequest). Settings (Prowlarr,
+# Audiobookshelf, users) are kept there too, so the pod has no volume of its own.
+# Setup after the first deploy: Gemberkoekje/projects Zeef/DEPLOY.md, part D.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: audiobookrequest
+  namespace: zeef
+spec:
+  replicas: 1
+  # The start command runs the database migrations; two pods would run them at once.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: audiobookrequest
+  template:
+    metadata:
+      labels:
+        app: audiobookrequest
+    spec:
+      # The image runs as root unless told otherwise. It needs no write access outside /config.
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      enableServiceLinks: false
+      initContainers:
+        # -U is required: UID 1000 has no entry in the image's /etc/passwd, and without a user
+        # name pg_isready gives up with "no attempt" (see seerr.yaml).
+        - name: wait-for-postgres
+          image: postgres:17-alpine
+          command:
+            - sh
+            - -c
+            - until pg_isready -U postgres -h postgresql.flux-system.svc.cluster.local -p 5432 -t 2; do echo "waiting for postgres"; sleep 2; done
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+      containers:
+        - name: audiobookrequest
+          image: markbeep/audiobookrequest:1.11.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          env:
+            - name: TZ
+              value: Europe/Amsterdam
+            - name: ABR_APP__PORT
+              value: "8000"
+            - name: ABR_DB__USE_POSTGRES
+              value: "true"
+            - name: ABR_DB__POSTGRES_HOST
+              value: postgresql.flux-system.svc.cluster.local
+            - name: ABR_DB__POSTGRES_PORT
+              value: "5432"
+            - name: ABR_DB__POSTGRES_DB
+              value: audiobookrequest
+            - name: ABR_DB__POSTGRES_USER
+              value: audiobookrequest
+            # Goes into the connection URL as-is, so hex only (openssl rand -hex 24): an @, : or /
+            # in it would break the URL.
+            - name: ABR_DB__POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: zeef-stack
+                  key: AUDIOBOOKREQUEST__POSTGRES__PASSWORD
+          ports:
+            - name: http
+              containerPort: 8000
+          # /api/health is anonymous and runs "SELECT 1", so it only gates readiness; liveness
+          # stays a TCP check (a PostgreSQL outage must not restart a healthy pod). Before the
+          # first user exists it answers 302 to /init, which still counts as ready (it read the
+          # user table to decide that). The migrations run before the port opens.
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 120
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            periodSeconds: 10
+          volumeMounts:
+            # The migration step creates the SQLite directory (/config) even when PostgreSQL is
+            # used, and a non-root process can't create it in /. Nothing is kept in it.
+            - name: config
+              mountPath: /config
+          resources:
+            requests:
+              cpu: 50m
+              memory: 192Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+      volumes:
+        - name: config
+          emptyDir:
+            sizeLimit: 64Mi
+---
+# LAN and tailnet only, on the shared 192.168.1.234 (the router forwards nothing to it).
+# Friendly name audiobookrequest.lan.gemberkoekje.nl.
+apiVersion: v1
+kind: Service
+metadata:
+  name: audiobookrequest
+  namespace: zeef
+  annotations:
+    metallb.io/loadBalancerIPs: 192.168.1.234
+    metallb.io/allow-shared-ip: zeef-lan
+spec:
+  type: LoadBalancer
+  allocateLoadBalancerNodePorts: false
+  selector:
+    app: audiobookrequest
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http

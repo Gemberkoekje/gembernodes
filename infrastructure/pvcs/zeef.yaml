@@ -191,3 +191,37 @@ spec:
   resources:
     requests:
       storage: 2Gi
+---
+# Audiobookshelf's settings, users and listening progress: SQLite only, so this is on local-path
+# like Jellyfin's config, never NFS. The pod stays on the node that first ran it. Flux never prunes
+# it (local-path deletes data with the claim). Its scheduled backups go to audiobookshelf-metadata
+# on the QNAP.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: audiobookshelf-config
+  namespace: zeef
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 2Gi
+---
+# Audiobookshelf's /metadata: covers, image cache, logs and backups/ (its own scheduled backups of
+# the database). No database lives here, so NFS is fine.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: audiobookshelf-metadata
+  namespace: zeef
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: qnap-nfs
+  resources:
+    requests:
+      storage: 5Gi
