@@ -3,4 +3,6 @@ kind: Kustomization
 resources:
   # Pinned: `releases/latest` applied whatever was released upstream on the next reconcile,
   # with cluster-wide permissions. Bump this deliberately (v0.20.2 is what was running).
-  - https://github.com/rancher/system-upgrade-controller/releases/download/v0.20.2/system-upgrade-controller.yaml
+  # The release's manifest is kept here, not fetched from github.com at every reconcile: GitHub's release downloads
+  # returned 504 on 2026-11-08 and failed the build of infrastructure. How to bump: see the file's header.
+  - system-upgrade-controller.yaml
