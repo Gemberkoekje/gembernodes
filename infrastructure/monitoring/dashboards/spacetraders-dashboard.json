@@ -2759,6 +2759,588 @@
       }
     },
     {
+      "id": 46,
+      "type": "state-timeline",
+      "title": "What stops the jump gate",
+      "description": "What stops the home system's jump gate from being built, over time, as the construction plan saw it on each pass (slice 6.51, D139): one reason at a time, the first that holds of: Done (it needs no materials), No market (no market a builder can reach sells what it still needs), Low supply (SCARCE or LIMITED wherever it is sold, D66) or Market busy (another of our trips is on its way to buy it there, D80), Purchase order (a purchase comes before its loads, D64, D136: it can't be built yet), Credits (the next load costs more than a load may spend, D137), Ships (a load is ready but no builder is free with an empty hold, or none is at home), Building (every unit it still needs is on its way: nothing waits). Off: the construction plan or the automation is off. Which goods of its chain are short: the two panels below.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 16,
+        "x": 0,
+        "y": 128
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max(spacetraders_construction_blocker{namespace=\"spacetraders\", reset_date=~\"$reset_date\"})",
+          "legendFormat": "Jump gate"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Done",
+                  "color": "green",
+                  "index": 0
+                },
+                "1": {
+                  "text": "Building",
+                  "color": "light-green",
+                  "index": 1
+                },
+                "2": {
+                  "text": "Ships",
+                  "color": "purple",
+                  "index": 2
+                },
+                "3": {
+                  "text": "Credits",
+                  "color": "yellow",
+                  "index": 3
+                },
+                "4": {
+                  "text": "Low supply",
+                  "color": "orange",
+                  "index": 4
+                },
+                "5": {
+                  "text": "Market busy",
+                  "color": "light-orange",
+                  "index": 5
+                },
+                "6": {
+                  "text": "Purchase order",
+                  "color": "blue",
+                  "index": 6
+                },
+                "7": {
+                  "text": "No market",
+                  "color": "red",
+                  "index": 7
+                },
+                "8": {
+                  "text": "Off",
+                  "color": "#808080",
+                  "index": 8
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "custom": {
+            "fillOpacity": 85,
+            "lineWidth": 0
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "auto",
+        "rowHeight": 0.9,
+        "mergeValues": true,
+        "alignValue": "left",
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 47,
+      "type": "bargauge",
+      "title": "What stopped the jump gate, share of the time",
+      "description": "Of the time range shown, the share each reason stopped the home system's jump gate (slice 6.51, D139): the panel to the left, added up. Reasons that never held are left out.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 128
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "avg_over_time((max(spacetraders_construction_blocker{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) == bool 0)[$__range:1m]) > 0",
+          "legendFormat": "Done",
+          "instant": true
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "avg_over_time((max(spacetraders_construction_blocker{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) == bool 1)[$__range:1m]) > 0",
+          "legendFormat": "Building",
+          "instant": true
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "avg_over_time((max(spacetraders_construction_blocker{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) == bool 2)[$__range:1m]) > 0",
+          "legendFormat": "Ships",
+          "instant": true
+        },
+        {
+          "refId": "D",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "avg_over_time((max(spacetraders_construction_blocker{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) == bool 3)[$__range:1m]) > 0",
+          "legendFormat": "Credits",
+          "instant": true
+        },
+        {
+          "refId": "E",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "avg_over_time((max(spacetraders_construction_blocker{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) == bool 4)[$__range:1m]) > 0",
+          "legendFormat": "Low supply",
+          "instant": true
+        },
+        {
+          "refId": "F",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "avg_over_time((max(spacetraders_construction_blocker{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) == bool 5)[$__range:1m]) > 0",
+          "legendFormat": "Market busy",
+          "instant": true
+        },
+        {
+          "refId": "G",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "avg_over_time((max(spacetraders_construction_blocker{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) == bool 6)[$__range:1m]) > 0",
+          "legendFormat": "Purchase order",
+          "instant": true
+        },
+        {
+          "refId": "H",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "avg_over_time((max(spacetraders_construction_blocker{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) == bool 7)[$__range:1m]) > 0",
+          "legendFormat": "No market",
+          "instant": true
+        },
+        {
+          "refId": "I",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "avg_over_time((max(spacetraders_construction_blocker{namespace=\"spacetraders\", reset_date=~\"$reset_date\"}) == bool 8)[$__range:1m]) > 0",
+          "legendFormat": "Off",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 0,
+          "min": 0,
+          "max": 1,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Done"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Building"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "light-green"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Ships"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "purple"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Credits"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "yellow"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Low supply"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "orange"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Market busy"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "light-orange"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Purchase order"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "No market"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Off"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#808080"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "showUnfilled": true,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      }
+    },
+    {
+      "id": 48,
+      "type": "state-timeline",
+      "title": "Jump gate chain: supply where each good is sold",
+      "description": "Every good of the home system's jump gate's production chain, down to the ores (slice 6.51, D139), each row \"step · good\": step 1 a material the gate still needs, 2 what it is made from, and so on. The best supply among the home system's markets that sell it (export or exchange it): where a load or a trade buys it. A load buys no material at SCARCE or LIMITED (D66). An ore is mostly mined, not sold, so it mostly has no row here; see the panel to the right. A material the gate has in full leaves the chain, and what only it was made from with it.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 134
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (step, good) (spacetraders_construction_chain_supply{namespace=\"spacetraders\", reset_date=~\"$reset_date\", kind=\"EXPORT\"})",
+          "legendFormat": "{{step}} · {{good}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "SCARCE",
+                  "color": "red",
+                  "index": 0
+                },
+                "2": {
+                  "text": "LIMITED",
+                  "color": "orange",
+                  "index": 1
+                },
+                "3": {
+                  "text": "MODERATE",
+                  "color": "yellow",
+                  "index": 2
+                },
+                "4": {
+                  "text": "HIGH",
+                  "color": "green",
+                  "index": 3
+                },
+                "5": {
+                  "text": "ABUNDANT",
+                  "color": "dark-green",
+                  "index": 4
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "custom": {
+            "fillOpacity": 85,
+            "lineWidth": 0
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "auto",
+        "rowHeight": 0.9,
+        "mergeValues": true,
+        "alignValue": "left",
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 49,
+      "type": "state-timeline",
+      "title": "Jump gate chain: supply where each good is made into the next step",
+      "description": "Every good of the home system's jump gate's production chain (slice 6.51, D139), each row \"step · good\": the best supply among the home system's markets that make a good of the chain from it (import it and export what it goes into). SCARCE or LIMITED here starves the next step up: its export falls, and with it what a load or a trade can buy there. The ores show here: how well the mining drones feed the smelters.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 134
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (step, good) (spacetraders_construction_chain_supply{namespace=\"spacetraders\", reset_date=~\"$reset_date\", kind=\"IMPORT\"})",
+          "legendFormat": "{{step}} · {{good}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "SCARCE",
+                  "color": "red",
+                  "index": 0
+                },
+                "2": {
+                  "text": "LIMITED",
+                  "color": "orange",
+                  "index": 1
+                },
+                "3": {
+                  "text": "MODERATE",
+                  "color": "yellow",
+                  "index": 2
+                },
+                "4": {
+                  "text": "HIGH",
+                  "color": "green",
+                  "index": 3
+                },
+                "5": {
+                  "text": "ABUNDANT",
+                  "color": "dark-green",
+                  "index": 4
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "custom": {
+            "fillOpacity": 85,
+            "lineWidth": 0
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showValue": "auto",
+        "rowHeight": 0.9,
+        "mergeValues": true,
+        "alignValue": "left",
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      }
+    },
+    {
       "id": 39,
       "type": "timeseries",
       "title": "API request rates",
@@ -2770,7 +3352,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 128
+        "y": 144
       },
       "targets": [
         {
@@ -2914,7 +3496,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 138
+        "y": 154
       },
       "targets": [
         {
@@ -2975,7 +3557,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 138
+        "y": 154
       },
       "targets": [
         {
@@ -3065,7 +3647,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 148
+        "y": 164
       },
       "targets": [
         {
@@ -3126,7 +3708,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 148
+        "y": 164
       },
       "targets": [
         {
@@ -3192,7 +3774,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 158
+        "y": 174
       },
       "targets": [
         {
@@ -3267,7 +3849,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 158
+        "y": 174
       },
       "targets": [
         {
@@ -3306,7 +3888,7 @@
         "h": 20,
         "w": 24,
         "x": 0,
-        "y": 166
+        "y": 182
       },
       "targets": [
         {
@@ -3510,7 +4092,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 186
+        "y": 202
       },
       "targets": [
         {
@@ -3604,7 +4186,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 194
+        "y": 210
       },
       "targets": [
         {
@@ -3640,7 +4222,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 208
+        "y": 224
       },
       "targets": [
         {
