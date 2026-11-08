@@ -24,19 +24,41 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
+          # pyyaml's wheel, pinned below, comes from pip's cache once seen.
+          cache: pip
+          cache-dependency-path: .github/workflows/validate.yaml
+
+      # The flux CLI of the Flux version installed in the cluster, so builds match kustomize-controller.
+      - name: Tool versions
+        id: versions
+        run: |
+          echo "flux=$(sed -n 's/^# Flux Version: v//p' clusters/home/flux-system/gotk-components.yaml)" >> "$GITHUB_OUTPUT"
+
+      # The same tool versions on every run: downloaded once per version, not on every run, so a GitHub releases
+      # outage (504s for an hour on 2026-11-08) doesn't fail validation while the versions stay the same.
+      - name: Cache tools
+        id: tools
+        uses: actions/cache@v6
+        with:
+          path: ~/bin
+          key: tools-flux-${{ steps.versions.outputs.flux }}-kubeconform-${{ env.KUBECONFORM_VERSION }}-helm-${{ env.HELM_VERSION }}
 
       - name: Install tools
+        if: steps.tools.outputs.cache-hit != 'true'
+        env:
+          FLUX_VERSION: ${{ steps.versions.outputs.flux }}
         run: |
           set -euo pipefail
-          # The flux CLI of the Flux version installed in the cluster, so builds match kustomize-controller.
-          flux_version=$(sed -n 's/^# Flux Version: v//p' clusters/home/flux-system/gotk-components.yaml)
           mkdir -p "$HOME/bin"
-          curl -sSfL "https://github.com/fluxcd/flux2/releases/download/v${flux_version}/flux_${flux_version}_linux_amd64.tar.gz" \
+          curl -sSfL --retry 3 "https://github.com/fluxcd/flux2/releases/download/v${FLUX_VERSION}/flux_${FLUX_VERSION}_linux_amd64.tar.gz" \
             | tar xz -C "$HOME/bin" flux
-          curl -sSfL "https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" \
+          curl -sSfL --retry 3 "https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" \
             | tar xz -C "$HOME/bin" kubeconform
-          curl -sSfL "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz" \
+          curl -sSfL --retry 3 "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz" \
             | tar xz -C "$HOME/bin" --strip-components=1 linux-amd64/helm
+
+      - name: Python packages
+        run: |
           echo "$HOME/bin" >> "$GITHUB_PATH"
           pip install pyyaml==6.0.2
 
