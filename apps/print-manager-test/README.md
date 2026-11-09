@@ -17,6 +17,12 @@ fields `VOID_PLIN`, `VOID_PASSWORD`. This is a local VOID password, not an ERU o
 in to https://test-void-api.the-vortex.nl/admin with ERU and set one under Access control >
 Password. The PLIN needs Infobalie or higher in ERU.
 
+From 0.3.0 the desk logs in with a VOID api token, and that PLIN/password is only its fallback.
+Make the token on https://test-void-api.the-vortex.nl/admin/tokens (SL, Event Control or Super)
+and paste it into the desk's dashboard, Admin → VOID token. It is kept in `/data/env`; the
+Deployment leaves `VOID_TOKEN` unset so a pasted token survives a new pod. While the test void
+refuses the token, the desk prints with the PLIN/password and shows an amber banner.
+
 The image comes from Gemberkoekje/print-manager, the private GitHub copy of
 vortexadventures/print-manager: pushing tag `v1.2.3` there publishes
 `ghcr.io/gemberkoekje/print-manager:1.2.3`. To update the desk, put the new version into the three
