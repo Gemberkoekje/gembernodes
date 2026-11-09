@@ -36,7 +36,7 @@ spec:
       containers:
         - name: desk
           # A release of Gemberkoekje/print-manager: git tag v0.1.0 is image tag 0.1.0.
-          image: ghcr.io/gemberkoekje/print-manager:0.2.0
+          image: ghcr.io/gemberkoekje/print-manager:0.3.0
           imagePullPolicy: IfNotPresent
           # Runs as root: cupsd needs it (it drops to lp for filters), the pmspool backend runs as
           # root, and print-manager calls lpadmin. No privileged mode or extra capabilities.
@@ -98,7 +98,7 @@ spec:
         # inside the pod, so only CUPS can reach those, as on the printer LAN.
         # Root only for SNMP on udp/161, which is how CUPS sees jams, empty trays and offline.
         - name: printer-b
-          image: ghcr.io/gemberkoekje/print-manager:0.2.0
+          image: ghcr.io/gemberkoekje/print-manager:0.3.0
           imagePullPolicy: IfNotPresent
           command: ["python3", "/opt/print-manager/scripts/fake-jetdirect.py",
                     "--bind", "127.0.0.1", "--control-bind", "0.0.0.0", "--control-port", "8100",
@@ -122,7 +122,7 @@ spec:
             - name: data
               mountPath: /data
         - name: printer-a
-          image: ghcr.io/gemberkoekje/print-manager:0.2.0
+          image: ghcr.io/gemberkoekje/print-manager:0.3.0
           imagePullPolicy: IfNotPresent
           command: ["python3", "/opt/print-manager/scripts/fake-jetdirect.py",
                     "--bind", "127.0.0.2", "--control-bind", "0.0.0.0", "--control-port", "8101",
