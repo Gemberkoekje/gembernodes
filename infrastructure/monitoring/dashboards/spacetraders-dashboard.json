@@ -3341,6 +3341,224 @@
       }
     },
     {
+      "id": 50,
+      "type": "timeseries",
+      "title": "Jump gate forecast: hours to finish, by limit",
+      "description": "When the home jump gate will be finished, in hours from then, as the construction plan forecast it (slice 6.55, D143): eta, the slowest of money (the units still needed at their cheapest seller x1.25, less what a load may spend, over the fleet's trade earnings of the last 2 hours), supply (each material's units over its sellers' pace; dashed per material) and haul (the builders' holds, a round trip every 15 minutes). 999 = can't be met (no earnings, no seller or no builder). It only observes for now: ship purchases don't read it yet.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 18,
+        "x": 0,
+        "y": 144
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (limit) (spacetraders_gate_forecast_hours{namespace=\"spacetraders\", reset_date=~\"$reset_date\", good=\"\"})",
+          "legendFormat": "{{limit}}"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (good) (spacetraders_gate_forecast_hours{namespace=\"spacetraders\", reset_date=~\"$reset_date\", limit=\"supply\", good!=\"\"})",
+          "legendFormat": "supply {{good}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "h",
+          "min": 0,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 0,
+            "spanNulls": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "eta"
+            },
+            "properties": [
+              {
+                "id": "custom.lineWidth",
+                "value": 4
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "money"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "yellow"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "supply"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "orange"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "haul"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "purple"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "supply .*"
+            },
+            "properties": [
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "fill": "dash",
+                  "dash": [
+                    10,
+                    10
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 51,
+      "type": "stat",
+      "title": "Jump gate finishes in",
+      "description": "The forecast's eta now (slice 6.55, D143), and what limits it: the slowest of money, supply and haul.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 144
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max(spacetraders_gate_forecast_hours{namespace=\"spacetraders\", reset_date=~\"$reset_date\", limit=\"eta\"})",
+          "legendFormat": "eta",
+          "instant": true
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "topk(1, max by (limit) (spacetraders_gate_forecast_hours{namespace=\"spacetraders\", reset_date=~\"$reset_date\", limit=~\"money|supply|haul\", good=\"\"}))",
+          "legendFormat": "limit: {{limit}}",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "h",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 12
+              },
+              {
+                "color": "red",
+                "value": 24
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "justifyMode": "auto",
+        "orientation": "vertical"
+      }
+    },
+    {
       "id": 39,
       "type": "timeseries",
       "title": "API request rates",
@@ -3352,7 +3570,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 144
+        "y": 152
       },
       "targets": [
         {
@@ -3496,7 +3714,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 154
+        "y": 162
       },
       "targets": [
         {
@@ -3557,7 +3775,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 154
+        "y": 162
       },
       "targets": [
         {
@@ -3647,7 +3865,7 @@
         "h": 10,
         "w": 12,
         "x": 0,
-        "y": 164
+        "y": 172
       },
       "targets": [
         {
@@ -3708,7 +3926,7 @@
         "h": 10,
         "w": 12,
         "x": 12,
-        "y": 164
+        "y": 172
       },
       "targets": [
         {
@@ -3774,7 +3992,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 174
+        "y": 182
       },
       "targets": [
         {
@@ -3849,7 +4067,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 174
+        "y": 182
       },
       "targets": [
         {
@@ -3888,7 +4106,7 @@
         "h": 20,
         "w": 24,
         "x": 0,
-        "y": 182
+        "y": 190
       },
       "targets": [
         {
@@ -4092,7 +4310,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 202
+        "y": 210
       },
       "targets": [
         {
@@ -4186,7 +4404,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 210
+        "y": 218
       },
       "targets": [
         {
@@ -4222,7 +4440,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 224
+        "y": 232
       },
       "targets": [
         {
