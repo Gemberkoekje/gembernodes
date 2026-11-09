@@ -75,6 +75,21 @@ https://bazarr.lan.gemberkoekje.nl {
 	reverse_proxy bazarr.zeef.svc.cluster.local:6767
 }
 
+https://audiobookshelf.lan.gemberkoekje.nl {
+	import lan_tls
+	reverse_proxy audiobookshelf.zeef.svc.cluster.local:13378
+}
+
+https://audiobookrequest.lan.gemberkoekje.nl {
+	import lan_tls
+	reverse_proxy audiobookrequest.zeef.svc.cluster.local:8000
+}
+
+https://chaptarr.lan.gemberkoekje.nl {
+	import lan_tls
+	reverse_proxy chaptarr.zeef.svc.cluster.local:8789
+}
+
 # Grafana serves from /grafana/ (serve_from_sub_path); the bare name lands there.
 https://grafana.lan.gemberkoekje.nl {
 	import lan_tls

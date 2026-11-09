@@ -1453,3 +1453,84 @@ The fix:
   - Cleanuparr's Seeker: "Proactive search" on, with "Use cutoff" and "Use custom format score" off.
     That searches only for missing items, one at a time, at most once a week per item. Those
     are the automatic retries that were missing.
+
+## 2026-11-09 — Zeef: audiobooks with Audiobookshelf, AudioBookRequest and Chaptarr
+
+To understand this, read `apps/zeef/chaptarr.yaml`, `apps/zeef/audiobookrequest.yaml` and
+`apps/zeef/audiobookshelf.yaml`, then the audiobook rows in `apps/zeef/README.md`.
+
+Asked: a stack like Sonarr, Seerr and Jellyfin for audiobooks, on the existing storage. Then: a
+malware check for the audiobook downloads, like the one films and series get.
+
+- **The chain.** AudioBookRequest (requests, like Seerr) → Chaptarr (search, grab, import, like
+  Sonarr) → qBittorrent → `/data/Audiobooks` → Audiobookshelf (playback, like Jellyfin).
+  - Prowlarr syncs its indexers into Chaptarr. Prowlarr has no Chaptarr app type, so Chaptarr is
+    added as a "Readarr" app, the way AudioBookRequest's own test setup does it.
+  - Cleanuparr checks Chaptarr's queue with the Malware Blocker and Queue Cleaner, as it does for
+    Sonarr. Chaptarr support is new in Cleanuparr 2.11.0 (2026-11-08), hence the bump from 2.10.12.
+    The other changes in 2.11.0 are Seeker features and fixes for other download clients.
+  - **Chaptarr gets its own Malware Blocker list.** The shared blacklist that Sonarr and Radarr use
+    (`cleanuparr.pages.dev/static/blacklist`, 850 patterns) is built for video. It blocks `*.mp3`,
+    `*.m4a`, `*.flac`, `*.jpg`, `*.png`, `*.cue`, `*.nfo` and `*.txt`, so it would throw away most
+    audiobook releases. Instead, `cleanuparr.yaml` ships a whitelist as ConfigMap
+    `cleanuparr-blocklists`, mounted at `/blocklists/audiobooks.txt`: audio, cover, cue and
+    companion-file extensions. Any other file (`.exe`, `.lnk`, `.scr`, `.msi`, archives, scripts)
+    is skipped, and a release with nothing on the list is removed and searched again.
+- **Why Chaptarr.**
+  - Readarr is retired: its repo is archived and its metadata servers are gone.
+  - The first design had no import step: AudioBookRequest grabbed through Prowlarr straight into
+    the library folder. That left audiobooks outside Cleanuparr, which only reads the queues of
+    the *arr apps (checked in its source). qBittorrent has no virus-scanner integration of its own.
+  - Chaptarr is beta. Its README reports no data loss in the last 6 months across 11,000 users.
+- **Chaptarr** (`chaptarr/chaptarr:0.9.965`, the newest release and identical to `latest` on
+  2026-11-09):
+  - Three databases in the shared PostgreSQL (`chaptarr-main`, `-log`, `-cache`), through
+    `CHAPTARR__POSTGRES__*`. Chaptarr doesn't create them, so README step 2 must run first.
+  - `/config` on local-path (`chaptarr-config`, Flux pruning disabled). Even with PostgreSQL,
+    Chaptarr keeps a SQLite cache in `/config/staging.db` (WAL mode), which must not be on NFS.
+  - Runs like the Servarr images: it starts as root, sets the owner of `/config` and drops to
+    PUID 1000 / PGID 100 (UMASK 002). It mounts the library at `/data`, like Sonarr, so imports
+    are hardlinks with no path mapping.
+  - Its defaults leave hardlinked files alone: "Tag Audio Files with Metadata" is off, and "Use
+    Hardlinks instead of Copy" is on. Ebooks are not used. (If they ever are: "Write Book Tags"
+    defaults to new files, which would also change the copy that is seeding.)
+- **AudioBookRequest** (`markbeep/audiobookrequest:1.11.0`): download backend Chaptarr, set in its
+  UI. Database `audiobookrequest` in PostgreSQL. No volume; `/config` is an emptyDir, because the
+  migration step creates that directory even with PostgreSQL. Runs as 1000:1000.
+- **Audiobookshelf** (`ghcr.io/advplyr/audiobookshelf:2.37.2`):
+  - SQLite on local-path (`audiobookshelf-config`); `/metadata` (covers, logs, its own backups) on
+    qnap-nfs. Runs as 1000:100 on port 13378. The library is mounted read-only at `/media`.
+  - **The watcher must stay on** ("Automatically watch libraries for changes", the default).
+    Chaptarr reports imports through Audiobookshelf's watcher API. With the watcher off,
+    Audiobookshelf answers 200, logs "Invalid library id from watcher" and adds nothing.
+    Tested both ways.
+- **Reachable at** `.234:13378` / `audiobookshelf.lan…`, `.234:8000` / `audiobookrequest.lan…`,
+  `.234:8789` / `chaptarr.lan…`, with links on the start page.
+- **Tested locally (Docker, 2026-11-08/09)**, with the pinned images, the manifests' users and
+  ports, and one shared `/data` directory, on `postgres:17-alpine` with the databases made exactly
+  as in README step 2:
+  - Chaptarr: migrations on all three databases; `/ping` 200 after 8 s. `system/status` reports
+    postgreSQL 17, and the API key comes from the env var. Root folder `/data/Audiobooks`
+    accessible. A test file written as 1000:100 got mode 664, and a hardlink from
+    `@Downloads/complete` worked.
+  - Chaptarr → qBittorrent (`5.3.0_v2.1.2-ls486`): the download client test passed, with category
+    `chaptarr`.
+  - Prowlarr (`2.7.0.5723-ls167`) → Chaptarr as a Readarr app: the test passed. A stand-in
+    Torznab indexer synced into Chaptarr as "(Prowlarr)", with categories 3030, 7000 and 7020.
+  - Chaptarr → Audiobookshelf: the connection test passed. Audiobookshelf as 1000:100 with a
+    read-only library scanned a test book; the watcher API added a book with the watcher on, and
+    ignored it with the watcher off.
+  - AudioBookRequest → Chaptarr: "connected". AudioBookRequest → Audiobookshelf: library listed,
+    scan started.
+  - Cleanuparr: 2.10.12 then 2.11.0 on the same PostgreSQL database, healthy after the upgrade.
+    "Connection to Chaptarr instance successful"; a wrong key fails with 401. With the list
+    mounted at `/blocklists`, Malware Blocker → Chaptarr (Whitelist, `/blocklists/audiobooks.txt`)
+    saved, and the job logged "Successfully loaded 1 blocklists". Cleanuparr's matching rule,
+    replayed on sample names, keeps `Part 01.mp3`, `Book.m4b`, `cover.jpg` and `Book.pdf`, and
+    skips `Book.mp3.exe`, `Book.m4b.lnk`, `setup.scr`, `Book.zip` and `run.bat`.
+  - Caddy 2.11.9 `validate`; `scripts/validate.py` and `scripts/check_images.py`.
+- **Not tested:** a real request from end to end. The sandbox can't reach Chaptarr's metadata
+  server (`api2.chaptarr.com`), so no book could be looked up, grabbed or imported, and the
+  Malware Blocker never saw a real Chaptarr download. The cluster itself (local-path and NFS
+  ownership) and the phone app weren't tested either.
+- **After the merge:** Gemberkoekje/projects `Zeef/DEPLOY.md`, part D.

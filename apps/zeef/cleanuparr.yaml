@@ -1,7 +1,8 @@
-# Cleanuparr: checks the file list of every Sonarr/Radarr torrent as soon as its metadata arrives
-# (Malware Blocker) and removes stalled or unimportable downloads (Queue Cleaner). Bad releases are
-# blocklisted in Sonarr/Radarr, which then search for another one. It works through the qBittorrent,
-# Sonarr and Radarr APIs only, so it doesn't mount the media share. Its database is in the shared
+# Cleanuparr: checks the file list of every Sonarr, Radarr and Chaptarr torrent as soon as its
+# metadata arrives (Malware Blocker) and removes stalled or unimportable downloads (Queue Cleaner).
+# Bad releases are blocklisted in the app that grabbed them, which then searches for another one.
+# It works through the qBittorrent, Sonarr, Radarr and Chaptarr APIs only (Chaptarr needs 2.11.0
+# or later), so it doesn't mount the media share. Its database is in the shared
 # PostgreSQL (database cleanuparr); /config keeps its DataProtection keys and logs.
 apiVersion: apps/v1
 kind: Deployment
@@ -40,7 +41,7 @@ spec:
               memory: 64Mi
       containers:
         - name: cleanuparr
-          image: ghcr.io/cleanuparr/cleanuparr:2.10.12
+          image: ghcr.io/cleanuparr/cleanuparr:2.11.0
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
@@ -90,6 +91,10 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
+            # Malware Blocker → Chaptarr → path /blocklists/audiobooks.txt (see the ConfigMap below).
+            - name: blocklists
+              mountPath: /blocklists
+              readOnly: true
           resources:
             requests:
               cpu: 50m
@@ -101,6 +106,50 @@ spec:
         - name: config
           persistentVolumeClaim:
             claimName: cleanuparr-config
+        - name: blocklists
+          configMap:
+            name: cleanuparr-blocklists
+---
+# Malware Blocker list for Chaptarr, type Whitelist: a file that matches no line is skipped (not
+# downloaded), and a release whose files all fail is removed and blocklisted in Chaptarr, which then
+# searches again. Sonarr/Radarr's shared blacklist (cleanuparr.pages.dev) can't be used for
+# audiobooks: it blocks *.mp3, *.m4a, *.flac, *.jpg and *.cue, so it would throw away most
+# audiobook releases. Patterns match the end of the file name, ignoring case. Cleanuparr re-reads a
+# local list at least every 5 minutes, and the kubelet updates the mounted file within a minute or
+# two of a change here, so no restart is needed.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cleanuparr-blocklists
+  namespace: zeef
+data:
+  audiobooks.txt: |
+    *.mp3
+    *.m4b
+    *.m4a
+    *.mp4
+    *.aac
+    *.flac
+    *.ogg
+    *.oga
+    *.opus
+    *.wma
+    *.wav
+    *.mka
+    *.jpg
+    *.jpeg
+    *.png
+    *.webp
+    *.cue
+    *.nfo
+    *.txt
+    *.opf
+    *.m3u
+    *.m3u8
+    *.sfv
+    *.md5
+    *.pdf
+    *.epub
 ---
 # LAN and tailnet only, on the shared 192.168.1.234 (the router forwards nothing to it).
 apiVersion: v1
