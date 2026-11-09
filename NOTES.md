@@ -1575,3 +1575,37 @@ To understand this, read the header of `apps/zeef/chaptarr.yaml` and the `chapta
   - The `CHAPTARR__POSTGRES__PASSWORD` field in the 1Password item `zeef-stack` can go.
   - Then Gemberkoekje/projects `Zeef/DEPLOY.md`, part D3 onwards (its D1 still lists the Chaptarr
     databases, to be updated there).
+
+## 2026-11-09 — Maintainerr behind a login
+
+To understand this, read the maintainerr block in `infrastructure/lan-proxy/Caddyfile`, then
+`infrastructure/lan-proxy/maintainerr-login.yaml`.
+
+- **What was open.** Maintainerr 3.32 has no login at all. Asked from another pod without
+  credentials, `/api/rules` and `/api/settings` answered 200, and the settings carry the filled
+  `jellyfin_api_key` and `seerr_api_key`: admin access to Jellyfin and Seerr. Anyone on the home
+  network or the tailnet could read those keys, or change the rules so that the library is deleted.
+  Every other Zeef UI refuses without a login (Sonarr, Radarr, Prowlarr, qBittorrent, Cleanuparr,
+  Bazarr with form login, Jellyfin, Seerr, Audiobookshelf, AudioBookRequest, Chaptarr).
+- **Fix.**
+  - Caddy asks for a user name and password on `maintainerr.lan.gemberkoekje.nl` (`basic_auth`).
+    The user name and a bcrypt hash of the password come from the 1Password item `lan-proxy` as
+    environment variables. The repository is public, so even the hash stays out of Git.
+  - Maintainerr's Service is now ClusterIP, so `192.168.1.234:6246` is closed and Caddy is the only
+    way in. Nothing else calls Maintainerr; it only calls Jellyfin, Sonarr, Radarr and Seerr.
+  - Caddy reads `{$MAINTAINERR_USER}` and `{$MAINTAINERR_PASSWORD_HASH}` once, when it starts.
+    After changing the item, restart Caddy (`kubectl -n lan-proxy rollout restart deploy/caddy`).
+- **Tested** before the PR: `caddy validate` of the new Caddyfile in a running Caddy pod
+  (caddy 2.11.9) with a throwaway user and hash; a second Caddy in that pod on a spare port with the
+  same block answered 401 without credentials, 401 with a wrong password and 200 with Maintainerr's
+  page with the right one; `kubectl apply --server-side --dry-run=server` accepted the Service
+  change from LoadBalancer to ClusterIP.
+- **Before the merge:** create the item, or the new Caddy pods wait in
+  `CreateContainerConfigError`. The old pods keep serving, so the names stay up, but a kured reboot
+  could then take them away.
+  - Hash: `kubectl -n lan-proxy exec -it deploy/caddy -- caddy hash-password` (asks for the
+    password twice, prints the hash).
+  - 1Password, vault Gembercluster: item **`lan-proxy`**, with the fields `MAINTAINERR_USER` and
+    `MAINTAINERR_PASSWORD_HASH`.
+- **After the merge:** the browser asks for the login once on `maintainerr.lan.gemberkoekje.nl`.
+  Projects `Zeef/DEPLOY.md` still mentions Maintainerr's port 6246, to be updated there.

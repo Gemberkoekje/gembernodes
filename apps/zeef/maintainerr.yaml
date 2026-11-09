@@ -4,6 +4,8 @@
 # so the gap-fill doesn't fetch them again; deleted files go to their 7-day recycle bin).
 # It works only through the Jellyfin, Sonarr, Radarr and Seerr APIs, so it doesn't mount the media
 # share. Its SQLite database is on local-path (no PostgreSQL support), like Jellyfin's config.
+# It has no login of its own, so it is reachable only through Caddy, which asks for one (see the
+# Service below).
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -74,18 +76,17 @@ spec:
           persistentVolumeClaim:
             claimName: maintainerr-data
 ---
-# LAN and tailnet only, on the shared 192.168.1.234; friendly name maintainerr.lan.gemberkoekje.nl.
+# Inside the cluster only. The way in is https://maintainerr.lan.gemberkoekje.nl, where Caddy
+# (infrastructure/lan-proxy) asks for the login Maintainerr lacks. No port on 192.168.1.234: anyone
+# on the LAN or the tailnet could change its rules there, or read the Jellyfin and Seerr API keys
+# from its settings.
 apiVersion: v1
 kind: Service
 metadata:
   name: maintainerr
   namespace: zeef
-  annotations:
-    metallb.io/loadBalancerIPs: 192.168.1.234
-    metallb.io/allow-shared-ip: zeef-lan
 spec:
-  type: LoadBalancer
-  allocateLoadBalancerNodePorts: false
+  type: ClusterIP
   selector:
     app: maintainerr
   ports:

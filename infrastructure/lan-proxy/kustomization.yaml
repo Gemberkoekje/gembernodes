@@ -5,6 +5,7 @@ namespace: lan-proxy
 
 resources:
   - caddy.yaml
+  - maintainerr-login.yaml
   - certificate.yaml
   - restart.yaml
 

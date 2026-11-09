@@ -46,6 +46,19 @@ spec:
               value: /data
             - name: XDG_CONFIG_HOME
               value: /config
+            # Maintainerr's login (Caddyfile), from the 1Password item lan-proxy
+            # (maintainerr-login.yaml). Without that Secret a new pod waits in
+            # CreateContainerConfigError; the rollout keeps the old pods serving meanwhile.
+            - name: MAINTAINERR_USER
+              valueFrom:
+                secretKeyRef:
+                  name: lan-proxy
+                  key: MAINTAINERR_USER
+            - name: MAINTAINERR_PASSWORD_HASH
+              valueFrom:
+                secretKeyRef:
+                  name: lan-proxy
+                  key: MAINTAINERR_PASSWORD_HASH
           ports:
             - name: http
               containerPort: 8080
