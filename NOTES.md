@@ -1469,6 +1469,13 @@ malware check for the audiobook downloads, like the one films and series get.
   - Cleanuparr checks Chaptarr's queue with the Malware Blocker and Queue Cleaner, as it does for
     Sonarr. Chaptarr support is new in Cleanuparr 2.11.0 (2026-11-08), hence the bump from 2.10.12.
     The other changes in 2.11.0 are Seeker features and fixes for other download clients.
+  - **Chaptarr gets its own Malware Blocker list.** The shared blacklist that Sonarr and Radarr use
+    (`cleanuparr.pages.dev/static/blacklist`, 850 patterns) is built for video. It blocks `*.mp3`,
+    `*.m4a`, `*.flac`, `*.jpg`, `*.png`, `*.cue`, `*.nfo` and `*.txt`, so it would throw away most
+    audiobook releases. Instead, `cleanuparr.yaml` ships a whitelist as ConfigMap
+    `cleanuparr-blocklists`, mounted at `/blocklists/audiobooks.txt`: audio, cover, cue and
+    companion-file extensions. Any other file (`.exe`, `.lnk`, `.scr`, `.msi`, archives, scripts)
+    is skipped, and a release with nothing on the list is removed and searched again.
 - **Why Chaptarr.**
   - Readarr is retired: its repo is archived and its metadata servers are gone.
   - The first design had no import step: AudioBookRequest grabbed through Prowlarr straight into
@@ -1516,7 +1523,11 @@ malware check for the audiobook downloads, like the one films and series get.
   - AudioBookRequest → Chaptarr: "connected". AudioBookRequest → Audiobookshelf: library listed,
     scan started.
   - Cleanuparr: 2.10.12 then 2.11.0 on the same PostgreSQL database, healthy after the upgrade.
-    "Connection to Chaptarr instance successful"; a wrong key fails with 401.
+    "Connection to Chaptarr instance successful"; a wrong key fails with 401. With the list
+    mounted at `/blocklists`, Malware Blocker → Chaptarr (Whitelist, `/blocklists/audiobooks.txt`)
+    saved, and the job logged "Successfully loaded 1 blocklists". Cleanuparr's matching rule,
+    replayed on sample names, keeps `Part 01.mp3`, `Book.m4b`, `cover.jpg` and `Book.pdf`, and
+    skips `Book.mp3.exe`, `Book.m4b.lnk`, `setup.scr`, `Book.zip` and `run.bat`.
   - Caddy 2.11.9 `validate`; `scripts/validate.py` and `scripts/check_images.py`.
 - **Not tested:** a real request from end to end. The sandbox can't reach Chaptarr's metadata
   server (`api2.chaptarr.com`), so no book could be looked up, grabbed or imported, and the
