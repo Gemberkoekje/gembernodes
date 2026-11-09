@@ -225,3 +225,22 @@ spec:
   resources:
     requests:
       storage: 5Gi
+---
+# Chaptarr's config.xml, covers, logs and its SQLite cache (staging.db, WAL mode, kept even with
+# PostgreSQL). SQLite on NFS corrupts, so this is on local-path like Jellyfin's config; the pod stays
+# on the node that first ran it. Flux never prunes it (local-path deletes data with the claim).
+# Losing it costs the login, the covers and the cache: the library itself is in PostgreSQL.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: chaptarr-config
+  namespace: zeef
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi

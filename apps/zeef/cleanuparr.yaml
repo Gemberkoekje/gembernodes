@@ -1,7 +1,8 @@
-# Cleanuparr: checks the file list of every Sonarr/Radarr torrent as soon as its metadata arrives
-# (Malware Blocker) and removes stalled or unimportable downloads (Queue Cleaner). Bad releases are
-# blocklisted in Sonarr/Radarr, which then search for another one. It works through the qBittorrent,
-# Sonarr and Radarr APIs only, so it doesn't mount the media share. Its database is in the shared
+# Cleanuparr: checks the file list of every Sonarr, Radarr and Chaptarr torrent as soon as its
+# metadata arrives (Malware Blocker) and removes stalled or unimportable downloads (Queue Cleaner).
+# Bad releases are blocklisted in the app that grabbed them, which then searches for another one.
+# It works through the qBittorrent, Sonarr, Radarr and Chaptarr APIs only (Chaptarr needs 2.11.0
+# or later), so it doesn't mount the media share. Its database is in the shared
 # PostgreSQL (database cleanuparr); /config keeps its DataProtection keys and logs.
 apiVersion: apps/v1
 kind: Deployment
@@ -40,7 +41,7 @@ spec:
               memory: 64Mi
       containers:
         - name: cleanuparr
-          image: ghcr.io/cleanuparr/cleanuparr:2.10.12
+          image: ghcr.io/cleanuparr/cleanuparr:2.11.0
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false

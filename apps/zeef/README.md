@@ -3,7 +3,8 @@
 Download Station's replacement: films and series via Radarr and Sonarr, torrents via qBittorrent,
 indexers via Prowlarr, malware and stalled-download cleanup via Cleanuparr, English subtitles via
 Bazarr, and the TRaSH Guides' quality rules via a nightly Recyclarr job. Audiobooks are requested
-in AudioBookRequest, grabbed through Prowlarr into qBittorrent, and played from Audiobookshelf.
+in AudioBookRequest, found and imported by Chaptarr (indexers from Prowlarr, downloads through
+qBittorrent, checked by Cleanuparr), and played from Audiobookshelf.
 Downloads land on the QNAP **Multimedia** share (`/data` in every pod; audiobooks in
 `/data/Audiobooks`). Design and runbook: Gemberkoekje/projects `Zeef/DESIGN.md` and
 `Zeef/DEPLOY.md`. The Zeef app itself (one Dutch search box in front of all this) follows in phase 1.
@@ -26,6 +27,7 @@ forwards nothing to it. Away from home, the Tailscale subnet router already rout
 | `:6767` | Bazarr (English subtitles) |
 | `:13378` | Audiobookshelf (audiobook library and player) |
 | `:8000` | AudioBookRequest (request audiobooks) |
+| `:8789` | Chaptarr (audiobooks, like Sonarr) |
 | `:80` | (Zeef, phase 1) |
 
 The only thing the internet reaches is qBittorrent's peer port, `192.168.1.235:49160` (TCP and
@@ -43,9 +45,11 @@ UDP, forwarded by the router). It speaks BitTorrent and has no web UI behind it.
   database + subtitles, newest four kept) land on the `jellyfin-backup` claim on the QNAP once
   `JELLYFIN__APIKEY` is in the `zeef-stack` item.
 - **Audiobookshelf's `/config` is on `local-path` too** (SQLite only), and it mounts the library
-  read-only: qBittorrent owns the files in `Audiobooks/` and keeps seeding them. Its own scheduled
-  backups land in `/metadata/backups` on the QNAP (`audiobookshelf-metadata`), once switched on in
-  its settings.
+  read-only: Chaptarr owns the files in `Audiobooks/` (hardlinks of what qBittorrent seeds). Its
+  own scheduled backups land in `/metadata/backups` on the QNAP (`audiobookshelf-metadata`), once
+  switched on in its settings.
+- **Chaptarr's `/config` is on `local-path` as well.** Its databases are in PostgreSQL, but it
+  always keeps a SQLite cache (`staging.db`, WAL mode) in `/config`.
 - **Image tags stay pinned.** Bump them deliberately. The Servarr apps migrate their databases on
   start, so read the release notes before a major version (Sonarr 5 is in development).
 
@@ -109,6 +113,15 @@ CREATE ROLE audiobookrequest LOGIN;
 CREATE DATABASE audiobookrequest OWNER audiobookrequest;
 REVOKE CONNECT, TEMPORARY ON DATABASE audiobookrequest FROM PUBLIC;
 
+-- Chaptarr (added with its manifest; create it before that merges). It doesn't create its
+-- databases itself.
+CREATE ROLE chaptarr LOGIN;
+\password chaptarr
+CREATE DATABASE "chaptarr-main" OWNER chaptarr;
+CREATE DATABASE "chaptarr-log" OWNER chaptarr;
+CREATE DATABASE "chaptarr-cache" OWNER chaptarr;
+REVOKE CONNECT, TEMPORARY ON DATABASE "chaptarr-main", "chaptarr-log", "chaptarr-cache" FROM PUBLIC;
+
 -- Every login may connect to a new database; only its owner may connect to these.
 REVOKE CONNECT, TEMPORARY ON DATABASE "sonarr-main", "sonarr-log", "radarr-main", "radarr-log",
   "prowlarr-main", "prowlarr-log", cleanuparr FROM PUBLIC;
@@ -135,6 +148,8 @@ Item **`zeef-stack`** in the Gembercluster vault, with exactly these field label
 | `SEERR__DB_PASS` | seerr's password (Seerr) |
 | `BAZARR__POSTGRES__PASSWORD` | bazarr's password (Bazarr) |
 | `AUDIOBOOKREQUEST__POSTGRES__PASSWORD` | audiobookrequest's password (AudioBookRequest; hex only) |
+| `CHAPTARR__AUTH__APIKEY` | `openssl rand -hex 16` |
+| `CHAPTARR__POSTGRES__PASSWORD` | chaptarr's password (Chaptarr) |
 | `QBITTORRENT__PASSWORD` | the qBittorrent WebUI password (for later use) |
 | `JELLYFIN__APIKEY` | a Jellyfin API key (weekly backup job and Bazarr's post-processing; optional) |
 

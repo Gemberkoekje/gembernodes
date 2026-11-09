@@ -1454,64 +1454,72 @@ The fix:
     That searches only for missing items, one at a time, at most once a week per item. Those
     are the automatic retries that were missing.
 
-## 2026-11-08 — Zeef: Audiobookshelf and AudioBookRequest for audiobooks
+## 2026-11-09 — Zeef: audiobooks with Audiobookshelf, AudioBookRequest and Chaptarr
 
-To understand this, read `apps/zeef/audiobookshelf.yaml` and `apps/zeef/audiobookrequest.yaml`,
-then the audiobook rows in `apps/zeef/README.md`.
+To understand this, read `apps/zeef/chaptarr.yaml`, `apps/zeef/audiobookrequest.yaml` and
+`apps/zeef/audiobookshelf.yaml`, then the audiobook rows in `apps/zeef/README.md`.
 
-Asked: a stack like Sonarr, Seerr and Jellyfin, but for audiobooks, on the existing storage.
+Asked: a stack like Sonarr, Seerr and Jellyfin for audiobooks, on the existing storage. Then: a
+malware check for the audiobook downloads, like the one films and series get.
 
-- **Why these two.**
+- **The chain.** AudioBookRequest (requests, like Seerr) → Chaptarr (search, grab, import, like
+  Sonarr) → qBittorrent → `/data/Audiobooks` → Audiobookshelf (playback, like Jellyfin).
+  - Prowlarr syncs its indexers into Chaptarr. Prowlarr has no Chaptarr app type, so Chaptarr is
+    added as a "Readarr" app, the way AudioBookRequest's own test setup does it.
+  - Cleanuparr checks Chaptarr's queue with the Malware Blocker and Queue Cleaner, as it does for
+    Sonarr. Chaptarr support is new in Cleanuparr 2.11.0 (2026-11-08), hence the bump from 2.10.12.
+    The other changes in 2.11.0 are Seeker features and fixes for other download clients.
+- **Why Chaptarr.**
   - Readarr is retired: its repo is archived and its metadata servers are gone.
-  - Its forks were either beta (Chaptarr) or one format per instance (Bookshelf) in November 2026.
-  - Audiobookshelf is the usual audiobook server. AudioBookRequest grabs through the existing
-    Prowlarr, so no Sonarr-like app is needed.
-  - Chaptarr can still be added later: AudioBookRequest 1.11.0 can hand downloads to it instead of
-    Prowlarr, and Chaptarr then imports and renames.
-- **Audiobookshelf** (`ghcr.io/advplyr/audiobookshelf:2.37.2`, the newest release on 2026-11-08):
-  - SQLite only, so `/config` is on local-path (`audiobookshelf-config`, Flux pruning disabled),
-    like Jellyfin. The pod is tied to the node that first ran it.
-  - `/metadata` (covers, cache, logs and its own scheduled backups) is on qnap-nfs
-    (`audiobookshelf-metadata`). `/metadata/streams` (transcodes) is a 4Gi emptyDir.
-  - Runs as 1000:100; the image would run as root. `PORT=13378`, because a non-root process
-    can't open the image's port 80. No `fsGroup`, so an init container sets the owner of the two
-    volume roots (not recursively), as Jellyfin's does.
-  - Mounts the Multimedia share read-only at `/media`; the library folder is `/media/Audiobooks`.
-- **AudioBookRequest** (`markbeep/audiobookrequest:1.11.0`, released 2026-10-27):
-  - Database in the shared PostgreSQL, database `audiobookrequest`, through `ABR_DB__*`. The password
-    is the `zeef-stack` field `AUDIOBOOKREQUEST__POSTGRES__PASSWORD`. It goes into a connection URL
-    unescaped, so it must be hex. README step 2 must run before the merge.
-  - No volume: its settings live in the database too. `/config` is an emptyDir, because the
-    migration step creates that directory even with PostgreSQL.
-  - Runs as 1000:1000.
-- **Where the downloads go.** AudioBookRequest has no import step, so the download folder is the
-  library folder:
-  - Prowlarr gets a download client of its own: qBittorrent, Default Category `audiobooks`.
-  - qBittorrent's category `audiobooks` saves in `/data/Audiobooks`. Incomplete files wait in
-    `@Downloads/incomplete` as usual, so Audiobookshelf never sees half a book.
-  - The finished book seeds from the library folder, which is why Audiobookshelf mounts it
-    read-only.
-  - After the seeding limit the torrent stops and stays listed: nothing removes it, whereas
-    Sonarr/Radarr do that for theirs. To delete a book, remove the torrent with its files in
-    qBittorrent.
-  - Cleanuparr and Maintainerr don't cover audiobooks: both work through Sonarr and Radarr.
-- **Reachable at** `192.168.1.234:13378` / `https://audiobookshelf.lan.gemberkoekje.nl` and
-  `192.168.1.234:8000` / `https://audiobookrequest.lan.gemberkoekje.nl`, with links on the start page.
-- **Tested locally (Docker, 2026-11-08), with the pinned images and the manifests' users, ports and
-  mounts:**
-  - Audiobookshelf as 1000:100 with the library read-only: `/healthcheck` 200 after 3 s. It
-    scanned a test book (title and author from its tags) with no write errors, and an API key
-    worked.
-  - AudioBookRequest as 1000:1000 on `postgres:17-alpine`, with the role and database made as in
-    README step 2 (`REVOKE` included):
-    - the migrations created 8 tables;
-    - `/api/health` gave 302 to `/init` before the first user and 200 after;
-    - the first admin was created through `/init`.
-  - AudioBookRequest → Audiobookshelf with that API key: the library was listed, and "test
-    connection" started a scan.
-  - Caddy 2.11.9 `validate`. Both names through a local Caddy: Audiobookshelf 200, AudioBookRequest
-    302 to `/login` on the same https name. The start page links both.
-  - `scripts/validate.py`: 0 errors, 0 warnings.
-- **Not tested:** the cluster itself (ownership on the NFS volume, local-path), a real grab from
-  Prowlarr into qBittorrent, and the phone app.
+  - The first design had no import step: AudioBookRequest grabbed through Prowlarr straight into
+    the library folder. That left audiobooks outside Cleanuparr, which only reads the queues of
+    the *arr apps (checked in its source). qBittorrent has no virus-scanner integration of its own.
+  - Chaptarr is beta. Its README reports no data loss in the last 6 months across 11,000 users.
+- **Chaptarr** (`chaptarr/chaptarr:0.9.965`, the newest release and identical to `latest` on
+  2026-11-09):
+  - Three databases in the shared PostgreSQL (`chaptarr-main`, `-log`, `-cache`), through
+    `CHAPTARR__POSTGRES__*`. Chaptarr doesn't create them, so README step 2 must run first.
+  - `/config` on local-path (`chaptarr-config`, Flux pruning disabled). Even with PostgreSQL,
+    Chaptarr keeps a SQLite cache in `/config/staging.db` (WAL mode), which must not be on NFS.
+  - Runs like the Servarr images: it starts as root, sets the owner of `/config` and drops to
+    PUID 1000 / PGID 100 (UMASK 002). It mounts the library at `/data`, like Sonarr, so imports
+    are hardlinks with no path mapping.
+  - Its defaults leave hardlinked files alone: "Tag Audio Files with Metadata" is off, and "Use
+    Hardlinks instead of Copy" is on. Ebooks are not used. (If they ever are: "Write Book Tags"
+    defaults to new files, which would also change the copy that is seeding.)
+- **AudioBookRequest** (`markbeep/audiobookrequest:1.11.0`): download backend Chaptarr, set in its
+  UI. Database `audiobookrequest` in PostgreSQL. No volume; `/config` is an emptyDir, because the
+  migration step creates that directory even with PostgreSQL. Runs as 1000:1000.
+- **Audiobookshelf** (`ghcr.io/advplyr/audiobookshelf:2.37.2`):
+  - SQLite on local-path (`audiobookshelf-config`); `/metadata` (covers, logs, its own backups) on
+    qnap-nfs. Runs as 1000:100 on port 13378. The library is mounted read-only at `/media`.
+  - **The watcher must stay on** ("Automatically watch libraries for changes", the default).
+    Chaptarr reports imports through Audiobookshelf's watcher API. With the watcher off,
+    Audiobookshelf answers 200, logs "Invalid library id from watcher" and adds nothing.
+    Tested both ways.
+- **Reachable at** `.234:13378` / `audiobookshelf.lan…`, `.234:8000` / `audiobookrequest.lan…`,
+  `.234:8789` / `chaptarr.lan…`, with links on the start page.
+- **Tested locally (Docker, 2026-11-08/09)**, with the pinned images, the manifests' users and
+  ports, and one shared `/data` directory, on `postgres:17-alpine` with the databases made exactly
+  as in README step 2:
+  - Chaptarr: migrations on all three databases; `/ping` 200 after 8 s. `system/status` reports
+    postgreSQL 17, and the API key comes from the env var. Root folder `/data/Audiobooks`
+    accessible. A test file written as 1000:100 got mode 664, and a hardlink from
+    `@Downloads/complete` worked.
+  - Chaptarr → qBittorrent (`5.3.0_v2.1.2-ls486`): the download client test passed, with category
+    `chaptarr`.
+  - Prowlarr (`2.7.0.5723-ls167`) → Chaptarr as a Readarr app: the test passed. A stand-in
+    Torznab indexer synced into Chaptarr as "(Prowlarr)", with categories 3030, 7000 and 7020.
+  - Chaptarr → Audiobookshelf: the connection test passed. Audiobookshelf as 1000:100 with a
+    read-only library scanned a test book; the watcher API added a book with the watcher on, and
+    ignored it with the watcher off.
+  - AudioBookRequest → Chaptarr: "connected". AudioBookRequest → Audiobookshelf: library listed,
+    scan started.
+  - Cleanuparr: 2.10.12 then 2.11.0 on the same PostgreSQL database, healthy after the upgrade.
+    "Connection to Chaptarr instance successful"; a wrong key fails with 401.
+  - Caddy 2.11.9 `validate`; `scripts/validate.py` and `scripts/check_images.py`.
+- **Not tested:** a real request from end to end. The sandbox can't reach Chaptarr's metadata
+  server (`api2.chaptarr.com`), so no book could be looked up, grabbed or imported, and the
+  Malware Blocker never saw a real Chaptarr download. The cluster itself (local-path and NFS
+  ownership) and the phone app weren't tested either.
 - **After the merge:** Gemberkoekje/projects `Zeef/DEPLOY.md`, part D.

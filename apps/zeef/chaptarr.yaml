@@ -1,0 +1,156 @@
+# Chaptarr: Sonarr's counterpart for audiobooks (a Readarr fork; Readarr itself is retired).
+# AudioBookRequest hands it each request by ASIN. Chaptarr searches the indexers that Prowlarr syncs
+# into it (as a "Readarr" app), grabs through qBittorrent (category "chaptarr"), and hardlinks
+# finished books into /data/Audiobooks with Author/Title folders. Then it tells Audiobookshelf.
+# Because the downloads go through Chaptarr's queue, Cleanuparr (2.11.0 and later) checks them like
+# Sonarr's: Malware Blocker and Queue Cleaner.
+# Its databases are in the shared PostgreSQL (chaptarr-main, chaptarr-log, chaptarr-cache), set
+# through CHAPTARR__* env vars. /config is on local-path, not NFS: besides config.xml, covers and
+# logs, Chaptarr always keeps a SQLite cache there (staging.db, in WAL mode), and SQLite on NFS
+# corrupts.
+# Setup after the first deploy: Gemberkoekje/projects Zeef/DEPLOY.md, part D.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chaptarr
+  namespace: zeef
+spec:
+  replicas: 1
+  # One writer for the SQLite cache; the local-path volume can only be on one node anyway.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: chaptarr
+  template:
+    metadata:
+      labels:
+        app: chaptarr
+    spec:
+      # No fsGroup: the kubelet would chown every file on /data, which is the media library.
+      # The image starts as root, sets the owner of /config and drops to PUID/PGID itself (gosu).
+      enableServiceLinks: false
+      initContainers:
+        # Start only once PostgreSQL answers, instead of crash-looping through a reboot.
+        - name: wait-for-postgres
+          image: postgres:17-alpine
+          command:
+            - sh
+            - -c
+            - until pg_isready -h postgresql.flux-system.svc.cluster.local -p 5432 -t 2; do echo "waiting for postgres"; sleep 2; done
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi
+      containers:
+        - name: chaptarr
+          image: chaptarr/chaptarr:0.9.965
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+          env:
+            - name: PUID
+              value: "1000"
+            - name: PGID
+              value: "100"
+            - name: UMASK
+              value: "002"
+            - name: TZ
+              value: Europe/Amsterdam
+            - name: CHAPTARR__POSTGRES__HOST
+              value: postgresql.flux-system.svc.cluster.local
+            - name: CHAPTARR__POSTGRES__PORT
+              value: "5432"
+            - name: CHAPTARR__POSTGRES__USER
+              value: chaptarr
+            - name: CHAPTARR__POSTGRES__MAINDB
+              value: chaptarr-main
+            - name: CHAPTARR__POSTGRES__LOGDB
+              value: chaptarr-log
+            - name: CHAPTARR__POSTGRES__CACHEDB
+              value: chaptarr-cache
+            - name: CHAPTARR__POSTGRES__PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: zeef-stack
+                  key: CHAPTARR__POSTGRES__PASSWORD
+            # The API key comes from 1Password, so Prowlarr, AudioBookRequest and Cleanuparr use the
+            # same value without anyone copying it out of a UI.
+            - name: CHAPTARR__AUTH__APIKEY
+              valueFrom:
+                secretKeyRef:
+                  name: zeef-stack
+                  key: CHAPTARR__AUTH__APIKEY
+            # Login always required, method deliberately not set: as with the Servarr apps, the
+            # first visit shows "Authentication Required", where the user is created (see sonarr.yaml).
+            - name: CHAPTARR__AUTH__REQUIRED
+              value: Enabled
+            # Info, not debug: every log line is written to /config.
+            - name: CHAPTARR__LOG__LEVEL
+              value: info
+          ports:
+            - name: http
+              containerPort: 8789
+          # /ping touches the database, so it only gates readiness; liveness stays a TCP check (a
+          # PostgreSQL outage must not restart a healthy pod). The first start runs the migrations
+          # on all three databases, hence the same 20-minute startup window as Sonarr.
+          startupProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 5
+            failureThreshold: 240
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 100m
+              memory: 384Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: chaptarr-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: multimedia
+---
+# LAN and tailnet only, on the shared 192.168.1.234 (the router forwards nothing to it).
+# Friendly name chaptarr.lan.gemberkoekje.nl. In-cluster clients use
+# chaptarr.zeef.svc.cluster.local:8789.
+apiVersion: v1
+kind: Service
+metadata:
+  name: chaptarr
+  namespace: zeef
+  annotations:
+    metallb.io/loadBalancerIPs: 192.168.1.234
+    metallb.io/allow-shared-ip: zeef-lan
+spec:
+  type: LoadBalancer
+  allocateLoadBalancerNodePorts: false
+  selector:
+    app: chaptarr
+  ports:
+    - name: http
+      port: 8789
+      targetPort: http

@@ -3,10 +3,13 @@
 #   - Settings, users and listening progress: SQLite in /config on local-path (never NFS), like
 #     Jellyfin. The pod stays on the node that first ran it.
 #   - Covers, cache, logs and its own scheduled backups: /metadata on the QNAP (qnap-nfs).
-#   - Books: the Multimedia share, read-only, library folder /media/Audiobooks. qBittorrent owns
-#     those files (AudioBookRequest grabs through Prowlarr into the category "audiobooks", saved
-#     in /data/Audiobooks) and keeps seeding them, so Audiobookshelf must never rewrite them.
-#     "Store covers/metadata with item" stay off (the defaults) for the same reason.
+#   - Books: the Multimedia share, read-only, library folder /media/Audiobooks. Chaptarr owns
+#     those files: it imports them as hardlinks of what qBittorrent is still seeding, so
+#     Audiobookshelf must never rewrite them. "Store covers/metadata with item" stay off (the
+#     defaults) for the same reason.
+#   - Chaptarr reports each import through Audiobookshelf's watcher API. That only works while
+#     "Automatically watch libraries for changes" is on (the default): with it off, Audiobookshelf
+#     answers 200 and drops the update.
 #   - /metadata/streams (transcodes for players that can't direct-play) is a capped emptyDir, so
 #     a runaway transcode can't fill the QNAP volume.
 # Setup after the first deploy: Gemberkoekje/projects Zeef/DEPLOY.md, part D.
@@ -135,7 +138,7 @@ spec:
 ---
 # LAN and tailnet only, on the shared 192.168.1.234 (the router forwards nothing to it).
 # Friendly name audiobookshelf.lan.gemberkoekje.nl, which is also the server address for the apps.
-# AudioBookRequest uses audiobookshelf.zeef.svc.cluster.local:13378.
+# AudioBookRequest and Chaptarr use audiobookshelf.zeef.svc.cluster.local:13378.
 apiVersion: v1
 kind: Service
 metadata:

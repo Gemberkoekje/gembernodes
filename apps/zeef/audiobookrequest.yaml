@@ -1,10 +1,9 @@
 # AudioBookRequest: the request page for audiobooks, Seerr's counterpart for books. Search
 # (Audible's catalogue), "request", and "already in the library" from Audiobookshelf. With
-# auto-download on, a request from a "trusted" user or an admin is grabbed at once; other users'
-# requests wait for an admin. The grab goes through Prowlarr, which sends the release to
-# qBittorrent under its own download client's category "audiobooks", which qBittorrent saves in
-# /data/Audiobooks, the Audiobookshelf library. AudioBookRequest has no import step and never
-# touches the files, so it doesn't mount the media share.
+# auto-download on, a request from a "trusted" user or an admin goes to Chaptarr at once (download
+# backend "Chaptarr", by ASIN); other users' requests wait for an admin. Chaptarr then searches,
+# grabs and imports, as Sonarr does for Seerr. AudioBookRequest never touches the files, so it
+# doesn't mount the media share.
 # Its database is in the shared PostgreSQL (database audiobookrequest). Settings (Prowlarr,
 # Audiobookshelf, users) are kept there too, so the pod has no volume of its own.
 # Setup after the first deploy: Gemberkoekje/projects Zeef/DEPLOY.md, part D.
