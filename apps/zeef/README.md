@@ -48,8 +48,9 @@ UDP, forwarded by the router). It speaks BitTorrent and has no web UI behind it.
   read-only: Chaptarr owns the files in `Audiobooks/` (hardlinks of what qBittorrent seeds). Its
   own scheduled backups land in `/metadata/backups` on the QNAP (`audiobookshelf-metadata`), once
   switched on in its settings.
-- **Chaptarr's `/config` is on `local-path` as well.** Its databases are in PostgreSQL, but it
-  always keeps a SQLite cache (`staging.db`, WAL mode) in `/config`.
+- **Chaptarr's `/config` is on `local-path` as well**, with its SQLite databases (`chaptarr.db`,
+  `logs.db`, `cache.db`, `staging.db`). Not in the shared PostgreSQL: that runs in FIPS mode, where
+  `md5()` fails, and one of Chaptarr's PostgreSQL migrations needs it (NOTES.md, 2026-11-09).
 - **Image tags stay pinned.** Bump them deliberately. The Servarr apps migrate their databases on
   start, so read the release notes before a major version (Sonarr 5 is in development).
 
@@ -113,15 +114,6 @@ CREATE ROLE audiobookrequest LOGIN;
 CREATE DATABASE audiobookrequest OWNER audiobookrequest;
 REVOKE CONNECT, TEMPORARY ON DATABASE audiobookrequest FROM PUBLIC;
 
--- Chaptarr (added with its manifest; create it before that merges). It doesn't create its
--- databases itself.
-CREATE ROLE chaptarr LOGIN;
-\password chaptarr
-CREATE DATABASE "chaptarr-main" OWNER chaptarr;
-CREATE DATABASE "chaptarr-log" OWNER chaptarr;
-CREATE DATABASE "chaptarr-cache" OWNER chaptarr;
-REVOKE CONNECT, TEMPORARY ON DATABASE "chaptarr-main", "chaptarr-log", "chaptarr-cache" FROM PUBLIC;
-
 -- Every login may connect to a new database; only its owner may connect to these.
 REVOKE CONNECT, TEMPORARY ON DATABASE "sonarr-main", "sonarr-log", "radarr-main", "radarr-log",
   "prowlarr-main", "prowlarr-log", cleanuparr FROM PUBLIC;
@@ -149,7 +141,6 @@ Item **`zeef-stack`** in the Gembercluster vault, with exactly these field label
 | `BAZARR__POSTGRES__PASSWORD` | bazarr's password (Bazarr) |
 | `AUDIOBOOKREQUEST__POSTGRES__PASSWORD` | audiobookrequest's password (AudioBookRequest; hex only) |
 | `CHAPTARR__AUTH__APIKEY` | `openssl rand -hex 16` |
-| `CHAPTARR__POSTGRES__PASSWORD` | chaptarr's password (Chaptarr) |
 | `QBITTORRENT__PASSWORD` | the qBittorrent WebUI password (for later use) |
 | `JELLYFIN__APIKEY` | a Jellyfin API key (weekly backup job and Bazarr's post-processing; optional) |
 

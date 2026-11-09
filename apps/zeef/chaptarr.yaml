@@ -4,10 +4,9 @@
 # finished books into /data/Audiobooks with Author/Title folders. Then it tells Audiobookshelf.
 # Because the downloads go through Chaptarr's queue, Cleanuparr (2.11.0 and later) checks them like
 # Sonarr's: Malware Blocker and Queue Cleaner.
-# Its databases are in the shared PostgreSQL (chaptarr-main, chaptarr-log, chaptarr-cache), set
-# through CHAPTARR__* env vars. /config is on local-path, not NFS: besides config.xml, covers and
-# logs, Chaptarr always keeps a SQLite cache there (staging.db, in WAL mode), and SQLite on NFS
-# corrupts.
+# Its databases are SQLite in /config (chaptarr.db, logs.db, cache.db, staging.db, WAL mode), on
+# local-path, not NFS: SQLite on NFS corrupts. Not the shared PostgreSQL: that runs in FIPS mode,
+# where md5() fails, and one of Chaptarr's PostgreSQL migrations uses md5() (NOTES.md, 2026-11-09).
 # Setup after the first deploy: Gemberkoekje/projects Zeef/DEPLOY.md, part D.
 apiVersion: apps/v1
 kind: Deployment
@@ -16,7 +15,7 @@ metadata:
   namespace: zeef
 spec:
   replicas: 1
-  # One writer for the SQLite cache; the local-path volume can only be on one node anyway.
+  # One writer for the SQLite databases; the local-path volume can only be on one node anyway.
   strategy:
     type: Recreate
   selector:
@@ -30,24 +29,6 @@ spec:
       # No fsGroup: the kubelet would chown every file on /data, which is the media library.
       # The image starts as root, sets the owner of /config and drops to PUID/PGID itself (gosu).
       enableServiceLinks: false
-      initContainers:
-        # Start only once PostgreSQL answers, instead of crash-looping through a reboot.
-        - name: wait-for-postgres
-          image: postgres:17-alpine
-          command:
-            - sh
-            - -c
-            - until pg_isready -h postgresql.flux-system.svc.cluster.local -p 5432 -t 2; do echo "waiting for postgres"; sleep 2; done
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: ["ALL"]
-          resources:
-            requests:
-              cpu: 10m
-              memory: 16Mi
-            limits:
-              memory: 64Mi
       containers:
         - name: chaptarr
           image: chaptarr/chaptarr:0.9.965
@@ -63,23 +44,6 @@ spec:
               value: "002"
             - name: TZ
               value: Europe/Amsterdam
-            - name: CHAPTARR__POSTGRES__HOST
-              value: postgresql.flux-system.svc.cluster.local
-            - name: CHAPTARR__POSTGRES__PORT
-              value: "5432"
-            - name: CHAPTARR__POSTGRES__USER
-              value: chaptarr
-            - name: CHAPTARR__POSTGRES__MAINDB
-              value: chaptarr-main
-            - name: CHAPTARR__POSTGRES__LOGDB
-              value: chaptarr-log
-            - name: CHAPTARR__POSTGRES__CACHEDB
-              value: chaptarr-cache
-            - name: CHAPTARR__POSTGRES__PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: zeef-stack
-                  key: CHAPTARR__POSTGRES__PASSWORD
             # The API key comes from 1Password, so Prowlarr, AudioBookRequest and Cleanuparr use the
             # same value without anyone copying it out of a UI.
             - name: CHAPTARR__AUTH__APIKEY
@@ -97,9 +61,9 @@ spec:
           ports:
             - name: http
               containerPort: 8789
-          # /ping touches the database, so it only gates readiness; liveness stays a TCP check (a
-          # PostgreSQL outage must not restart a healthy pod). The first start runs the migrations
-          # on all three databases, hence the same 20-minute startup window as Sonarr.
+          # /ping touches the database, so it only gates readiness; liveness stays a TCP check. The
+          # first start runs the migrations (about 10 s on SQLite in a test pod); the 20-minute
+          # startup window is Sonarr's, kept as a margin for a busy node.
           startupProbe:
             tcpSocket:
               port: http
