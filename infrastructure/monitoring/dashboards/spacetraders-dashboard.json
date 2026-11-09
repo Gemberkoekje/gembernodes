@@ -2787,7 +2787,8 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "fixed",
+            "fixedColor": "text"
           },
           "mappings": [
             {
@@ -2841,15 +2842,6 @@
               }
             }
           ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "text",
-                "value": null
-              }
-            ]
-          },
           "custom": {
             "fillOpacity": 85,
             "lineWidth": 0
@@ -3179,7 +3171,8 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "fixed",
+            "fixedColor": "text"
           },
           "mappings": [
             {
@@ -3213,15 +3206,6 @@
               }
             }
           ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "text",
-                "value": null
-              }
-            ]
-          },
           "custom": {
             "fillOpacity": 85,
             "lineWidth": 0
@@ -3274,7 +3258,8 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "fixed",
+            "fixedColor": "text"
           },
           "mappings": [
             {
@@ -3308,15 +3293,6 @@
               }
             }
           ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "text",
-                "value": null
-              }
-            ]
-          },
           "custom": {
             "fillOpacity": 85,
             "lineWidth": 0
