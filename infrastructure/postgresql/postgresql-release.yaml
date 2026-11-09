@@ -33,6 +33,12 @@ spec:
     image:
       digest: sha256:ac855a024049fc14d6b73e38ae3b53cf2d93ae69bf7c6174eda550a5de6f5227
     primary:
+      # The chart defaults to FIPS mode (global.defaultFips: restricted, so OPENSSL_FIPS=yes),
+      # which makes SQL md5() fail with "could not compute MD5 hash: unsupported". Chaptarr's
+      # first migration names constraints with md5() and stopped there. "off" sets
+      # OPENSSL_FIPS=no; nothing here needs FIPS-validated crypto.
+      fips:
+        openssl: "off"
       # With the chart's default (Always) the kubelet re-applies fsGroup 1001 to every file of
       # the data directory over NFS on each pod start, which took 4+ minutes. OnRootMismatch
       # skips that when the volume root already has the right ownership.

@@ -1534,3 +1534,25 @@ malware check for the audiobook downloads, like the one films and series get.
   Malware Blocker never saw a real Chaptarr download. The cluster itself (local-path and NFS
   ownership) and the phone app weren't tested either.
 - **After the merge:** Gemberkoekje/projects `Zeef/DEPLOY.md`, part D.
+
+## 2026-11-09 — PostgreSQL: FIPS mode off (Chaptarr's first migration)
+
+To understand this, read the `fips` comment in `infrastructure/postgresql/postgresql-release.yaml`.
+
+- **What failed.** After the audiobooks merge, Chaptarr stopped in its first start with
+  `XX000: could not compute MD5 hash: unsupported` and "Non-recoverable failure, waiting for user
+  intervention". The pod stays Running 0/1 until its 20-minute startup probe restarts it, and then
+  fails again. One of its migrations names CHECK constraints with
+  `substr(md5(schema || '.' || table || '.' || column), 1, 16)`.
+- **Why.** The Bitnami chart runs PostgreSQL in FIPS mode by default (`global.defaultFips:
+  restricted`, so the container gets `OPENSSL_FIPS=yes`). OpenSSL's FIPS provider has no MD5, so SQL
+  `md5()` fails. No app on this server had called it before. The local test passed because it ran
+  on `postgres:17-alpine`, which has no FIPS mode.
+- **Fix.** `primary.fips.openssl: "off"`. Rendered with the pinned chart (18.5.14), it sets
+  `OPENSSL_FIPS=no` (`relaxed` does too; `restricted` gives `yes`). Nothing on this cluster needs
+  FIPS-validated crypto. SCRAM password logins are unaffected.
+- **Cost.** Changing the env restarts `postgresql-0`: every app on the shared server loses its
+  database for a minute or two (clean fast shutdown, then the NFS start).
+- **After the merge.** Chaptarr's next automatic restart (startup probe) should run the
+  migrations through. Restart its pod to skip the wait. Then Gemberkoekje/projects
+  `Zeef/DEPLOY.md`, part D3 onwards.
