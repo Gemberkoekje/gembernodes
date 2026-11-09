@@ -65,8 +65,14 @@ https://cleanuparr.lan.gemberkoekje.nl {
 	reverse_proxy cleanuparr.zeef.svc.cluster.local:11011
 }
 
+# Maintainerr has no login of its own, and its settings API hands out the Jellyfin and Seerr API
+# keys, so Caddy asks for one. User name and bcrypt hash come from 1Password as environment
+# variables (maintainerr-login.yaml). This is the only way in: Maintainerr's Service is ClusterIP.
 https://maintainerr.lan.gemberkoekje.nl {
 	import lan_tls
+	basic_auth {
+		{$MAINTAINERR_USER} {$MAINTAINERR_PASSWORD_HASH}
+	}
 	reverse_proxy maintainerr.zeef.svc.cluster.local:6246
 }
 

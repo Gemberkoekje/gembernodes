@@ -23,12 +23,15 @@ forwards nothing to it. Away from home, the Tailscale subnet router already rout
 | `:11011` | Cleanuparr |
 | `:8096` | Jellyfin |
 | `:5055` | Seerr (request films and series) |
-| `:6246` | Maintainerr (cleanup of watched media) |
 | `:6767` | Bazarr (English subtitles) |
 | `:13378` | Audiobookshelf (audiobook library and player) |
 | `:8000` | AudioBookRequest (request audiobooks) |
 | `:8789` | Chaptarr (audiobooks, like Sonarr) |
 | `:80` | (Zeef, phase 1) |
+
+Maintainerr (cleanup of watched media) has no port there: it has no login of its own, so it is
+reachable only as `https://maintainerr.lan.gemberkoekje.nl`, where Caddy asks for one (the
+1Password item `lan-proxy`, see `infrastructure/lan-proxy/maintainerr-login.yaml`).
 
 The only thing the internet reaches is qBittorrent's peer port, `192.168.1.235:49160` (TCP and
 UDP, forwarded by the router). It speaks BitTorrent and has no web UI behind it.

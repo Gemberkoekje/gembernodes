@@ -1,0 +1,14 @@
+# The login Caddy asks for on maintainerr.lan.gemberkoekje.nl (Caddyfile): Maintainerr has none of
+# its own. Item `lan-proxy` in the Gembercluster vault, with exactly these field labels:
+#   MAINTAINERR_USER            the user name
+#   MAINTAINERR_PASSWORD_HASH   a bcrypt hash of the password, made with
+#                               kubectl -n lan-proxy exec -it deploy/caddy -- caddy hash-password
+# The repository is public, so even the hash stays out of Git. caddy.yaml reads both fields, once
+# at start: after changing them, restart Caddy (kubectl -n lan-proxy rollout restart deploy/caddy).
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: lan-proxy
+  namespace: lan-proxy
+spec:
+  itemPath: "vaults/Gembercluster/items/lan-proxy"
