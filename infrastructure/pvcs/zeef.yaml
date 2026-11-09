@@ -226,10 +226,11 @@ spec:
     requests:
       storage: 5Gi
 ---
-# Chaptarr's config.xml, covers, logs and its SQLite cache (staging.db, WAL mode, kept even with
-# PostgreSQL). SQLite on NFS corrupts, so this is on local-path like Jellyfin's config; the pod stays
-# on the node that first ran it. Flux never prunes it (local-path deletes data with the claim).
-# Losing it costs the login, the covers and the cache: the library itself is in PostgreSQL.
+# Chaptarr's config.xml, covers, logs and its SQLite databases (chaptarr.db, logs.db, cache.db,
+# staging.db, WAL mode). SQLite on NFS corrupts, so this is on local-path like Jellyfin's config; the
+# pod stays on the node that first ran it. Flux never prunes it (local-path deletes data with the
+# claim). Losing it costs Chaptarr's settings and its list of books; the audiobook files themselves
+# are on the QNAP, in Audiobooks/, and can be imported again.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:

@@ -1534,3 +1534,44 @@ malware check for the audiobook downloads, like the one films and series get.
   Malware Blocker never saw a real Chaptarr download. The cluster itself (local-path and NFS
   ownership) and the phone app weren't tested either.
 - **After the merge:** Gemberkoekje/projects `Zeef/DEPLOY.md`, part D.
+
+## 2026-11-09 — Chaptarr on SQLite, after a PostgreSQL outage
+
+To understand this, read the header of `apps/zeef/chaptarr.yaml` and the `chaptarr-config` claim in
+`infrastructure/pvcs/zeef.yaml`.
+
+- **What failed.** After #143 merged, Chaptarr stopped on its first start with
+  `XX000: could not compute MD5 hash: unsupported`, then "Non-recoverable failure, waiting for user
+  intervention". The pod stays Running 0/1 until its 20-minute startup probe restarts it, then fails
+  again. One of its PostgreSQL migrations names CHECK constraints with
+  `substr(md5(schema || '.' || table || '.' || column), 1, 16)`.
+- **Why.** The Bitnami chart runs the shared PostgreSQL in FIPS mode (`global.defaultFips:
+  restricted`, so `OPENSSL_FIPS=yes`). OpenSSL's FIPS provider has no MD5, so SQL `md5()` fails. No
+  other app on the server calls it. #143's local test passed because it ran on
+  `postgres:17-alpine`, which has no FIPS mode.
+- **The first fix took every database app down (#144, reverted in #145).** `primary.fips.openssl:
+  "off"` renders `OPENSSL_FIPS=no`, and with that this image refused every connection with
+  `FATAL: could not generate random cancel key`. From 08:18 to 08:26Z, Sonarr, Radarr, Prowlarr,
+  AudioBookRequest, SpaceTraders, Curatool and ArmaBot had no database; ArmaBot and Curatool went
+  into a crash loop and came back by themselves at 08:30Z. Sonarr's RSS sync has a gap for that
+  window.
+  - **Leave `fips` alone on the shared PostgreSQL.** `relaxed` renders `OPENSSL_FIPS=no` as well.
+  - Try image-level settings in a throwaway pod before changing the shared database.
+- **Fix: Chaptarr keeps its databases in SQLite**, in `/config` on local-path (`chaptarr.db`,
+  `logs.db`, `cache.db`, `staging.db`), and its manifest no longer mentions PostgreSQL (no
+  `CHAPTARR__POSTGRES__*`, no wait-for-postgres init container). Its migrations on SQLite contain
+  no `md5()`.
+  - **Tested** in a throwaway Job in `zeef` (the pinned image, the same user and env, an emptyDir
+    `/config`): `/ping` 200 about 10 s after start; `system/status` reports `databaseType`
+    `sqLite` 3.50.4; no errors or warnings in the log besides ASP.NET's two start-up notes.
+  - **Cost:** the shared PostgreSQL's nightly backup no longer covers Chaptarr. Losing the
+    local-path volume (a dead node disk) loses Chaptarr's settings and its list of books; the
+    audiobook files stay on the QNAP and can be imported again. Audiobookshelf has the same trade.
+- **After the merge:**
+  - The Deployment rolls; the new pod creates its SQLite files in `/config` on first start.
+  - The `chaptarr` role and its three databases on the shared PostgreSQL are unused. In DBeaver:
+    `DROP DATABASE "chaptarr-main"; DROP DATABASE "chaptarr-log"; DROP DATABASE "chaptarr-cache";
+    DROP ROLE chaptarr;`
+  - The `CHAPTARR__POSTGRES__PASSWORD` field in the 1Password item `zeef-stack` can go.
+  - Then Gemberkoekje/projects `Zeef/DEPLOY.md`, part D3 onwards (its D1 still lists the Chaptarr
+    databases, to be updated there).
