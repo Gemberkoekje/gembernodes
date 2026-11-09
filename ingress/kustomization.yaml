@@ -16,3 +16,4 @@ resources:
   - charactercreator-ingress.yaml
   - bygalacticaccord-ingress.yaml
   - plotboek-generator-ingress.yaml
+  - datumprikker-ingress.yaml

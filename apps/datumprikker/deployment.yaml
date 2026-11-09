@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: datumprikker
+  namespace: datumprikker
+spec:
+  replicas: 1
+  # One pod on purpose: the share-token check and Marten's first-start schema creation assume a
+  # single writer, and a family poll app needs no second replica.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: datumprikker
+  template:
+    metadata:
+      labels:
+        app: datumprikker
+    spec:
+      imagePullSecrets:
+        - name: ghcr-login
+      containers:
+        - name: datumprikker
+          # A sha "Build and Push DatumPrikker" has pushed from projects main (README, Deploying).
+          image: ghcr.io/gemberkoekje/datumprikker:a14f0cac1d0cd7f22dac3d18487ca7007f4aa56a
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Production
+            - name: ASPNETCORE_HTTP_PORTS
+              value: "8080"
+            - name: ConnectionStrings__Postgres
+              valueFrom:
+                secretKeyRef:
+                  name: datumprikker-secrets
+                  key: ConnectionStrings__Postgres
+            # Optional: the admins' account ids (google:…, microsoft:…). Empty on the first deploy;
+            # log in once, copy the id Nieuwe prikker shows, add it here (README.md, After the first deploy).
+            - name: Admin__Accounts
+              valueFrom:
+                secretKeyRef:
+                  name: datumprikker-secrets
+                  key: Admin__Accounts
+                  optional: true
+            # Optional: each sign-in provider is offered only when both its values are set.
+            - name: Authentication__Google__ClientId
+              valueFrom:
+                secretKeyRef:
+                  name: datumprikker-secrets
+                  key: Authentication__Google__ClientId
+                  optional: true
+            - name: Authentication__Google__ClientSecret
+              valueFrom:
+                secretKeyRef:
+                  name: datumprikker-secrets
+                  key: Authentication__Google__ClientSecret
+                  optional: true
+            - name: Authentication__Microsoft__ClientId
+              valueFrom:
+                secretKeyRef:
+                  name: datumprikker-secrets
+                  key: Authentication__Microsoft__ClientId
+                  optional: true
+            - name: Authentication__Microsoft__ClientSecret
+              valueFrom:
+                secretKeyRef:
+                  name: datumprikker-secrets
+                  key: Authentication__Microsoft__ClientSecret
+                  optional: true
+          # /healthz is anonymous and touches nothing. The first start also creates the Marten
+          # schema, hence the generous startup window.
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 3
+            failureThreshold: 40
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 25m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 384Mi

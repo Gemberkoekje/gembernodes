@@ -28,3 +28,4 @@ resources:
 - traefik-namespace.yaml
 - tailscale-namespace.yaml
 - print-manager-test-namespace.yaml
+- datumprikker-namespace.yaml

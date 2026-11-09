@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: datumprikker-ingress
+  namespace: datumprikker
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx-public
+  tls:
+  - hosts:
+    - datumprikker.gemberkoekje.nl
+    secretName: datumprikker-tls
+  rules:
+  - host: datumprikker.gemberkoekje.nl
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: datumprikker-service
+            port:
+              number: 80
