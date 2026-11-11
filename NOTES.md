@@ -1719,3 +1719,44 @@ updated the same evening.
   qBittorrent by hand in that category, was imported by Chaptarr as a hardlink.
 - **Still open:** projects `Zeef/DEPLOY.md` D1 and D9 still describe Chaptarr on PostgreSQL (from
   2026-11-09).
+
+## 2026-11-11 (night) — Tailscale subnet router: room for video streams
+
+To understand this, read the `resources` block and its comment in
+`infrastructure/tailscale/subnet-router.yaml`, then this entry.
+
+- **Symptom.** Jellyfin "hiccups": playback on the phone (Findroid) and in the browser stopped and
+  restarted. Jellyfin itself was fine. In 5 days it had no restarts, was never unready and peaked at
+  0.5 CPU and 1.2 GiB (limit 2 GiB), with at most 1.2% CPU throttling. NFS had no retransmissions
+  on any node.
+- **Cause: the subnet router ran out of memory.** Every Findroid and Jellyfin Web session of the
+  past 4 days went through it, with the phone on the home Wi-Fi and Tailscale on. Its direct
+  endpoint was 192.168.1.120, so it was on the LAN. Kodi on the PC connects directly: the router
+  relayed nothing during its sessions.
+  - One stream is 3-9 Mbit/s and costs the router 100-200 MiB (userspace networking ends each
+    connection in the pod and buffers both sides). With two streams at 22:20 it reached 255 MiB; at
+    23:40 it hit 256 MiB and was OOMKilled at 23:40:19. The new container went straight back to
+    255 MiB.
+  - At the limit, the kernel kept evicting tailscaled's code and reading it back: 1,500-2,700 major
+    page faults/s, 140-300 MB/s of reads from node-02's disk, and node-02 iowait at 29-51%. Jellyfin's
+    config (local-path) sits on that disk, so those minutes were slow for every client.
+  - The Jellyfin log matches: Findroid playback stopped and restarted at 23:34:57, at 23:42:41 (after
+    the OOM kill) and at 23:43:29.
+- **Fix.** The memory limit goes from 256Mi to 1Gi, the request from 64Mi to 128Mi, and
+  `GOMEMLIMIT=768MiB` makes Go collect garbage before the limit. Go doesn't read the cgroup limit,
+  and by default it lets the heap reach about twice the live data.
+- **Not chosen: kernel networking** (`TS_USERSPACE=false`). The kernel would route the packets
+  instead of the pod proxying each connection, which uses far less memory. But it needs root,
+  `NET_ADMIN`, `/dev/net/tun` and `net.ipv4.ip_forward` (not a safe sysctl), exactly the privileges
+  this pod avoids. Revisit if 1 GiB isn't enough.
+- **Devices at home use the router too** when Tailscale is on. The routes (/29 and /28) are
+  narrower than the home /24, so they win there as well as on foreign networks. With enough memory
+  that costs nothing. Turning Tailscale off at home gives the direct path.
+- **To check after the merge,** while something is streaming over Tailscale:
+  `container_memory_working_set_bytes{namespace="tailscale"}` stays well under 1 GiB,
+  `rate(container_fs_reads_bytes_total{namespace="tailscale"}[5m])` stays near 0, and
+  `kubectl -n tailscale get pod` shows no new restarts.
+- **Seen in passing** (not Jellyfin): spacetraders-api restarted 119 times in the past week (Error,
+  one OOMKilled), but not since the 19:00 deploy. armabotcs and curatool both exited with code 139
+  (segfault) at 08:25 UTC on 2026-11-09, on different nodes. The eno1 counters show receive drops
+  only, no errors. The metallb-speaker restarts line up with kured reboots.
