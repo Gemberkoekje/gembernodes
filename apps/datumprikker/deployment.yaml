@@ -22,7 +22,7 @@ spec:
       containers:
         - name: datumprikker
           # A sha "Build and Push DatumPrikker" has pushed from projects main (README, Deploying).
-          image: ghcr.io/gemberkoekje/datumprikker:64bf006a555a3616ecb75df882255705abc56f1c
+          image: ghcr.io/gemberkoekje/datumprikker:958924f2300255e84b34d359768c9f4187377d4c
           imagePullPolicy: IfNotPresent
           securityContext:
             runAsNonRoot: true
