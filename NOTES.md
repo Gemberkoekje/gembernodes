@@ -1655,3 +1655,62 @@ To understand this, read the image line in `apps/zeef/qbittorrent.yaml`, then th
 - **Moving back to 5.3.x:** check MAM's client list first. 5.3.x then runs its migrations 9 to 12
   again and moves the WebUI settings from step 2 into `[WebUI]`, over the stale ones, so nothing
   needs redoing. Set Disk IO type back to "Default" (pread with libtorrent 2.1) and restart.
+
+## 2026-11-11 (evening) — After the downgrade: API keys, MAM in Chaptarr, seeding
+
+To understand this, read the entry above, then projects `Zeef/DEPLOY.md` B3, B7 and D3 to D5,
+updated the same evening.
+
+- **The apps log in with qBittorrent's API key, not the password.** Sonarr, Radarr, Chaptarr
+  (Settings → Download Clients → qBittorrent) and Cleanuparr (Download Clients) send it as
+  `Authorization: Bearer`. Step 2 above was incomplete: 5.2.4 couldn't see 5.3.0's key either (it
+  sat in the `[WebUI]` section), so a new key was made and put into all four.
+  - API-key requests are never banned. 5.2.4 bans an address only after 5 failed
+    username/password logins (an hour, in memory, gone after a restart). A missing or wrong key
+    gets a plain 403 with the body `Forbidden`.
+  - Chaptarr's qBittorrent client refuses a user name or password next to an API key.
+- **Restarting qBittorrent.** Flux undoes `kubectl rollout restart`: about 18 seconds later it
+  removes the `restartedAt` annotation, so the pod restarts a second time (harmless with
+  Recreate; step 4 above did exactly that). For a single restart:
+  `kubectl -n zeef scale deploy/qbittorrent --replicas=0`, wait until the pod is gone, then
+  `--replicas=1`.
+- **Seeding limits.** Global: ratio 2.0 (was 1.0) or 7 days, then Stop. Category `chaptarr`:
+  `"ratio_limit": -1` in `/config/qBittorrent/categories.json` (the old file is
+  `categories.json.bak-2026-11-11`), because MAM wants 72 hours of seeding per torrent and a ratio
+  stop can come sooner.
+  - qBittorrent takes the torrent's own limit, then its category's (and the parents'), then the
+    global one. Chaptarr leaves the ratio at "default" (-2), so the category's applies.
+  - 5.2.4's WebUI and API can't edit a category's share limits (5.3.x's can), hence the file.
+    qBittorrent writes it only when a category is added, changed or removed, so an edit made while
+    it runs survives a restart.
+- **MAM goes through Chaptarr's own indexer, not Prowlarr's.** Chaptarr 0.9.965 has a native
+  MyAnonaMouse indexer. It rejects VIP-only torrents unless the account is VIP, pauses MAM grabs
+  before the limit on unsatisfied torrents ("Protect Unsatisfied Slots", reserve 5), and sends its
+  Seed Time (default 72 hours, minimum 72) to qBittorrent as the torrent's seeding limit.
+  - Through Prowlarr, Chaptarr tried two VIP-only releases. MAM answered 406, "Download blocked:
+    VIP torrent and you are not VIP or higher", and Prowlarr then disabled the indexer for a few
+    minutes, so the next grab got a 429.
+  - Chaptarr ranks releases by title match, native category, format, profile preference,
+    protocol, indexer priority, size and then seeders. With every indexer on priority 25, *The Way
+    of Kings* came from Knaben (public); MAM on priority 10 wins otherwise equal releases.
+- **Queued torrents earn no seeding time on MAM**, since they don't announce. Chaptarr's
+  qBittorrent client has Initial State "Force Start", and qBittorrent 5.2.4 skips share limits for
+  forced torrents (`processTorrentShareLimits` returns early): they seed until stopped by hand, and
+  Chaptarr never removes them. Indexers can be pinned to a download client, so DEPLOY D3 now has a
+  second client, "qBittorrent MAM" (category `chaptarr-mam`, Force Start), for the MAM indexer.
+- **Cleanuparr 2.11.0 and private torrents.** The Malware Blocker has Ignore Private (on), queue
+  rules have a Privacy Type (Public, Private or Both), and Failed Import has Ignore Private. A
+  skipped file would leave a MAM torrent seeding only in part. Cleanuparr did skip a file in *The
+  Way of Kings*, a 4 KB checksum file named `.sv`, but that torrent is public (private flag 0).
+- **Chaptarr doesn't search missing books on a schedule.** 0.9.965's tasks are RSS sync, download
+  monitoring, refreshes, the MAM account status, Hardcover sync, housekeeping and backups. RSS only
+  sees new uploads, so after adding an indexer: Wanted → Missing → Search All.
+- **Checked that evening:**
+  - *The Way of Kings* (Knaben, 38 MP3s, 1.9 GB) was downloading in category `chaptarr`, with the
+    category's no-ratio limit.
+  - *Project Hail Mary* is in `/data/Audiobooks/Andy Weir/Project Hail Mary - Ray Porter/` as a
+    hardlink (2 links). Its torrent (public) stopped after 29 minutes of seeding, and its data
+    still sits under `@Downloads/incomplete`. qBittorrent's log no longer reaches back far enough
+    to say why.
+- **Still open:** projects `Zeef/DEPLOY.md` D1 and D9 still describe Chaptarr on PostgreSQL (from
+  2026-11-09). The "qBittorrent MAM" client in D3 is new and not set up yet.
