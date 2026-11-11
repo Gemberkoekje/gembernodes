@@ -1609,3 +1609,49 @@ To understand this, read the maintainerr block in `infrastructure/lan-proxy/Cadd
     `MAINTAINERR_PASSWORD_HASH`.
 - **After the merge:** the browser asks for the login once on `maintainerr.lan.gemberkoekje.nl`.
   Projects `Zeef/DEPLOY.md` still mentions Maintainerr's port 6246, to be updated there.
+
+## 2026-11-11 — qBittorrent back to 5.2.4 for MyAnonamouse
+
+To understand this, read the image line in `apps/zeef/qbittorrent.yaml`, then this entry.
+
+- **Why.** MyAnonamouse does not allow qBittorrent 5.3.0 yet. The image goes from
+  `5.3.0_v2.1.2-ls486` to `5.2.4_v2.0.15-ls481`, the newest 5.2 build, which also takes libtorrent
+  from 2.1.2 back to 2.0.15. 5.2.4 (2026-09-28) ends the 5.2 line: its branch has nothing after the
+  tag, so no more fixes will come, and Zeef should move up once MAM allows 5.3.x.
+- **What 5.2.4 lacks.** Nothing Zeef relies on. 5.3.0 added conveniences: share limits that must
+  all be met before they act (5.2.4 acts on whichever limit comes first), downloading finished
+  files and free disk space in the WebUI, IP range bans, filtering by infohash, a .torrent backup
+  folder, and libtorrent 2.1's pread disk I/O. Its security fixes do not reach this setup. The
+  X-Forwarded-For login bypass (#24889) needs reverse-proxy support switched on in qBittorrent,
+  behind a proxy that passes a client's own X-Forwarded-For along; Caddy replaces that header (no
+  `trusted_proxies` in the Caddyfile). The rest is CSRF hardening and mail and dynamic-DNS fixes.
+- **Checked in the source** (qBittorrent release-5.2.4 against release-5.3.0, libtorrent v2.0.15
+  against v2.1.2):
+  - The torrents load. libtorrent 2.1 writes resume files with `file-version` 2, and 2.0.15 reads
+    versions 1 and 2. 5.3.0 still writes every `qBt-*` key that 5.2.4 reads and only adds
+    `qBt-shareLimitsMode`; `categories.json` only gains `share_limits_mode`.
+  - The config loads. 5.3.0 left `Meta\MigrationVersion` at 12; 5.2.4 knows up to 8, so it runs no
+    migration and writes 8 back.
+  - **The WebUI settings do not carry over.** 5.3.0 moved them from `WebUI\*` under `[Preferences]`
+    to their own `[WebUI]` section (its migration 11), and 5.2.4 reads only the old place. On 5.2.4
+    the login is `admin` with a temporary password printed in the pod log, and the WebUI tab
+    (subnet whitelist, reverse proxy, API key, ban settings) is back to defaults. The `[WebUI]`
+    section stays in the file, unused.
+  - Disk I/O. "Default" is pread in libtorrent 2.1 but memory-mapped files in 2.0.15, the mode
+    known for high memory use and trouble on network storage. The downloads are on the QNAP NFS
+    share, and the pod has a 1 GiB memory limit.
+- **After the merge** (the new pod starts on 5.2.4):
+  1. `kubectl -n zeef logs deploy/qbittorrent | grep -i "temporary password"`, then sign in on
+     `qbittorrent.lan.gemberkoekje.nl` as `admin` with that password.
+  2. Options → WebUI: set the user name and password the apps were given (the password is
+     `QBITTORRENT__PASSWORD` in the 1Password item `zeef-stack`), and whatever else was changed on
+     that tab.
+  3. Options → Advanced → Disk IO type: "Simple pread/pwrite" (libtorrent's mmap backend made to
+     always use pread/pwrite, the closest to what 2.1 did). Save.
+  4. `kubectl -n zeef rollout restart deploy/qbittorrent`. It applies the disk I/O type and lifts
+     the bans: after 5 failed logins qBittorrent bans an address for an hour, and Sonarr, Radarr,
+     Chaptarr and Cleanuparr kept trying the old login until step 2.
+  5. MAM's tracker shows "Working" on its torrents, and the apps' download client tests pass.
+- **Moving back to 5.3.x:** check MAM's client list first. 5.3.x then runs its migrations 9 to 12
+  again and moves the WebUI settings from step 2 into `[WebUI]`, over the stale ones, so nothing
+  needs redoing. Set Disk IO type back to "Default" (pread with libtorrent 2.1) and restart.

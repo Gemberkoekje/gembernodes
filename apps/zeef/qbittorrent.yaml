@@ -24,7 +24,9 @@ spec:
       enableServiceLinks: false
       containers:
         - name: qbittorrent
-          image: lscr.io/linuxserver/qbittorrent:5.3.0_v2.1.2-ls486
+          # Held at 5.2.4 (libtorrent 2.0.15) until MyAnonamouse allows 5.3.x; it did not on
+          # 2026-11-11. NOTES.md (2026-11-11) has what the downgrade changed and how to move up again.
+          image: lscr.io/linuxserver/qbittorrent:5.2.4_v2.0.15-ls481
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
