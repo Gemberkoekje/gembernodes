@@ -58,13 +58,23 @@ spec:
                 secretKeyRef:
                   name: tailscale-authkey
                   key: password
+            # Go doesn't see the container's memory limit and lets its heap grow to about twice
+            # the live data before collecting. This makes it collect well before the hard limit.
+            - name: GOMEMLIMIT
+              value: "768MiB"
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
+          # Userspace networking ends every forwarded TCP connection in this pod and buffers both
+          # sides, so a video stream costs memory: one Jellyfin stream took 100-200 MiB. At 256 MiB
+          # two streams hit the limit (2026-11-11): the kernel kept evicting tailscaled's own code
+          # and reading it back (~300 MB/s from node-02's disk, iowait up to 50%), playback stalled,
+          # and then the OOM kill dropped every tailnet connection. Devices at home use this pod
+          # too when Tailscale is on, because these routes are narrower than the home /24.
           resources:
             requests:
               cpu: "10m"
-              memory: "64Mi"
+              memory: "128Mi"
             limits:
-              memory: "256Mi"
+              memory: "1Gi"
