@@ -1696,8 +1696,9 @@ updated the same evening.
 - **Queued torrents earn no seeding time on MAM**, since they don't announce. Chaptarr's
   qBittorrent client has Initial State "Force Start", and qBittorrent 5.2.4 skips share limits for
   forced torrents (`processTorrentShareLimits` returns early): they seed until stopped by hand, and
-  Chaptarr never removes them. Indexers can be pinned to a download client, so DEPLOY D3 now has a
-  second client, "qBittorrent MAM" (category `chaptarr-mam`, Force Start), for the MAM indexer.
+  Chaptarr never removes them. Indexers can be pinned to a download client, so a second client,
+  "qbittorrent MAM" (category `chaptarr mam`, Force Start), takes the MAM indexer's grabs (DEPLOY
+  D3). A torrent added to qBittorrent by hand gets no Force Start; force-start it there.
 - **Cleanuparr 2.11.0 and private torrents.** The Malware Blocker has Ignore Private (on), queue
   rules have a Privacy Type (Public, Private or Both), and Failed Import has Ignore Private. A
   skipped file would leave a MAM torrent seeding only in part. Cleanuparr did skip a file in *The
@@ -1712,5 +1713,9 @@ updated the same evening.
     hardlink (2 links). Its torrent (public) stopped after 29 minutes of seeding, and its data
     still sits under `@Downloads/incomplete`. qBittorrent's log no longer reaches back far enough
     to say why.
+- **Set up the same evening:** the client "qbittorrent MAM" (category `chaptarr mam`, Initial
+  State Force Start) and the MyAnonaMouse indexer (priority 10, pinned to that client, Seed Time
+  256 hours, Protect Unsatisfied Slots on; MAM reported 1 of 20 unsatisfied). *Elantris*, added to
+  qBittorrent by hand in that category, was imported by Chaptarr as a hardlink.
 - **Still open:** projects `Zeef/DEPLOY.md` D1 and D9 still describe Chaptarr on PostgreSQL (from
-  2026-11-09). The "qBittorrent MAM" client in D3 is new and not set up yet.
+  2026-11-09).
