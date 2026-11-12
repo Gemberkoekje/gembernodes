@@ -2211,3 +2211,39 @@ To understand this, read the `values:` of `infrastructure/certmanager/certmanage
 - **The first of the version updates planned on 2026-09-26** (Follow-ups, "Version updates").
   system-upgrade-controller is done too (#180). Next: MetalLB, the Prometheus and Grafana charts,
   Promtail → Alloy, Flux, then CloudNativePG.
+
+## 2026-11-12 — MetalLB 0.14.9 → 0.16.2, native L2 mode
+
+To understand this, read `infrastructure/metallb/metallb-release.yaml`; its comments carry the
+reasoning.
+
+- **Version:** chart range `0.14.x` → `0.16.x`. Release notes and upgrade docs need no step via
+  0.15. Our `metallb.io/*` annotations, `allow-shared-ip`, the one `spec.loadBalancerIP`
+  (postgresql) and `configuration/ipaddresspool.yaml` all work unchanged.
+- **FRR off, both kinds:**
+  - Chart 0.16 turns **frr-k8s** on by default. A plain bump would have installed a second
+    DaemonSet (5 containers), a status-cleaner Deployment, 4 more CRDs and a second webhook, all for
+    BGP. `frrk8s.enabled: false`.
+  - The 0.14 chart ran FRR sidecars (`frr`, `reloader`, `frr-metrics`) in every speaker.
+    `speaker.frr.enabled: false` leaves only the `speaker` container. L2 never used FRR.
+- **All speakers restart at once** (`maxUnavailable: 100%`). 0.16.2 derives the memberlist key with
+  SHA-256 (metallb PR #3143). In a one-by-one roll, old and new speakers can't gossip and would both
+  announce the same IPs, with duplicate ARP replies for 1–3 minutes. Restarting all at once leaves a
+  few seconds without an announcer, which existing ARP caches cover.
+- **Also:** `upgrade.remediation.retries: 3` (there was only an install remediation).
+- **Other changes in 0.16:**
+  - Metrics moved to HTTPS on 9120/9121, without kube-rbac-proxy. Nothing scrapes MetalLB here.
+  - Two status CRDs were added (`configurationstates`, `servicebgpstatuses`). The CRDs come from
+    chart templates, so Helm upgrades them.
+  - `IPAddressPool` and `L2Advertisement` stay at `v1beta1`.
+- **Checked:**
+  - Renders: 0.14.9 now; 0.16.2 plain (frr-k8s added); 0.16.2 with these values (speaker only, 25
+    objects, 9 CRDs, 1 webhook).
+  - A server-side dry run accepted the HelmRelease, and `flux build` of infrastructure passes.
+- **Before the upgrade**, L2 announcements (`servicel2statuses`): the Zeef services and Caddy on
+  gembernode-03, Traefik and print-manager-test on 02, postgresql on 01.
+- **After the merge:**
+  - `metallb-speaker` has only the `speaker` container, and no frr-k8s pods exist.
+  - Every LoadBalancer keeps its IP, and `servicel2statuses` shows one node per service.
+  - The speaker logs show a memberlist join with the other two.
+  - The public sites (the 74-URL check) and LAN IPs answer.

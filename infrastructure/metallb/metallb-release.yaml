@@ -1,3 +1,5 @@
+# MetalLB, L2 mode only: it answers ARP for the LoadBalancer IPs in configuration/ipaddresspool.yaml
+# (192.168.1.230-.239). No BGP anywhere, so no FRR.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -12,8 +14,28 @@ spec:
         kind: HelmRepository
         name: metallb
         namespace: flux-system
-      version: "0.14.x"
+      version: "0.16.x"
   interval: 1h0m0s
   install:
     remediation:
       retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    speaker:
+      # The native announcer. 0.14's chart ran FRR sidecars in every speaker; L2 doesn't use them.
+      frr:
+        enabled: false
+      # All speakers restart together instead of one at a time. 0.16.2 derives the memberlist key
+      # differently, so during a one-by-one roll old and new speakers can't gossip and would both
+      # announce the same IPs (duplicate ARP replies) for a minute or two. Restarting them together
+      # leaves a few seconds without an announcer, which clients ride out on their ARP caches.
+      updateStrategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 100%
+    # Chart 0.16 turns frr-k8s on by default: a second DaemonSet, a webhook and four CRDs, all for
+    # BGP.
+    frrk8s:
+      enabled: false
