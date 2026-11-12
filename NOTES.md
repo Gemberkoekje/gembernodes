@@ -2429,3 +2429,33 @@ To understand this, read the "Path to 2.10" list in the Flux 2.7.5 entry above.
   v1beta2. Then check that `gotk_resource_info` still reports the OCIRepository.
 - **Checked:** server-side dry runs of both files, and `flux migrate -f .` finds nothing else in
   the repo to migrate.
+
+## 2026-11-12 — Flux step 3 of 3: 2.7.5 → 2.10.0, Helm 4
+
+To understand this, read the "Path to 2.10" list in the Flux 2.7.5 entry above, then
+`clusters/home/flux-system/gotk-components.yaml` (generated, don't edit) and
+`.github/workflows/validate.yaml`.
+
+- **The change:** the components → v2.10.0 (source 1.10.1, kustomize 1.10.1, helm 1.7.1,
+  notification 1.10.0), generated with the 2.10.0 CLI (from the fluxcd/flux2 release, checked
+  against its checksums file). CI's `HELM_VERSION` → v4.3.1, helm-controller 1.7.1's go.mod (Helm
+  4).
+- **CRDs:** every remaining v1beta2/v2beta2 is dropped. That is why step 2 had to move the
+  OCIRepository to v1 and run `flux migrate` first. Alert and Provider move their storage version
+  from v1beta3 to v1 (we have neither), and v1beta3 stays served.
+- **Other differences:**
+  - The controllers' Services get an `https` port 443 next to `http`.
+  - The `allow-webhooks` NetworkPolicy opens only the receiver's port 9292. We have no Receivers.
+  - The controllers' readiness probes move to `/readyz` on the healthz port.
+  - RBAC: `serviceaccounts/token` → `subjectaccessreviews`. That only matters for object-level
+    workload identity, which isn't used here.
+- **Behaviour to watch:**
+  - Health checks move to kstatus (`waitStrategy: poller`) for every HelmRelease. Watch postgres,
+    with its 15m timeout.
+  - HelmReleases get a `Drifted` condition.
+  - New releases install with server-side apply. Existing ones keep client-side apply, which
+    `upgrade.serverSideApply: auto` reads from Helm's storage.
+  - kustomize-controller turns `StrictPostBuildSubstitutions` on. No `postBuild` is used here.
+- **After the merge:** `flux check`; all Kustomizations and HelmReleases Ready on the new
+  revision; `flux migrate` again (Alert/Provider storage → v1); `gotk_resource_info` still
+  reports every kind.
