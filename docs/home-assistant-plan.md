@@ -1,9 +1,9 @@
 # Home Assistant on gembernodes
 
-**Status: phase 1 deployed (2026-11-12).** HA runs on gembernode-01 and answers at
-https://homeassistant.lan.gemberkoekje.nl, waiting for onboarding. The manifests are in
-[apps/home-assistant/](../apps/home-assistant/), with a [README](../apps/home-assistant/README.md).
-Phases 2–6 are still to do; phase 2 is next. This plan started as
+**Status: phases 1–3 done (2026-11-12).** HA runs on gembernode-01 at
+https://homeassistant.lan.gemberkoekje.nl, with all ten lamps under local control. The manifests are
+in [apps/home-assistant/](../apps/home-assistant/), with a [README](../apps/home-assistant/README.md).
+Phase 4 (the boiler) is next; phases 5 and 6 follow. This plan started as
 `home-assistant-plan.md` in Gemberkoekje/projects; where building phase 1 changed it, "Changed
 while building" says so.
 
@@ -70,11 +70,11 @@ All on 2026-11-12, by the user:
 - [x] **DHCP reservations** for every Calex lamp: 192.168.1.50–.59 (D4).
 - [x] **Pick the HA node:** gembernode-01 (D2).
 - [x] **Decide exposure:** LAN and Tailscale only (D1).
-- [ ] Have the Calex app account and the Climate Connect account credentials at hand.
+- [x] Have the Calex app account and the Climate Connect account credentials at hand.
 
 ---
 
-## Phase 1 — Deploy HA via Flux (built)
+## Phase 1 — Deploy HA via Flux (done)
 
 In [apps/home-assistant/](../apps/home-assistant/), namespace `home-automation`.
 
@@ -103,24 +103,25 @@ on 2026-11-12 (NOTES.md).
 
 ---
 
-## Phase 2 — Onboarding & base config
+## Phase 2 — Onboarding & base config (done)
 
-- [ ] Complete onboarding (user, location, units, timezone).
-- [ ] **Settings → System → Network:** set both Home Assistant URLs to
+- [x] Complete onboarding (user, location, units, timezone).
+- [x] **Settings → System → Network:** set both Home Assistant URLs to
   `https://homeassistant.lan.gemberkoekje.nl`. It works at home and over Tailscale alike.
-- [ ] **Look at the Marketplace** (Settings → Marktplaats): HACS, built in. Browsing and installing
+- [x] **Look at the Marketplace** (Settings → Marktplaats): HACS, built in. Browsing and installing
   from its catalog needs no GitHub account. Connecting GitHub (Settings → Devices & services →
   Marktplaats → Reconfigure) is only needed for custom repositories, which phases 3 and 4 both need.
-- [ ] Enable HA's **automatic backups** (daily, keep ~7). They land in `/config/backups`, on the NAS.
-  HA encrypts them: **store the encryption key in 1Password**, or the backups can't be restored.
-- [ ] Install the **HA Companion app** on the phone. It's the notification target for Phase 5.
-- [ ] Turn off any auto-discovered junk you don't want.
+- [x] Enable HA's **automatic backups**: daily, keeping 3 (the user's choice; ~7 was suggested). They
+  land in `/config/backups`, on the NAS: the first, 18 MB, at 15:27 on 2026-11-12. HA encrypts
+  them: **store the encryption key in 1Password**, or the backups can't be restored.
+- [x] Install the **HA Companion app** on the phone ("Mobiel"). It's the notification target for Phase 5.
+- [x] Turn off any auto-discovered junk you don't want.
 
 **Done when:** a manual backup lands on the QNAP and a test notification reaches the phone.
 
 ---
 
-## Phase 3 — Calex lamps (local)
+## Phase 3 — Calex lamps (local) (done)
 
 1. **Quick win (optional, ~5 min):** add the built-in **Tuya** integration. Enter the User Code from the Calex app (Account → Settings → Account and Security) and scan the QR code with the Calex app. This confirms the lamps are reachable and gives temporary cloud control.
 2. **Install `tuya-local`** (`make-all/tuya-local`, shown as "Tuya Local"), then restart HA. It is **not in the Marketplace's own catalog** (checked 2026-11-12; its README says to add it as a custom repository). So: connect the Marketplace to GitHub (phase 2), then in Settings → Marktplaats use ⋮ → Custom repositories to add `https://github.com/make-all/tuya-local` (category: Integration), and download it. Don't confuse it with **LocalTuya** ("Local Tuya", `rospogrigio/localtuya`), which *is* in the catalog: a different project that needs Tuya developer-platform credentials (Client ID, Secret, User ID) instead of the Calex app's User Code.
@@ -134,17 +135,43 @@ on 2026-11-12 (NOTES.md).
 
 **Done when:** every lamp turns on/off and dims from HA with the internet uplink unplugged. Brief test; expect them to grumble if left offline long.
 
+**Result (2026-11-12, done by the user):** all ten lamps run on Tuya Local, one config entry each, in
+the areas Woonkamer (7), Slaapkamer, Toilet and Gang. The cloud Tuya quick win (step 1) was skipped,
+so step 4 had nothing to remove. LocalTuya, installed by mistake first, was removed. Each lamp, as
+Tuya Local stores it:
+
+| Lamp | Address | Tuya protocol | Tuya Local device type |
+|---|---|---|---|
+| Voorkamer | 192.168.1.50 | 3.3 | `rgbcw_lightbulb` (RGBCW lightbulb) |
+| Woonkamer Linksvoor | 192.168.1.51 | 3.3 | `calex_s45cleare27_light` (CCT lightbulb) |
+| Woonkamer Rechtsvoor | 192.168.1.52 | 3.3 | `calex_s45cleare27_light` |
+| Woonkamer linksmidden | 192.168.1.53 | 3.3 | `calex_s45cleare27_light` |
+| Woonkamer rechtsmidden | 192.168.1.54 | 3.3 | `calex_s45cleare27_light` |
+| Woonkamer linksachter | 192.168.1.55 | 3.3 | `calex_s45cleare27_light` |
+| Woonkamer Rechtsachter | 192.168.1.56 | 3.3 | `calex_s45cleare27_light` |
+| Slaapkamer | 192.168.1.57 | 3.3 | `rgbcw_lightbulb` |
+| Ganglicht | 192.168.1.58 | 3.5 | `calex_s45cleare27_light` |
+| WC licht | 192.168.1.59 | 3.5 | `calex_s45cleare27_light` |
+
+The white lamps (A60 Clear, P45 Softline "milky" 5101003300) are CCT: dimmable, warm to cool. The two
+G125 RGB CCT lamps are RGBCW: colour plus warm to cool white.
+
 ---
 
 ## Phase 4 — Itho Smartboiler (cloud)
 
+**Progress (2026-11-12):** `mjhagen/Itho-Daalderop-GES-HA` is installed through the Marketplace
+(version 1.5.0, commit `8e4658b`). The integration isn't added yet: step 2 (the login) is next.
+
 **Integration choice** (both unofficial, reverse-engineered, zero-star repos, so expect breakage when Itho changes their API):
-- **Primary:** `Rien-R/Itho-Daalderop-GES-HA` lineage (also `mjhagen/Itho-Daalderop-GES-HA` fork). Richest feature set: device mode select (SmartControl / Schedule / Continuous / Holiday), device state, boiler content %, power (kW), legionella timer, energy, connection status sensor. Polls status every 30 s. **Check which repo in the lineage is most recently maintained before installing.**
+- **Primary:** `Rien-R/Itho-Daalderop-GES-HA` lineage (also `mjhagen/Itho-Daalderop-GES-HA` fork). Richest feature set: device mode select (SmartControl / Schedule / Continuous / Holiday), device state, boiler content %, power (kW), legionella timer, energy, connection status sensor. Polls status every 30 s.
+  **Checked 2026-11-12: use [`mjhagen/Itho-Daalderop-GES-HA`](https://github.com/mjhagen/Itho-Daalderop-GES-HA).** It is 14 commits ahead of Rien-R's original and none behind, last pushed 2026-10-07 (Rien-R: 2026-02-27; the other fork, JobDoesburg: 2026-08-11). Two of those commits matter for phase 5: "Fix device mode API payload" (setting the mode back to SmartControl) and "Add boiler connection health and reauthentication" (a warning after repeated API errors, 5 minutes without polling, or 24 hours of unchanged telemetry). None of the candidates is in the Marketplace catalog.
+  **Gotcha:** its README's custom-repository URL is `marinuz/Itho-Daalderop-GES-HA`, which GitHub redirects to Rien-R's original, without these fixes. Add `https://github.com/mjhagen/Itho-Daalderop-GES-HA` instead.
 - **Fallback:** `vleerie/climateconnect-homeassistant`. Names the Smartboiler explicitly but is thinner (mode, temperature, boost, diagnostics; first device only).
 
 **Steps**
 1. Connect the Marketplace to GitHub first (Settings → Devices & services → Marktplaats → Reconfigure; a code to enter at github.com/login/device). Then add the chosen repo in the Marketplace as a custom repository (category: Integration), install, restart.
-2. Auth (Rien-R lineage): log in through the browser flow. The page shows an error after login, **which is expected**. Copy the `climateconnect://login?token=...` URL from the browser console (F12) into HA. The token lasts about a year.
+2. Auth (Rien-R lineage, mjhagen included): log in through the browser flow. The page shows an error after login, **which is expected**. Copy the `climateconnect://login?token=...` URL from the browser console (F12) into HA. The token lasts about a year.
 3. Confirm entities appear and the values match the Climate Connect app.
 
 **Done when:** mode, boiler content %, power and connection status update in HA within a minute of changes in the app.

@@ -2931,3 +2931,17 @@ and the "Upgrading" section of the community chart's README (grafana-community/h
   reinstalled the folder after every such delete. The 2.0.5 install from phase 1 is left for the
   Marketplace to delete. Browsing and installing need no GitHub account; custom repositories (the
   Itho integration, phase 4) need the GitHub connection (Marktplaats → Reconfigure).
+
+## 2026-11-12 — Home Assistant, phases 2 and 3 done (docs only)
+
+- **What:** the user finished onboarding and the lamps; [docs/home-assistant-plan.md](docs/home-assistant-plan.md)
+  now marks phases 1–3 done, with a table of the ten lamps (address, Tuya protocol, Tuya Local
+  device type). It also records the phase 4 pick: `mjhagen/Itho-Daalderop-GES-HA`, 14 commits ahead
+  of Rien-R's original, with the device-mode fix phase 5 needs. Its README's install URL redirects to
+  the original, so the plan names the fork's own URL.
+- **Checked** in HA's storage: URLs set, daily encrypted backups keeping 3 (the first on the NAS),
+  the Companion app registered, ten `tuya_local` entries on .50–.59, all in areas. LocalTuya is gone,
+  and so is `custom_components/hacs`: the Marketplace deleted it, as expected. The Itho integration
+  (mjhagen, 1.5.0) is installed but not added yet.
+- **#215 rolled out** at ~15:00Z. The new pod's `prepare-config` printed nothing (all three files
+  existed), HA started cleanly, and Caddy answers.
