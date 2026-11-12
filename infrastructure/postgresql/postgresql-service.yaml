@@ -1,0 +1,12 @@
+# The name every app and the backup use for PostgreSQL: postgresql.flux-system.svc.cluster.local.
+# Since 2026-11-12 it's an alias (a DNS CNAME) for the CloudNativePG Cluster's read-write Service
+# (configuration/postgresql-cluster.yaml), so nothing had to change in the apps. They can move to
+# postgres-rw.postgresql.svc.cluster.local one at a time; this Service goes once none use it.
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+  namespace: flux-system
+spec:
+  type: ExternalName
+  externalName: postgres-rw.postgresql.svc.cluster.local
