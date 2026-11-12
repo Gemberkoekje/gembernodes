@@ -1760,3 +1760,38 @@ To understand this, read the `resources` block and its comment in
   one OOMKilled), but not since the 19:00 deploy. armabotcs and curatool both exited with code 139
   (segfault) at 08:25 UTC on 2026-11-09, on different nodes. The eno1 counters show receive drops
   only, no errors. The metallb-speaker restarts line up with kured reboots.
+
+## 2026-11-12 — graphify out, MAP.md in, vortexplotboek's old files archived
+
+To understand this, read [MAP.md](MAP.md), then [CLAUDE.md](CLAUDE.md).
+
+- **Why.** The graphify knowledge graph went stale with every manifest change. In this YAML repo
+  all its nodes came from semantic extraction, which only a full re-extract refreshed. A short map,
+  kept up to date in the same commit as each change, replaces it.
+- **Removed:**
+  - `graphify-out/` (graph, cache and Obsidian vault: 378 generated files).
+  - `.claude/settings.json`, whose only content was two `graphify hook-guard` hooks (on Bash/Grep
+    and Read/Glob).
+  - The graphify section of `CLAUDE.md`.
+  - The `graphify-out/` exclusions in `scripts/validate.py`.
+- **Added:**
+  - `MAP.md`: the folders in Flux's order, the IP addresses, the three ways in (internet, LAN
+    names, Tailscale), the shared services, the apps and their dependencies, the infrastructure and
+    the checks.
+  - `CLAUDE.md` now points at MAP.md and NOTES.md and says when MAP.md must change.
+- **Checked while writing the map:** every app's `ConnectionStrings__*` host is
+  `postgresql.flux-system.svc.cluster.local` (11 apps; only the host and database name were read
+  from the live Secrets).
+- **vortexplotboek's old app files are archived; its redirect stays.** The app has run on the-vortex
+  cluster since 2026-10-23. Commit 0910ef7 (2026-11-02) removed everything here except the redirect.
+  - `archive/vortexplotboek/` now holds those removed files, in the repository's own layout (see
+    `archive/README.md`): the Deployment at `replicas: 0`, the sync CronJob, the 1Password item
+    references and the `kustomization.yaml`. It also holds the Ingress from before the redirect.
+  - Unchanged and still live: the Ingress that sends `vortexplotboek.gemberkoekje.nl` and
+    `gemberkoekje.nl/vortexplotboek` to `https://plotboek.the-vortex.nl/vortexplotboek`, the
+    pod-less Service it names as its backend, and the Namespace.
+  - `scripts/check_images.py` skips `archive/`, since those images aren't deployed. A missing image
+    (the old one on GitLab) would otherwise hold a pull request for 20 minutes and then fail it.
+    `scripts/validate.py` doesn't treat archived files as manifests.
+- **The Traefik header comment is fixed.** It still said the router sent public traffic to
+  ingress-nginx on .230. The router has pointed at Traefik (.231) since 2026-09-26.

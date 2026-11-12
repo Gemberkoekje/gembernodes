@@ -17,6 +17,7 @@ API deployments are `Recreate`, so the old pod is gone by then).
   which reads only the packages that give this repository access).
 - Only `image:` lines count, as Deployments, StatefulSets, CronJobs and Jobs write them; an image a Helm
   chart builds from separate repository and tag values isn't checked, nor one a line only moves.
+- Files under archive/ aren't deployed, so their images aren't checked.
 
 Needs nothing beyond Python 3 and git.
 """
@@ -61,7 +62,8 @@ def report(level, message, file=None, line=None):
 def changed_images(base):
     """The image references the pull request adds, each with the first file and line that adds it."""
     diff = subprocess.run(
-        ["git", "diff", "--unified=0", "--no-color", "--no-ext-diff", f"{base}...HEAD", "--", "*.yaml", "*.yml"],
+        ["git", "diff", "--unified=0", "--no-color", "--no-ext-diff", f"{base}...HEAD", "--", "*.yaml", "*.yml",
+         ":(exclude)archive/"],
         capture_output=True, text=True, check=True).stdout
     images = {}
     file, line = None, 0
