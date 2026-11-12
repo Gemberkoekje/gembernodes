@@ -2412,3 +2412,20 @@ reasoning.
   - `loki_write_dropped_entries_total` is 0.
   - The label list is unchanged, and the series and line counts per namespace don't double.
   - If the counts do double, the labels differ: remove Alloy before going on.
+
+## 2026-11-12 — Flux step 2 of 3: OCIRepository to v1
+
+To understand this, read the "Path to 2.10" list in the Flux 2.7.5 entry above.
+
+- **The change:** `repos/postgresql-repo.yaml` moves to `source.toolkit.fluxcd.io/v1`, and so does
+  the OCIRepository GVK in kube-state-metrics' custom resource config
+  (`infrastructure/monitoring/prometheus-release.yaml`). The comment there no longer names a
+  version: the versions must be ones the installed Flux serves.
+- **Why now:** Flux 2.8 serves OCIRepository only as v1. Flux 2.7.5 (running since step 1) is the
+  first version here that serves both.
+- **After the merge:** run `flux migrate`. It rewrites the stored objects to their storage
+  versions, so the OCIRepository CRD's `storedVersions` becomes `[v1]` and step 3's CRD update can
+  drop v1beta2. It also rewrites the four HelmRepository managedFields entries that still said
+  v1beta2. Then check that `gotk_resource_info` still reports the OCIRepository.
+- **Checked:** server-side dry runs of both files, and `flux migrate -f .` finds nothing else in
+  the repo to migrate.
