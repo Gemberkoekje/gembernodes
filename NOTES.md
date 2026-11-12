@@ -2247,3 +2247,44 @@ reasoning.
   - Every LoadBalancer keeps its IP, and `servicel2statuses` shows one node per service.
   - The speaker logs show a memberlist join with the other two.
   - The public sites (the 74-URL check) and LAN IPs answer.
+
+## 2026-11-12 — Flux 2.5.1 → 2.7.5 (step 1 of 3 to 2.10)
+
+To understand this, read the "Path to 2.10" list below, then
+`clusters/home/flux-system/gotk-components.yaml` (generated, don't edit) and
+`.github/workflows/validate.yaml`.
+
+- **Path to 2.10:** Flux can't jump straight there. Each release removes beta APIs: v1beta1/v2beta1
+  in 2.7, v1beta2/v2beta2 in 2.8, the notification v1beta2 in 2.9. The API server refuses a CRD
+  update that drops a version still listed in `storedVersions`. And `flux migrate` can only move
+  objects to a version the installed CRD stores. OCIRepository (`repos/postgresql-repo.yaml`) is on
+  v1beta2, the only version Flux 2.5 has, so it can only move to v1 once 2.7's CRD is in.
+  1. **This change:** the components → v2.7.5 (source 1.7.4, kustomize 1.7.3, helm 1.4.5,
+     notification 1.7.5), and CI's `HELM_VERSION` → v3.19.2 (helm-controller 1.4.5's go.mod).
+  2. **Next:** `repos/postgresql-repo.yaml` → `source.toolkit.fluxcd.io/v1`, **and** the
+     OCIRepository GVK in kube-state-metrics' custom resource config
+     (`infrastructure/monitoring/prometheus-release.yaml`) → v1. Then run `flux migrate` and
+     confirm the OCIRepository CRD's `storedVersions` is `[v1]`. `flux migrate` also rewrites the 4
+     HelmRepository managedFields entries that still say v1beta2.
+  3. **Then:** the components → v2.10.0 and `HELM_VERSION` → v4.3.1 (helm-controller 1.7.1 uses
+     Helm 4). Watch for these: health checks move to kstatus for every HelmRelease (keep an eye on
+     postgres with its 15m timeout), HelmReleases get a `Drifted` condition, and new releases install
+     with server-side apply.
+- **Generated with the 2.7.5 CLI.** `flux install --export --version=v2.7.5` from a newer CLI
+  (2.9.5) refuses ("not compatible with your current version"). The 2.7.5 CLI came from the
+  fluxcd/flux2 release, checked against its checksums file. Same four components as before.
+- **What changes:**
+  - The CRDs drop v1beta1/v2beta1, gain the ExternalArtifact CRD, and OCIRepository gains v1 as
+    its storage version.
+  - The controllers lose the `GOMAXPROCS` env (Go reads the CPU limit itself) and gain
+    `app.kubernetes.io/*` labels on their pods.
+  - A little more RBAC: `source.extensions.fluxcd.io` and `serviceaccounts/token`.
+  - Deployment selectors are unchanged.
+- **Checked:**
+  - The cluster's `storedVersions` hold none of the dropped versions. Every managedFields entry on
+    Flux objects is v1/v2, except the v1beta2 ones above, which 2.7.5 still serves.
+  - No manifest in the repo uses a dropped version.
+  - A server-side dry run of the new components file against the cluster accepted everything,
+    the CRDs included.
+- **After the merge:** `flux check`; all Kustomizations and HelmReleases Ready on the new
+  revision; `gotk_resource_info` still reports every kind (the Flux dashboard).
