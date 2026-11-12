@@ -245,3 +245,20 @@ spec:
   resources:
     requests:
       storage: 5Gi
+---
+# Nightly copies of the SQLite databases that live on local-path (Jellyfin, Chaptarr,
+# Audiobookshelf, Maintainerr), made by apps/zeef/sqlite-backup.yaml: one folder per app, gzipped
+# .db files. On the QNAP, so its local backup and nightly offsite sync cover them. ReadWriteMany
+# because the backup jobs run on whichever node holds each app's volume, at the same time.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sqlite-backups
+  namespace: zeef
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: qnap-nfs
+  resources:
+    requests:
+      storage: 2Gi
