@@ -215,6 +215,15 @@ a minute.
   - **Stayed online, only state/mode changed** → something else is putting it in standby. Check Climate Connect for schedule entries set to "standby" and look at what the device state value says.
 - Write down the exact entity/value that flags it.
 
+**Observed so far:**
+- **2026-11-12, ~16:45, standby forced on the boiler itself** (BOIL off in its own menu): nothing
+  the API reports changed. Every 30-second poll until 16:48 still showed mode Schedule, Online,
+  connected and 0 kW; only the legionella timer ticked over. So a standby set at the boiler is
+  invisible to the mode and connection checks. **Power is the only signal**: the boiler should draw
+  ~1.9 kW at some point in each half-hour slot (the tank cools a few degrees between slots). To
+  confirm on a normal day before relying on it: power above 0 in the slots of 2026-11-12 21:00 and
+  2026-11-13 10:00.
+
 **5b. Automate** (once the signal is known):
 - **Triggers,** with what the API offers (no content %, no water temperature; phase 4):
   - **Mode:** device mode no longer Schedule. The app's four modes are Smart control, Klokprogramma,
