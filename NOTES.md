@@ -1846,3 +1846,47 @@ To understand this, read the last progress-log entry in
   secrets survive from ingress-nginx releases removed over a year ago
   (`nginx-ingress-ingress-nginx-admission`, `nginx-ingress-internal-…`, `nginx-ingress-private-…`).
   None is used, and none is in Git; delete them by hand.
+- **After the merge (2026-11-12):**
+  - The uninstall hung on the `.230` Service, whose old ServiceLB finalizer nothing removes any
+    more. Removing it by hand finished the uninstall.
+  - `flux-system/postgresql` carries the same finalizer.
+  - The four admission Secrets are deleted.
+  - Details and checks are in the plan's progress log.
+
+## 2026-11-12 — Gateway API for public routes, kluskat first
+
+To understand this, read the "Public routes" section of [CLAUDE.md](CLAUDE.md), then
+`infrastructure/traefik/gateway.yaml` and `ingress/kluskat-route.yaml`; the reasoning is phase 5 of
+[docs/ingress-nginx-migration-plan.md](docs/ingress-nginx-migration-plan.md).
+
+- **Why Gateway API.** The Ingresses spoke ingress-nginx's annotation dialect, so retiring that
+  controller meant migrating every route. Gateway API routes don't depend on the controller, and
+  Traefik supports them. Its CRDs (v1.6.3, standard channel) were already installed by the Traefik
+  chart.
+- **The pieces:**
+  - **Traefik:** `providers.kubernetesGateway` on; the chart's GatewayClass `traefik`; the chart's
+    default Gateway off.
+  - **The Gateway** `traefik/public` in Git: an `http` listener (port 80, routes from every
+    namespace) and an `https-kluskat` listener (kluskat's hostname, Secret `kluskat-tls` in
+    `traefik`, routes only from namespace `kluskat`). Listener ports are Traefik's in-pod
+    entrypoint ports, 8000 and 8443.
+  - **cert-manager:** `config.gatewayAPI.enabled`. Its gateway-shim reads the Gateway's
+    `cert-manager.io/cluster-issuer: letsencrypt-gateway` annotation and issues a certificate per
+    HTTPS listener.
+  - **A new ClusterIssuer,** `letsencrypt-gateway`. It answers HTTP-01 with a temporary HTTPRoute
+    (exact path) on the `http` listener. `letsencrypt-prod` stays for the Ingresses.
+  - **kluskat's Ingress is replaced** by two HTTPRoutes: a 301 to HTTPS on `http`, and the app on
+    `https-kluskat`.
+- **The rule:** new public routes (and reworked ones) use this layout; no new Ingress objects or
+  nginx annotations. CLAUDE.md has the steps; MAP.md shows both kinds of route.
+- **Expect a short TLS gap on kluskat at the merge.** The Ingress and its certificate leave, and the
+  Gateway's certificate takes a minute or so to be issued. cert-manager's self-check only asks Let's
+  Encrypt to validate once the challenge URL answers, so a failed attempt costs no backoff.
+- **Checked before the merge:** chart renders (only the intended changes), server-side dry runs,
+  and `kubectl kustomize`/`flux build` (details in the plan's log).
+- **To check after the merge:**
+  - `kubectl -n traefik get gateway public` is Programmed, and the Certificate `traefik/kluskat-tls`
+    is Ready.
+  - `https://kluskat.gemberkoekje.nl` answers with a valid certificate and an HSTS header, and
+    `http://` gives a 301 to `https://` without a port.
+  - Then delete the old Secret `kluskat/kluskat-tls`.

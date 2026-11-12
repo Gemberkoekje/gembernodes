@@ -1,7 +1,8 @@
 # Plan: replace ingress-nginx with Traefik
 
 Status (2026-11-12): phases 0–4 are done. Public traffic has gone through Traefik since
-2026-09-26, and ingress-nginx is removed (see the progress log at the end). Phase 5 is optional.
+2026-09-26, and ingress-nginx is removed (see the progress log at the end). Phase 5 has started:
+routes move to the Gateway API, kluskat first.
 
 To understand this, start by reading the 2026-09-26 section of [NOTES.md](../NOTES.md), then
 [infrastructure/nginx/nginx-release.yaml](../infrastructure/nginx/nginx-release.yaml),
@@ -191,11 +192,28 @@ Rollback: nothing to roll back, nginx still serves all traffic.
 
 Rollback: restore `infrastructure/nginx/` from git history and point the router back at .230.
 
-### Phase 5 (optional, later): native Traefik or Gateway API
+### Phase 5: Gateway API
 
-The NGINX provider is a compatibility layer. Converting the Ingresses to `ingressClassName: traefik` with
-Traefik Middlewares, or to Gateway API HTTPRoutes, removes the dependency on nginx annotation semantics.
-That covers StripPrefix for ebi-frontend, IPAllowList for grafana-internal and a scheme redirect. It is not urgent.
+The NGINX provider is a compatibility layer: the Ingresses still speak ingress-nginx's annotation
+dialect, which is why retiring that controller meant a migration. **Decision (2026-11-12): Gateway
+API**, not Traefik's own `ingressClassName: traefik` and Middlewares. Gateway API routes are
+controller-neutral, so a later change of controller means a new GatewayClass, not new routes.
+Traefik serves both, so the Ingresses move one at a time.
+
+- **Set up:** Traefik's Gateway provider, the Gateway `traefik/public`
+  (`infrastructure/traefik/gateway.yaml`), cert-manager's Gateway support, and ClusterIssuer
+  `letsencrypt-gateway`. Kluskat went first (`ingress/kluskat-route.yaml`). CLAUDE.md says how a
+  route is set up, and that new ones must use this.
+- **Per Ingress:** an `https-<app>` listener and an `<app>-route.yaml`, then delete the Ingress.
+  `ssl-redirect` becomes the redirect route on the `http` listener. A path on the apex
+  `gemberkoekje.nl` needs an apex HTTPS listener (one for all those paths) with a route per app.
+- **Special cases:** ebi-frontend's `rewrite-target` becomes a `URLRewrite` filter, and the two
+  `permanent-redirect`s become `RequestRedirect` filters. The `whitelist-source-range` on
+  grafana-internal and spacetraders-internal needs a Traefik `IPAllowList` Middleware behind an
+  `ExtensionRef` filter. nginx's `proxy-buffer-*` and `proxy-body-size` have nothing to carry over;
+  check large logins and uploads after moving those apps.
+- **When the last Ingress is gone:** remove `letsencrypt-prod`, `infrastructure/traefik/ingressclass.yaml`
+  and the NGINX provider in `traefik-release.yaml`.
 
 ## Effort
 
@@ -292,6 +310,38 @@ that annotation and Flux's `kustomize.toolkit.fluxcd.io/*` labels.
   - `kubectl get ingress -A` shows `192.168.1.231` everywhere.
   - The sites answer through `.231`.
   - No ingress-nginx ValidatingWebhookConfiguration is left.
+
+**2026-11-12, after the merge of steps 2–4 (#167).** Flux applied it at 00:28Z.
+
+- **The uninstall hung.** Everything went except the LoadBalancer Service on `.230`, which stayed
+  Terminating. It carried the finalizer `service.kubernetes.io/load-balancer-cleanup`, which k3s's
+  ServiceLB added when it was created (2025-07-14). ServiceLB has been off since 2026-09-26, so
+  nothing would ever remove it, and Helm would have given up after its 5-minute timeout.
+  - Removing the finalizer by hand (`kubectl -n kube-system patch svc … --type=json -p
+    '[{"op":"remove","path":"/metadata/finalizers"}]'`) let it go at 00:32:29Z. MetalLB doesn't
+    use that finalizer, and the uninstall finished at 00:32:37Z.
+  - **The same trap waits on `flux-system/postgresql`** (192.168.1.232, 2025-06-27), the only other
+    LoadBalancer created before ServiceLB was turned off. Deleting it (for instance when moving to
+    CloudNativePG) hangs the same way.
+- **Checked:**
+  - All Kustomizations are Ready, and no ingress-nginx pods, Helm records, webhook, HelmChart,
+    HelmRepository or `.230` Service are left. IngressClass `nginx-public` stayed.
+  - Traefik restarted with `publishService`, and all 18 Ingresses show `192.168.1.231`.
+  - Every public host answers through `.231` with a valid certificate.
+  - `/grafana` and the SpaceTraders dashboard answer on `.231`, and `.230` doesn't answer.
+- **Deleted by hand:** the four `*-ingress-nginx-admission` Secrets in `kube-system` (this
+  release's and three from releases gone since 2025). Hook jobs had created them, so Helm didn't
+  track them, and nothing referenced them.
+
+**2026-11-12, phase 5: the Gateway API, kluskat first.** See the phase 5 section above. The checks
+before the merge:
+
+- **Chart renders with the full values:** cert-manager gains its config file and `--config`, and
+  already had permissions for Gateway objects. Traefik gains the Gateway provider, the matching
+  read and status permissions, and GatewayClass `traefik`, with no default Gateway.
+- **Accepted by the API server** in server-side dry runs: the Gateway, the ClusterIssuer, both
+  HTTPRoutes and both HelmReleases.
+- **Built:** infrastructure, configuration and ingress, with `kubectl kustomize` and `flux build`.
 
 ## Sources
 

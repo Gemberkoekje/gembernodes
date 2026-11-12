@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - traefik-release.yaml
   - ingressclass.yaml
+  - gateway.yaml

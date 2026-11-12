@@ -12,7 +12,7 @@ resources:
   - hackerminigames-ingress.yaml
   - dungeontable-ingress.yaml
   - spacetraders-ingress.yaml
-  - kluskat-ingress.yaml
+  - kluskat-route.yaml
   - charactercreator-ingress.yaml
   - bygalacticaccord-ingress.yaml
   - plotboek-generator-ingress.yaml

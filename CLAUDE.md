@@ -23,3 +23,25 @@ Check every change against MAP.md before committing it:
   the pull request.
 - Keep it short and current-state only: no history, no image tags, no numbers that drift by
   themselves. History goes in NOTES.md.
+
+## Public routes: Gateway API, not Ingress
+
+Every new public route, and every existing one you rework, goes through the Gateway API. Never add
+an `Ingress` object or a `nginx.ingress.kubernetes.io/*` annotation. The Ingresses still in
+`ingress/` are the old way and move over one by one (phase 5 of
+`docs/ingress-nginx-migration-plan.md`). The model is kluskat:
+
+1. **A listener on the public Gateway** (`infrastructure/traefik/gateway.yaml`): copy the
+   `https-kluskat` block as `https-<app>`, with the app's hostname, `certificateRefs` name
+   `<app>-tls`, and the app's namespace in `allowedRoutes`. cert-manager issues the certificate
+   by itself; don't add a `Certificate` or a `tls:` block anywhere else.
+2. **The routes:** `ingress/<app>-route.yaml`, copied from `ingress/kluskat-route.yaml`. One
+   HTTPRoute on the `http` listener redirects to HTTPS, and one on `https-<app>` sends the
+   traffic to the app's Service. List the file in `ingress/kustomization.yaml`.
+3. **When it replaces an Ingress,** delete that Ingress in the same change. Its old certificate
+   Secret stays in the app's namespace: delete it after the new route works.
+
+Path rewrites and redirects are HTTPRoute filters (`URLRewrite`, `RequestRedirect`). An IP
+allowlist has no Gateway API equivalent: use a Traefik `Middleware`, referenced from the route
+with an `ExtensionRef` filter. LAN-only `<app>.lan.gemberkoekje.nl` names are not public routes;
+they stay with Caddy (`infrastructure/lan-proxy/`).

@@ -1,0 +1,42 @@
+# The public Gateway. Public routes are HTTPRoutes that attach to it, served by Traefik (GatewayClass
+# "traefik", created by the chart in traefik-release.yaml). New public routes are set up this way,
+# not as Ingress objects: see CLAUDE.md, and ingress/kluskat-route.yaml for an example.
+#
+# Listener ports are Traefik's entrypoint ports inside the pod (web 8000, websecure 8443); its
+# Service on 192.168.1.231 maps 80 and 443 to them.
+#
+# - http: port 80 for every hostname. Each app attaches a route that redirects to HTTPS, and
+#   cert-manager attaches its temporary ACME HTTP-01 routes here (an exact path, so they win).
+# - https-<app>: one per hostname. The annotation below makes cert-manager issue the certificate
+#   that the listener names (a Secret in this namespace) through letsencrypt-gateway
+#   (configuration/certissuer-gateway.yaml). allowedRoutes admits only the app's own namespace.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: public
+  namespace: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-gateway
+spec:
+  gatewayClassName: traefik
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 8000
+      allowedRoutes:
+        namespaces:
+          from: All
+    - name: https-kluskat
+      protocol: HTTPS
+      port: 8443
+      hostname: kluskat.gemberkoekje.nl
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: kluskat-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: kluskat

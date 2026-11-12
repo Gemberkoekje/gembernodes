@@ -4,4 +4,5 @@ resources:
   - ipaddresspool.yaml
   - certissuer.yaml
   - certissuer-lan.yaml
+  - certissuer-gateway.yaml
   - traefik-hsts.yaml
