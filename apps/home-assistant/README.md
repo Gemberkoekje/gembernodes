@@ -14,7 +14,7 @@ decisions and open steps are in [docs/home-assistant-plan.md](../../docs/home-as
 | What | Where |
 |---|---|
 | `configuration.yaml` | [configuration.yaml](configuration.yaml) in Git, mounted read-only. Change it here, never in the pod |
-| Everything set up in the UI (`.storage`), HACS and what it installs | PVC `homeassistant-config` (local-path on gembernode-01) |
+| Everything set up in the UI (`.storage`), and what the Marketplace installs (`custom_components`) | PVC `homeassistant-config` (local-path on gembernode-01) |
 | Automations, scripts and scenes made in the UI | `automations.yaml`, `scripts.yaml`, `scenes.yaml` on the same PVC |
 | History, logbook, statistics (the recorder) | Database `homeassistant` on the shared PostgreSQL |
 | Backups | `/config/backups`: PVC `homeassistant-backups` on the NAS |
@@ -61,7 +61,6 @@ waits in `CreateContainerConfigError`.
 ```bash
 flux reconcile kustomization flux-system --with-source
 kubectl -n home-automation get pods,pvc -o wide        # 1/1 Running on gembernode-01, both PVCs Bound
-kubectl -n home-automation logs deploy/homeassistant -c prepare-config   # "HACS 2.0.5 installed"
 curl -sI https://homeassistant.lan.gemberkoekje.nl     # 302 to /onboarding.html before onboarding
 ```
 
@@ -81,9 +80,10 @@ Add that address to `trusted_proxies` in [configuration.yaml](configuration.yaml
 - **Home Assistant:** bump the tag in both places in [deployment.yaml](deployment.yaml). Read the
   release notes' breaking changes first; a new release may migrate the recorder's tables, which
   takes a few minutes on the first start.
-- **HACS** updates itself from its own page once installed. The version and checksum in
-  `deployment.yaml` only matter for a fresh volume. To change them, download the release's
-  `hacs.zip` and use its `sha256sum`.
+- **Community integrations** (tuya-local, the Itho integration) update from the **Marketplace**
+  (Settings → Marktplaats): HACS, built into Home Assistant since 2026.11. It needs no install.
+  Connecting it to GitHub (Settings → Devices & services → Marktplaats → Reconfigure) is only
+  needed for custom repositories.
 - **`configuration.yaml`:** edit it here; the content-hashed ConfigMap restarts Home Assistant.
 
 ## Restoring onto a fresh volume

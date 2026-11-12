@@ -1,6 +1,6 @@
-# Home Assistant's config: integrations, devices, users and dashboards (.storage), plus HACS and
-# what it installs (custom_components). On local-path, like the Zeef apps' SQLite, so it stays
-# off NFS; the recorder's history is in PostgreSQL, not here. The volume is made on gembernode-01
+# Home Assistant's config: integrations, devices, users and dashboards (.storage), plus what the
+# Marketplace (HACS, built in) installs (custom_components). On local-path, like the Zeef apps'
+# SQLite, so it stays off NFS; the recorder's history is in PostgreSQL, not here. The volume is made on gembernode-01
 # (the Deployment's nodeSelector) and the pod stays there. Flux never prunes it (local-path deletes
 # data with the claim). It reaches the NAS through Home Assistant's own backups (below).
 apiVersion: v1

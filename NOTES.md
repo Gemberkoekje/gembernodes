@@ -2921,3 +2921,13 @@ and the "Upgrading" section of the community chart's README (grafana-community/h
     device is ever added.
   - Ports 8123 and 5353 caused no trouble after all.
   - Onboarding (phase 2) is left to the user.
+- **HACS is built in now; the install was dropped.** After onboarding, the user couldn't find
+  "HACS" under Add integration. Since 2026.11.0 HACS ships with Home Assistant as the
+  **Marketplace** (Dutch UI: Marktplaats, under Settings), and its config entry set itself up on the
+  first start. The loader blocks the custom `hacs` integration (`BLOCKED_CUSTOM_INTEGRATIONS`,
+  `replaced_by="marketplace"`). That is logged only at info level, so the log showed nothing. The
+  Marketplace also deletes `custom_components/hacs` itself once it has its own repositories file.
+  So `prepare-config.py` now only creates the included files: left in, its HACS step would have
+  reinstalled the folder after every such delete. The 2.0.5 install from phase 1 is left for the
+  Marketplace to delete. Browsing and installing need no GitHub account; custom repositories (the
+  Itho integration, phase 4) need the GitHub connection (Marktplaats → Reconfigure).
