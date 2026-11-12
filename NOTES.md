@@ -2793,3 +2793,45 @@ To understand this, read the v42.0.0 release notes of traefik/traefik-helm-chart
   the PreferNoSchedule taint, 30m drain timeout) are unchanged.
 - **After the merge:** the DaemonSet rolls one pod per node; all three Ready on 1.23.0. kured only
   reboots inside its window, so nothing reboots now.
+
+## 2026-11-12 — Loki: to the community chart (6.55.0 → 21.x, Loki 3.6.7 → 3.7.9)
+
+To understand this, read [infrastructure/monitoring/loki-release.yaml](infrastructure/monitoring/loki-release.yaml)
+and the "Upgrading" section of the community chart's README (grafana-community/helm-charts,
+`charts/loki`).
+
+- **Why not grafana/loki 7.x:** since 2026-03-16 the chart in grafana/helm-charts is maintained
+  for Grafana Enterprise Logs only. The open-source chart was forked at 6.55.0, the version we ran,
+  into grafana-community/helm-charts (where the Grafana chart already comes from), and bumps its
+  major for every breaking change: 7 to 21 since March.
+- **The breaking changes from 6.x to 21.x, checked one by one** (README "Upgrading", and Loki's own
+  guide `upgrade-helm-to-community.md`): PSP and old APIs removed (7); Enterprise removed (8);
+  self-monitoring removed (9); index-gateway, read-target, ephemeral-volume, registry, Cilium,
+  canary, MinIO, monitoring-mixin, headless-annotation and rollout-operator changes (10–21). None
+  touch our values. Two did need a look:
+  - `SingleBinary` was renamed `Monolithic` (12); the old name still works, but the values now say
+    `Monolithic`. The settings stay under `singleBinary`.
+  - The values schema rejects unknown top-level keys (20): ours all render.
+- **Rendered 6.55.0 against 21.2.1 with our values** (`helm template`, kube 1.37.2):
+  - The StatefulSet's fixed fields are unchanged: selector, `serviceName` (`grafana-loki-headless`),
+    `podManagementPolicy` and the volume template (10Gi `qnap-nfs`). No recreate needed.
+  - The old chart set `persistentVolumeClaimRetentionPolicy: Delete/Delete`, which would have
+    deleted Loki's data volume along with the StatefulSet; the new one leaves the default (Retain).
+  - The headless Service is now named `grafana-loki-headless`, matching the StatefulSet's
+    `serviceName` (the old chart named it `loki-headless`), and the runtime ConfigMap
+    `grafana-loki-runtime`. Nothing else refers to either.
+  - Pod: Loki 3.7.9, a liveness probe on `/loki/api/v1/status/buildinfo` (10 failures × 30 s),
+    seccomp `RuntimeDefault`, `GOGC=80`, and the rules sidecar 2.5.0 → 2.14.3.
+  - Config: the write-ahead log flushes on shutdown, plus timeout, gRPC and memberlist defaults.
+- **`abort_if_cluster_join_fails: false`:** the new chart sets it to `true`. dskit runs the join
+  after the memberlist service is up, so the pod can become Ready and find itself, but with one
+  instance there is no cluster to join and no reason to risk a crash loop on it.
+- **`upgrade.force` removed:** added on 2026-04-24 for the switch to a claim, never removed. A forced
+  upgrade replaces whole objects, which is an avoidable risk with two renamed objects.
+- **Loki 3.7's breaking changes** (the new query engine's scheduling; parsed labels no longer
+  override structured metadata) don't affect us: Alloy sends no structured metadata.
+- **Not touched:** `grafana-loki-gateway` (Deployment, Service, ConfigMap) from the first install
+  on 2026-06-18. Neither of Helm's release records lists it, so no chart version will remove it;
+  nothing uses it (Grafana and Alloy use `grafana-loki:3100`). It needs deleting by hand.
+- **After the merge:** the HelmRelease Ready on 21.x, `grafana-loki-0` running 3.7.9, new log lines
+  arriving (Alloy retries while Loki restarts), and the old 31 days still queryable.

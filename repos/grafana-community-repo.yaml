@@ -1,6 +1,6 @@
 # Grafana's own chart moved here when grafana/helm-charts stopped maintaining it (support ended
-# 2026-01-30). Loki and Alloy stay on the old repository (repos/grafana-repo.yaml), which still
-# publishes them.
+# 2026-01-30), and so did the open-source Loki chart (2026-03-16; the old one is now for Grafana
+# Enterprise Logs only). Alloy stays on the old repository (repos/grafana-repo.yaml).
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
