@@ -149,6 +149,13 @@ Designs and runbooks live in Gemberkoekje/projects.
   changes exist in their registries.
 - [.github/workflows/validate.yaml](.github/workflows/validate.yaml) runs both on every pull request,
   and runs `validate.py` on pushes to `main`.
+- [.github/dependabot.yml](.github/dependabot.yml) opens pull requests every Monday:
+  - for newer image tags in `apps/` and `infrastructure/`, one per image across all folders;
+  - for GitHub Actions, all in one.
+
+  It leaves out the app images built by their own repositories (`ghcr.io/gemberkoekje/*`,
+  `ghcr.io/eosfrontier/*`), qBittorrent (pinned for MyAnonamouse) and the Helm charts. Dependabot
+  can't read HelmReleases; Flux follows their `x` ranges itself.
 
 ## Other documents
 

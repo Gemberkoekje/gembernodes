@@ -55,7 +55,9 @@ UDP, forwarded by the router). It speaks BitTorrent and has no web UI behind it.
   `logs.db`, `cache.db`, `staging.db`). Not in the shared PostgreSQL: that runs in FIPS mode, where
   `md5()` fails, and one of Chaptarr's PostgreSQL migrations needs it (NOTES.md, 2026-11-09).
 - **Image tags stay pinned.** Bump them deliberately. The Servarr apps migrate their databases on
-  start, so read the release notes before a major version (Sonarr 5 is in development).
+  start, so read the release notes before a major version (Sonarr 5 is in development). Dependabot
+  proposes the bumps weekly (`.github/dependabot.yml`). It leaves qBittorrent out, since that stays
+  at 5.2.4 until MyAnonamouse allows 5.3.
 
 ## Before the first deploy
 

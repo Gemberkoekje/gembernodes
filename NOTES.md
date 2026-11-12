@@ -1939,3 +1939,35 @@ To understand this, read the two rules after "Container crash-looping or failing
   offsite nightly with Hybrid Backup Sync. The `local-path` SQLite volumes are outside that. Moving
   them to NFS was considered and rejected: SQLite over NFS risks corruption and is slow. The way to
   cover them is to point their backups at the NAS.
+
+## 2026-11-12 — Dependabot
+
+To understand this, read `.github/dependabot.yml` (header comment), then the Checks section of
+MAP.md.
+
+- **What it does.** Every Monday at 06:00 Amsterdam time it opens pull requests:
+  - **Container images:** newer image tags in the manifests under `apps/*` and `infrastructure/*`
+    (Dependabot's `docker` ecosystem reads Kubernetes manifests). One pull request per image,
+    covering every folder that uses it (`group-by: dependency-name`, February 2026), so busybox,
+    postgres and curl don't arrive as one PR per folder. At most 10 open at once.
+  - **GitHub Actions:** newer actions in the workflow, all in one PR.
+  - CI checks each PR like any other, and `check_images.py` confirms the new tag exists. A merged one
+    deploys through Flux straight away, so the release notes matter (Servarr database migrations).
+- **Left out on purpose:**
+  - `ghcr.io/gemberkoekje/*` and `ghcr.io/eosfrontier/*`: built and deployed by the apps' own
+    repositories; the tags are commit SHAs or build numbers.
+  - `lscr.io/linuxserver/qbittorrent`: held at 5.2.4 for MyAnonamouse.
+  - `archive/`: not scanned.
+- **Out of Dependabot's reach:**
+  - **The Helm charts.** It can't read Flux HelmReleases; its Helm support covers `Chart.yaml`
+    dependencies only. The HelmReleases' `x` ranges let Flux take new chart versions within the
+    range by itself, unreviewed. Renovate's Flux manager could turn those into pull requests too.
+  - **The k3s Plans:** their image has no tag; k3s comes from the stable channel.
+  - **Bitnami PostgreSQL:** a digest inside the HelmRelease values.
+- **Checked:** the file validates against SchemaStore's `dependabot-2.0` schema, which knows
+  `directories` and `group-by`. GitHub validates it again when it reaches `main`; problems show
+  under Insights → Dependency graph → Dependabot.
+- **Expect a burst on the first Monday:** up to 10 image PRs plus one for the Actions. Some
+  images are far behind: `rancher/system-upgrade-controller:v0.20.2`, the demo reset's
+  `curlimages/curl:8.5.0`, and the `postgres:17-alpine` init containers, where 18 matches the
+  server.

@@ -1,0 +1,49 @@
+# Dependabot: weekly pull requests for newer versions, which CI checks like any other change
+# (scripts/validate.py; scripts/check_images.py for the images). A merged one deploys through Flux at
+# once, so read the release notes first: the Servarr apps migrate their databases on start
+# (apps/zeef/README.md).
+#
+# Not covered here:
+# - The Helm charts. Dependabot can't read Flux HelmReleases; their "x" version ranges let Flux take
+#   new chart versions within the range by itself.
+# - The k3s upgrade Plans: their image has no tag, and k3s comes from the stable channel.
+# - Bitnami PostgreSQL: pinned by digest in the HelmRelease values (postgresql-release.yaml).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Amsterdam
+    commit-message:
+      prefix: "ci"
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # Image tags in the manifests of every app and infrastructure folder (archive/ is left out). One
+  # pull request per image, covering every folder that uses it (busybox, postgres, curl...).
+  - package-ecosystem: docker
+    directories:
+      - /apps/*
+      - /infrastructure/*
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Amsterdam
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "deps"
+    groups:
+      per-image:
+        group-by: dependency-name
+        patterns: ["*"]
+    ignore:
+      # Built and deployed by each app's own repository: their tags are commit SHAs or build numbers.
+      - dependency-name: "ghcr.io/gemberkoekje/*"
+      - dependency-name: "ghcr.io/eosfrontier/*"
+      # Held at 5.2.4 until MyAnonamouse allows qBittorrent 5.3 (NOTES.md, 2026-11-11). Move it by hand.
+      - dependency-name: "lscr.io/linuxserver/qbittorrent"
