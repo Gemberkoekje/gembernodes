@@ -4,6 +4,7 @@ resources:
 - externalsecrets
 - reflector
 - metallb
+- cloudnative-pg
 - postgresql
 - postgresql-backup
 - traefik

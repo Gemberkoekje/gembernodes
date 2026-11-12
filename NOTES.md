@@ -2631,3 +2631,18 @@ app's own design in Gemberkoekje/projects `FrontPage/DESIGN.md`.
   - `https://gemberkoekje.nl/api/cluster` says `"available": true` with three nodes.
   - `kubectl auth can-i --as=system:serviceaccount:frontpage:frontpage list pods -A` says yes,
     and `create deployments -n frontpage` says no.
+
+## 2026-11-12 — CloudNativePG: the operator (PR A)
+
+To understand this, read [docs/cloudnativepg-migration-plan.md](docs/cloudnativepg-migration-plan.md)
+first; this is its step 2.
+
+- **The change:** the `cloudnative-pg` HelmRepository, the operator's HelmRelease (chart `0.29.x`,
+  CNPG 1.30) in a new `cnpg-system` namespace, the new `postgresql` namespace, and the
+  `OnePasswordItem` `postgresql-superuser` there.
+- **The superuser secret:** no new 1Password item. The existing `postgresql-admin-secret` item got
+  `username` (`postgres`) and `password` (the same value as `postgresPassword`), the field names
+  CNPG reads. The Bitnami server and the backup keep reading `postgresPassword`.
+- **Nothing changes for the apps:** the Bitnami server keeps running until PR C.
+- **After the merge:** the operator pod and its webhook are Ready, the `postgresql.cnpg.io` CRDs
+  exist, and the Secret `postgresql/postgresql-superuser` has `username` and `password`.

@@ -138,6 +138,7 @@ Designs and runbooks live in Gemberkoekje/projects.
 | 1Password Connect | `infrastructure/externalsecrets` | Secrets from the `Gembercluster` vault |
 | Reflector | `infrastructure/reflector` | Copies `ghcr-login` into namespaces |
 | PostgreSQL, backup | `infrastructure/postgresql`, `infrastructure/postgresql-backup` | Shared database |
+| CloudNativePG operator | `infrastructure/cloudnative-pg` → `cnpg-system` | Will run PostgreSQL in namespace `postgresql`, replacing the Bitnami chart ([plan](docs/cloudnativepg-migration-plan.md)) |
 | NFS CSI driver | `infrastructure/nfs-provisioner` | The `qnap-nfs` StorageClass |
 | PVCs | `infrastructure/pvcs` | NFS volumes for the apps |
 | Monitoring | `infrastructure/monitoring` | Prometheus, Grafana and Loki. Grafana Alloy ships the container logs to Loki. Dashboards are `dashboards/*.json`, loaded through `configMapGenerator`; alert rules are in `grafana-alerting-provisioning.yaml` |
