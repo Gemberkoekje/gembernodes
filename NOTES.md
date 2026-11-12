@@ -2485,3 +2485,20 @@ To understand this, read the Alloy step 1 entry above and
   image), and the monitoring kustomization builds.
 - **After the merge:** Promtail's pods are gone, `ds/alloy` is 3/3 after its restart, Loki keeps
   receiving every namespace, and there's no volume spike from re-reading files.
+
+## 2026-11-12 — CloudNativePG: the plan
+
+To understand this, read `docs/cloudnativepg-migration-plan.md`.
+
+- **Decided:** one CNPG instance on the NAS (`qnap-nfs`), the same shape as today.
+- **Found while planning:**
+  - Every app in the cluster reaches PostgreSQL by `postgresql.flux-system.svc.cluster.local`;
+    only psql/DBeaver on the LAN use 192.168.1.232. So an `ExternalName` Service under the old
+    name lets the switch-over happen without touching any app.
+  - Eight apps connect as the `postgres` superuser (their databases are owned by it), as does the
+    backup. CNPG turns superuser access off by default, so it must stay on, with the same
+    password.
+  - 31 databases (about 1.2 GB). Six look unused and are already on the clean-up list.
+  - No extensions in use. Bitnami's preloaded `pgaudit` is unused.
+- **Not applied.** The plan lists the decisions it waits on: the downtime window, a 1Password item
+  for the superuser, the six unused databases, and the namespace.
