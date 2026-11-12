@@ -1,15 +1,19 @@
-# The public Gateway. Public routes are HTTPRoutes that attach to it, served by Traefik (GatewayClass
-# "traefik", created by the chart in traefik-release.yaml). New public routes are set up this way,
-# not as Ingress objects: see CLAUDE.md, and ingress/kluskat-route.yaml for an example.
+# The public Gateway. Every public route is an HTTPRoute that attaches to it, served by Traefik
+# (GatewayClass "traefik", created by the chart in traefik-release.yaml). How to add one: CLAUDE.md,
+# "Public routes", with ingress/kluskat-route.yaml as the example.
 #
 # Listener ports are Traefik's entrypoint ports inside the pod (web 8000, websecure 8443); its
 # Service on 192.168.1.231 maps 80 and 443 to them.
 #
-# - http: port 80 for every hostname. Each app attaches a route that redirects to HTTPS, and
-#   cert-manager attaches its temporary ACME HTTP-01 routes here (an exact path, so they win).
-# - https-<app>: one per hostname. The annotation below makes cert-manager issue the certificate
-#   that the listener names (a Secret in this namespace) through letsencrypt-gateway
-#   (configuration/certissuer-gateway.yaml). allowedRoutes admits only the app's own namespace.
+# - http: port 80 for every hostname. Each host has a route that redirects to HTTPS. cert-manager
+#   attaches its temporary ACME HTTP-01 routes here (an exact path, so they win). The LAN-only routes
+#   without a hostname (/grafana, /spacetraders/...) live here too, behind an IP allowlist.
+# - https-gemberkoekje-nl: the bare domain, shared by the apps that also answer on a path of it
+#   (/adventureengine, /dnd, /plotboek...). allowedRoutes lists their namespaces.
+# - https-<app>: one per subdomain. allowedRoutes admits only the app's own namespace.
+#
+# The annotation below makes cert-manager issue the certificate each HTTPS listener names (a Secret in
+# this namespace) through letsencrypt-gateway (configuration/certissuer-gateway.yaml).
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
@@ -40,3 +44,225 @@ spec:
           selector:
             matchLabels:
               kubernetes.io/metadata.name: kluskat
+    - name: https-gemberkoekje-nl
+      protocol: HTTPS
+      port: 8443
+      hostname: gemberkoekje.nl
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: gemberkoekje-nl-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  - adventureengine
+                  - cluster-healthcheck
+                  - cov-website
+                  - curatool
+                  - dungeontable
+                  - ebi-cs-api
+                  - file-server
+                  - hackerminigames
+                  - plotboek-generator
+                  - vortexplotboek
+    - name: https-adventureengine
+      protocol: HTTPS
+      port: 8443
+      hostname: adventureengine.gemberkoekje.nl
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: adventureengine-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: adventureengine
+    - name: https-bygalacticaccord
+      protocol: HTTPS
+      port: 8443
+      hostname: bygalacticaccord.gemberkoekje.nl
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: bygalacticaccord-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: bygalacticaccord
+    - name: https-charactercreator
+      protocol: HTTPS
+      port: 8443
+      hostname: charactercreator.gemberkoekje.nl
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: charactercreator-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: charactercreator
+    - name: https-cov-website
+      protocol: HTTPS
+      port: 8443
+      hostname: cov-website.gemberkoekje.nl
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: cov-website-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: cov-website
+    - name: https-curatool
+      protocol: HTTPS
+      port: 8443
+      hostname: curatool.gemberkoekje.nl
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: curatool-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: curatool
+    - name: https-datumprikker
+      protocol: HTTPS
+      port: 8443
+      hostname: datumprikker.gemberkoekje.nl
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: datumprikker-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: datumprikker
+    - name: https-dungeontable
+      protocol: HTTPS
+      port: 8443
+      hostname: dungeontable.gemberkoekje.nl
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: dungeontable-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: dungeontable
+    - name: https-ebi-cs-api
+      protocol: HTTPS
+      port: 8443
+      hostname: ebi-cs-api.gemberkoekje.nl
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: ebi-cs-api-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: ebi-cs-api
+    - name: https-ebi-frontend
+      protocol: HTTPS
+      port: 8443
+      hostname: ebi-frontend.gemberkoekje.nl
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: ebi-frontend-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: ebi-cs-api
+    - name: https-fileserver
+      protocol: HTTPS
+      port: 8443
+      hostname: fileserver.gemberkoekje.nl
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: fileserver-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: file-server
+    - name: https-hackerminigames
+      protocol: HTTPS
+      port: 8443
+      hostname: hackerminigames.gemberkoekje.nl
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: hackerminigames-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: hackerminigames
+    - name: https-healthcheck
+      protocol: HTTPS
+      port: 8443
+      hostname: healthcheck.gemberkoekje.nl
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: healthcheck-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: cluster-healthcheck
+    - name: https-plotboek
+      protocol: HTTPS
+      port: 8443
+      hostname: plotboek.gemberkoekje.nl
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: plotboek-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: plotboek-generator
+    - name: https-vortexplotboek
+      protocol: HTTPS
+      port: 8443
+      hostname: vortexplotboek.gemberkoekje.nl
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: vortexplotboek-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: vortexplotboek

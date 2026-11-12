@@ -2110,3 +2110,31 @@ To understand this, read the `ignore:` block of `.github/dependabot.yml`.
     manifest bundles the controller's own setup next to the image.
 - **Checked:** the file validates against SchemaStore's `dependabot-2.0` schema, and the rules
   exclude exactly the 22 images meant.
+
+## 2026-11-12 — Every route on the Gateway API
+
+To understand this, read "Public routes" in [CLAUDE.md](CLAUDE.md), then
+`infrastructure/traefik/gateway.yaml`, `ingress/adventureengine-route.yaml` (a subdomain plus a path
+on the bare domain) and `ingress/spacetraders-route.yaml` (LAN-only). Details and tests are in the
+last progress-log entry of [docs/ingress-nginx-migration-plan.md](docs/ingress-nginx-migration-plan.md).
+
+- **What changed:** the 16 remaining Ingresses are now HTTPRoutes.
+  - The Gateway has a listener per subdomain (16 with kluskat), plus `https-gemberkoekje-nl` for
+    the bare domain, which ten apps share by path.
+  - Port 80 redirects with 308 everywhere.
+  - Rewrites, redirects and LAN-only allowlists use Gateway API filters and a Traefik Middleware.
+  - vortexplotboek's pod-less Service went to `archive/`.
+- **CLAUDE.md** now says there are no Ingresses, and explains paths on the bare domain and LAN-only
+  paths, including Traefik's ranking of path length above hostname.
+- **Expect a short certificate gap per host at the merge.** The Gateway's 15 new listeners get
+  their certificates from `letsencrypt-gateway` while the Ingresses still serve, and the Ingresses
+  (and their certificates) only go when the `ingress` Kustomization applies. Hosts whose new
+  certificate isn't ready by then show Traefik's default certificate until it is (about 40 s for
+  kluskat).
+- **After the merge:**
+  - Compare the 74-URL baseline with a fresh run. Expected differences: ebi-frontend's subdomain
+    now serves every path; port-80 redirects on the bare domain's `/plotboek` and `/vortexplotboek`
+    go straight to the target; `http://gemberkoekje.nl/` redirects (to a 404) instead of a 404.
+  - Delete the old certificate Secrets in the app namespaces.
+  - Then the clean-up: the `nginx-public` IngressClass, Traefik's Ingress NGINX provider, and
+    `letsencrypt-prod`.

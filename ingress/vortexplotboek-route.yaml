@@ -1,0 +1,60 @@
+# The old vortexplotboek addresses, kept as redirects to the app's new home on the-vortex cluster
+# (2026-10-23). There is no backend: the Gateway answers both redirects itself. The app's old
+# manifests are in archive/vortexplotboek/.
+#
+# vortexplotboek.gemberkoekje.nl, any path, port 80 or 443: always the bare target, so that host lands
+# on the app's root. (The query string comes along; nginx dropped it.)
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: vortexplotboek
+  namespace: vortexplotboek
+spec:
+  parentRefs:
+    - name: public
+      namespace: traefik
+      sectionName: http
+    - name: public
+      namespace: traefik
+      sectionName: https-vortexplotboek
+  hostnames:
+    - vortexplotboek.gemberkoekje.nl
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            hostname: plotboek.the-vortex.nl
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /vortexplotboek
+            statusCode: 301
+---
+# gemberkoekje.nl/vortexplotboek/...: same path on the new host, so deep links such as
+# /vortexplotboek/Plotboek?Jaar=2026 survive (the app carries them through its login as returnUrl).
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: vortexplotboek-apex
+  namespace: vortexplotboek
+spec:
+  parentRefs:
+    - name: public
+      namespace: traefik
+      sectionName: http
+    - name: public
+      namespace: traefik
+      sectionName: https-gemberkoekje-nl
+  hostnames:
+    - gemberkoekje.nl
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /vortexplotboek
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            hostname: plotboek.the-vortex.nl
+            statusCode: 301

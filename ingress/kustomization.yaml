@@ -1,19 +1,20 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - adventureengine-ingress.yaml
-  - ebi-cs-api-ingress.yaml
-  - ebi-cs-frontend-ingress.yaml
-  - vortexplotboek-ingress.yaml
-  - cov-website-ingress.yaml
-  - healthcheck-ingress.yaml
-  - fileserver-ingress.yaml
-  - curatool-ingress.yaml
-  - hackerminigames-ingress.yaml
-  - dungeontable-ingress.yaml
-  - spacetraders-ingress.yaml
+  - adventureengine-route.yaml
+  - bygalacticaccord-route.yaml
+  - charactercreator-route.yaml
+  - cov-website-route.yaml
+  - curatool-route.yaml
+  - datumprikker-route.yaml
+  - dungeontable-route.yaml
+  - ebi-cs-api-route.yaml
+  - ebi-cs-frontend-route.yaml
+  - fileserver-route.yaml
+  - gemberkoekje-nl-route.yaml
+  - hackerminigames-route.yaml
+  - healthcheck-route.yaml
   - kluskat-route.yaml
-  - charactercreator-ingress.yaml
-  - bygalacticaccord-ingress.yaml
-  - plotboek-generator-ingress.yaml
-  - datumprikker-ingress.yaml
+  - plotboek-generator-route.yaml
+  - spacetraders-route.yaml
+  - vortexplotboek-route.yaml

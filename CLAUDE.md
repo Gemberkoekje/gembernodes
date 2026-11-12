@@ -26,22 +26,29 @@ Check every change against MAP.md before committing it:
 
 ## Public routes: Gateway API, not Ingress
 
-Every new public route, and every existing one you rework, goes through the Gateway API. Never add
-an `Ingress` object or a `nginx.ingress.kubernetes.io/*` annotation. The Ingresses still in
-`ingress/` are the old way and move over one by one (phase 5 of
-`docs/ingress-nginx-migration-plan.md`). The model is kluskat:
+Every public route goes through the Gateway API; there are no `Ingress` objects left. Never add
+one, nor a `nginx.ingress.kubernetes.io/*` annotation. The model is kluskat:
 
 1. **A listener on the public Gateway** (`infrastructure/traefik/gateway.yaml`): copy the
    `https-kluskat` block as `https-<app>`, with the app's hostname, `certificateRefs` name
    `<app>-tls`, and the app's namespace in `allowedRoutes`. cert-manager issues the certificate
    by itself; don't add a `Certificate` or a `tls:` block anywhere else.
 2. **The routes:** `ingress/<app>-route.yaml`, copied from `ingress/kluskat-route.yaml`. One
-   HTTPRoute on the `http` listener redirects to HTTPS, and one on `https-<app>` sends the
+   HTTPRoute on the `http` listener redirects to HTTPS (308), and one on `https-<app>` sends the
    traffic to the app's Service. List the file in `ingress/kustomization.yaml`.
-3. **When it replaces an Ingress,** delete that Ingress in the same change. Its old certificate
-   Secret stays in the app's namespace: delete it after the new route works.
+3. **A path on the bare `gemberkoekje.nl`** as well: a third HTTPRoute on the shared
+   `https-gemberkoekje-nl` listener, with a `PathPrefix` match (see
+   `ingress/adventureengine-route.yaml`), and the app's namespace added to that listener's
+   `allowedRoutes` list. The bare domain's port-80 redirect is `ingress/gemberkoekje-nl-route.yaml`.
 
-Path rewrites and redirects are HTTPRoute filters (`URLRewrite`, `RequestRedirect`). An IP
-allowlist has no Gateway API equivalent: use a Traefik `Middleware`, referenced from the route
-with an `ExtensionRef` filter. LAN-only `<app>.lan.gemberkoekje.nl` names are not public routes;
-they stay with Caddy (`infrastructure/lan-proxy/`).
+Path rewrites and redirects are HTTPRoute filters (`URLRewrite`, `RequestRedirect`; see
+`ingress/ebi-cs-frontend-route.yaml` and `ingress/plotboek-generator-route.yaml`). An IP allowlist
+has no Gateway API equivalent: use a Traefik `Middleware`, referenced from the route with an
+`ExtensionRef` filter.
+
+A **LAN-only path by IP** (like `http://192.168.1.231/grafana`) is an HTTPRoute without a hostname
+on the `http` listener, behind a `lan-only` Middleware (see `ingress/spacetraders-route.yaml`).
+Traefik ranks a longer path above a hostname match, so such a path wins on every hostname's port 80:
+keep these paths specific, and always put the allowlist on them. LAN-only
+`<app>.lan.gemberkoekje.nl` names are not public routes; they stay with Caddy
+(`infrastructure/lan-proxy/`).

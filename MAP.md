@@ -26,7 +26,7 @@ namespaces ─► repos ─► infrastructure ─┬─► configuration
 | [infrastructure/system-upgrade-plans/](infrastructure/system-upgrade-plans/) | k3s upgrade Plans | `system-upgrade-plans` |
 | [configuration/](configuration/) | Resources that need infrastructure's CRDs: the MetalLB address pool, cert-manager ClusterIssuers, Traefik's HSTS middleware | `configuration` |
 | [apps/](apps/) | One folder per app | `apps` |
-| [ingress/](ingress/) | The public routes, one file per app: HTTPRoutes (`<app>-route.yaml`, Gateway API, the way for new routes) and the older Ingress objects (`<app>-ingress.yaml`) | `ingress` |
+| [ingress/](ingress/) | The public routes: Gateway API HTTPRoutes, one `<app>-route.yaml` per app, plus the bare domain's redirect (`gemberkoekje-nl-route.yaml`) | `ingress` |
 | [archive/](archive/) | Manifests taken out of the cluster, kept just in case | none: not applied |
 
 Every folder has a `kustomization.yaml` listing its files: a new file only deploys once it's listed
@@ -51,16 +51,17 @@ embedded etcd. MetalLB hands out 192.168.1.230–.239 in L2 mode
 
 There are three ways in:
 
-- **From the internet:** `*.gemberkoekje.nl` → public IP → router (80/443) → Traefik (.231) → a
-  route in `ingress/` → the app's Service. Routes come in two kinds:
-  - **Gateway API (the way for new routes; so far kluskat):** HTTPRoutes attached to the Gateway
-    `traefik/public` (`infrastructure/traefik/gateway.yaml`). Its `http` listener carries every
-    host's redirect to HTTPS. It has one `https-<app>` listener per hostname, whose certificate
-    cert-manager issues through `letsencrypt-gateway` (HTTP-01 via a temporary HTTPRoute).
-  - **Ingress (the rest, moving over):** class `nginx-public` (defined in
-    `infrastructure/traefik/ingressclass.yaml`), which Traefik reads through its Ingress NGINX
-    provider. Most of these apps answer on their own subdomain and on a path of `gemberkoekje.nl`.
-    Their certificates come from cert-manager's `letsencrypt-prod` (HTTP-01).
+- **From the internet:** `*.gemberkoekje.nl` → public IP → router (80/443) → Traefik (.231) → an
+  HTTPRoute in `ingress/` → the app's Service. The routes attach to the Gateway `traefik/public`
+  (`infrastructure/traefik/gateway.yaml`), which has these listeners:
+  - **`http`:** every host's redirect to HTTPS (308), plus the LAN-only paths below.
+  - **`https-gemberkoekje-nl`:** the bare domain, shared by the apps that also answer on a path of
+    it (`/adventureengine`, `/dnd`, `/plotboek`...).
+  - **`https-<app>`:** one per subdomain.
+
+  cert-manager issues each HTTPS listener's certificate through `letsencrypt-gateway` (HTTP-01 via a
+  temporary HTTPRoute). The `nginx-public` IngressClass and Traefik's Ingress NGINX provider are
+  still installed but unused, until their clean-up.
 - **On the LAN, by name:** `<app>.lan.gemberkoekje.nl` → Caddy (.236) →
   the in-cluster Service. The routes are in
   [infrastructure/lan-proxy/Caddyfile](infrastructure/lan-proxy/Caddyfile). Caddy serves a wildcard
@@ -71,9 +72,11 @@ There are three ways in:
   same as at home. At home with Tailscale on, these narrower routes beat the home /24, so that
   traffic goes through the router pod too.
 
-Reachable on the LAN by IP only, with an allowlist of 192.168.0.0/16 and 10.0.0.0/8: the
-SpaceTraders dashboard (`http://192.168.1.231/spacetraders/dashboard/`) and Grafana
-(`http://192.168.1.231/grafana`). Dockhand listens on NodePort 30080 on every node.
+Reachable on the LAN by IP only: the SpaceTraders dashboard
+(`http://192.168.1.231/spacetraders/dashboard/`) and Grafana (`http://192.168.1.231/grafana`).
+Both are HTTPRoutes without a hostname on the `http` listener, behind a Traefik `lan-only`
+Middleware that allows only 192.168.0.0/16 and 10.0.0.0/8. Dockhand listens on NodePort 30080 on
+every node.
 
 ## Shared services the apps lean on
 
@@ -87,7 +90,7 @@ SpaceTraders dashboard (`http://192.168.1.231/spacetraders/dashboard/`) and Graf
 | **NFS volumes**: StorageClass `qnap-nfs` | [infrastructure/nfs-provisioner/](infrastructure/nfs-provisioner/) | Most PVCs, kept in [infrastructure/pvcs/](infrastructure/pvcs/) (one file per namespace). On the NAS at `/gembernodes-pvcs/<namespace>/<pvc>` |
 | **Node disk**: StorageClass `local-path` | built into k3s | SQLite, which must stay off NFS: Jellyfin, Maintainerr, Audiobookshelf's config, Chaptarr. Each pins its pod to one node. These volumes aren't on the NAS; their databases reach it through the nightly SQLite backups (row above) |
 | The Multimedia share | `infrastructure/pvcs/zeef.yaml` (static PV `multimedia-nfs`, PVC `zeef/multimedia`) | Zeef's media apps, mounted at `/data` (Jellyfin: `/media`, read-only) |
-| **Certificates**: cert-manager | [infrastructure/certmanager/](infrastructure/certmanager/), issuers in [configuration/](configuration/) | The public Gateway's listeners (`letsencrypt-gateway`, Secrets in `traefik`), the public Ingresses (`letsencrypt-prod`) and Caddy's wildcard certificate (`letsencrypt-lan`) |
+| **Certificates**: cert-manager | [infrastructure/certmanager/](infrastructure/certmanager/), issuers in [configuration/](configuration/) | The public Gateway's listeners (`letsencrypt-gateway`, Secrets in `traefik`) and Caddy's wildcard certificate (`letsencrypt-lan`). `letsencrypt-prod` served the Ingresses and is unused until its clean-up |
 
 ## Apps
 
@@ -107,11 +110,11 @@ SpaceTraders dashboard (`http://192.168.1.231/spacetraders/dashboard/`) and Graf
 | fileserver (File Browser) | `apps/fileserver` → `file-server` | `fileserver.gemberkoekje.nl` | NFS volume |
 | hackerminigames | `apps/hackerminigames` | `hackerminigames.gemberkoekje.nl` | |
 | healthcheck | `apps/healthcheck` → `cluster-healthcheck` | `healthcheck.gemberkoekje.nl` | A static page served by Caddy |
-| kluskat | `apps/kluskat` | `kluskat.gemberkoekje.nl` (Gateway API: `ingress/kluskat-route.yaml`) | PostgreSQL |
+| kluskat | `apps/kluskat` | `kluskat.gemberkoekje.nl` | PostgreSQL |
 | plotboek-generator | `apps/plotboek-generator` | `plotboek.gemberkoekje.nl` | PostgreSQL. A CronJob resets the demo at 04:00 (Amsterdam) |
 | print-manager-test | `apps/print-manager-test` | 192.168.1.233 | NFS volume |
 | spacetraders (API and web UI) | `apps/spacetraders` | LAN only (above) | PostgreSQL. Grafana reads its API (`infrastructure/monitoring`) |
-| vortexplotboek | `apps/vortexplotboek` | `vortexplotboek.gemberkoekje.nl`, `gemberkoekje.nl/vortexplotboek` | Redirect only, to `plotboek.the-vortex.nl` (the app runs on the-vortex cluster). The Service has no pods: it only gives the Ingress a backend to name. The old app manifests are in `archive/vortexplotboek/` |
+| vortexplotboek | `ingress/vortexplotboek-route.yaml` → `vortexplotboek` | `vortexplotboek.gemberkoekje.nl`, `gemberkoekje.nl/vortexplotboek` | Redirects only, to `plotboek.the-vortex.nl` (the app runs on the-vortex cluster): no Service or pods, the Gateway answers them itself. The old app manifests are in `archive/vortexplotboek/` |
 | **Zeef** (media stack) | `apps/zeef` ([README](apps/zeef/README.md)) | `<app>.lan.gemberkoekje.nl`, 192.168.1.234:`<port>` | PostgreSQL, the Multimedia share, `local-path`, the `zeef-stack` 1Password item |
 
 Inside Zeef: Seerr sends requests to Sonarr and Radarr. They search through Prowlarr, download
@@ -129,7 +132,7 @@ Designs and runbooks live in Gemberkoekje/projects.
 | Component | Folder | Role |
 |---|---|---|
 | MetalLB | `infrastructure/metallb` | LoadBalancer IPs (pool in `configuration/`) |
-| Traefik | `infrastructure/traefik` | Public entry point on .231. Also holds the public Gateway (`gateway.yaml`) and the `nginx-public` IngressClass |
+| Traefik | `infrastructure/traefik` | Public entry point on .231. Also holds the public Gateway (`gateway.yaml`), and the unused `nginx-public` IngressClass until its clean-up |
 | cert-manager | `infrastructure/certmanager` | Certificates |
 | 1Password Connect | `infrastructure/externalsecrets` | Secrets from the `Gembercluster` vault |
 | Reflector | `infrastructure/reflector` | Copies `ghcr-login` into namespaces |

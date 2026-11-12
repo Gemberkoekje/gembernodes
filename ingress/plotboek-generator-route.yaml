@@ -1,0 +1,77 @@
+# plotboek.gemberkoekje.nl through the public Gateway (infrastructure/traefik/gateway.yaml),
+# set up like every public route (CLAUDE.md, "Public routes").
+# Also on gemberkoekje.nl/plotboek.
+#
+# gemberkoekje.nl/plotboek is the short link to the demo: it redirects to plotboek.gemberkoekje.nl
+# and keeps whatever follows the prefix, so /plotboek/Privacy lands on /Privacy. nginx needed
+# larger proxy buffers for the OIDC sign-in's big cookies; Traefik has no such small limit.
+#
+# Port 80: redirect to HTTPS (308, so a POST stays a POST). cert-manager's ACME challenge routes on
+# the same listener match an exact path, so they take precedence over this catch-all.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: plotboek-generator-redirect
+  namespace: plotboek-generator
+spec:
+  parentRefs:
+    - name: public
+      namespace: traefik
+      sectionName: http
+  hostnames:
+    - plotboek.gemberkoekje.nl
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: 308
+---
+# Port 443: the app. TLS ends at the Gateway; HSTS comes from Traefik's websecure entrypoint.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: plotboek-generator
+  namespace: plotboek-generator
+spec:
+  parentRefs:
+    - name: public
+      namespace: traefik
+      sectionName: https-plotboek
+  hostnames:
+    - plotboek.gemberkoekje.nl
+  rules:
+    - backendRefs:
+        - name: plotboek-generator-service
+          port: 80
+---
+# gemberkoekje.nl/plotboek: the short link. On port 80 as well, so it goes there in one step.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: plotboek-generator-apex
+  namespace: plotboek-generator
+spec:
+  parentRefs:
+    - name: public
+      namespace: traefik
+      sectionName: http
+    - name: public
+      namespace: traefik
+      sectionName: https-gemberkoekje-nl
+  hostnames:
+    - gemberkoekje.nl
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /plotboek
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            hostname: plotboek.gemberkoekje.nl
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+            statusCode: 301
