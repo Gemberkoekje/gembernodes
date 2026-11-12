@@ -2554,3 +2554,30 @@ To understand this, read the "Decided" and "Before building" sections of
   FIPS mode, where `md5()` fails. Whether to import them is left open in the plan.
 - **Nothing built.** The plan stays a plan until the 1Password item exists and the moment is
   agreed.
+
+## 2026-11-12 — The flux-system Namespace: one owner (step 1 of 2)
+
+To understand this, read `namespaces/flux-system-namespace.yaml` and
+`clusters/home/flux-system/kustomization.yaml`.
+
+- **The problem:** two Kustomizations apply `Namespace/flux-system`: `namespaces` (every minute,
+  from `namespaces/flux-system-namespace.yaml`) and `flux-system` (about every 10 minutes, from the
+  generated `gotk-components.yaml`). Each stamps its own `kustomize.toolkit.fluxcd.io/name` owner
+  label. So after every `flux-system` run, `namespaces` "configured" the Namespace back. While it
+  did, it wasn't Ready, and `repos` → `infrastructure` → configuration, apps, ingress and
+  system-upgrade-plans waited a 30-second retry with "DependencyNotReady". The events show it
+  about every 16 minutes, at least since before 2026-11-12.
+- **The fix, in two steps:** only `flux-system` should own it, because that's where Flux's
+  bootstrap puts it. But `namespaces` has `prune: true`, so just deleting the file could make it
+  delete the Namespace Flux runs in. Whether it would depends on whose owner labels the Namespace
+  happens to carry at that moment.
+  1. **This change:** `kustomize.toolkit.fluxcd.io/prune: disabled` on the Namespace, from both
+     sources. The `namespaces` file gets the annotation, and a kustomize patch adds it to the gotk
+     copy (that file is generated). Both are needed: the two Kustomizations write with the same
+     field manager, so an apply without it would remove it again.
+  2. **Next,** once the annotation is live and stays through both Kustomizations' runs: remove
+     `namespaces/flux-system-namespace.yaml`. The annotation keeps the clean-up away from it, and
+     `flux-system` becomes the only owner.
+- **Checked:** both builds carry the annotation, and server-side dry runs accept them.
+- **After the merge:** the live Namespace carries the annotation, and still does after a
+  `flux-system` reconcile and a `namespaces` reconcile.
