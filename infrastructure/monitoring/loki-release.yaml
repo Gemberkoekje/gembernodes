@@ -1,3 +1,7 @@
+# The community Loki chart (grafana-community/helm-charts). Since 2026-03-16 the chart in
+# grafana/helm-charts is only maintained for Grafana Enterprise Logs; the open-source chart was
+# forked at 6.55.0 and continues there, with a major version for every breaking change. Read the
+# chart README's "Upgrading" section before moving to a new major (NOTES.md, 2026-11-12).
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -8,21 +12,23 @@ spec:
   install:
     remediation:
       retries: 3
+  # No `force`: it was a one-off for the April 2026 volume change, and a forced upgrade replaces
+  # whole objects instead of patching them.
   upgrade:
-    force: true
     remediation:
       retries: 3
   chart:
     spec:
-      version: "6.x"
+      version: "21.x"
       chart: loki
       sourceRef:
         kind: HelmRepository
-        name: grafana
+        name: grafana-community
         namespace: monitoring
       interval: 60m
   values:
-    deploymentMode: SingleBinary
+    # "SingleBinary" until chart 12, which renamed it; the values stay under `singleBinary`.
+    deploymentMode: Monolithic
     resultsCache:
       enabled: false
     chunksCache:
@@ -37,6 +43,11 @@ spec:
       enabled: false
     loki:
       auth_enabled: false
+      # The chart aborts Loki when it can't join its memberlist cluster within ~5 minutes. With one
+      # instance there is no cluster to join (the pod only finds itself, once it's Ready), so a
+      # failed join must not stop it.
+      extraMemberlistConfig:
+        abort_if_cluster_join_fails: false
       commonConfig:
         replication_factor: 1
       storage:
