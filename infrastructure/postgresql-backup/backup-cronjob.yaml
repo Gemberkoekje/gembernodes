@@ -10,26 +10,48 @@ spec:
   failedJobsHistoryLimit: 3
   jobTemplate:
     spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 1800
       template:
         spec:
           restartPolicy: OnFailure
+          securityContext:
+            seccompProfile:
+              type: RuntimeDefault
           containers:
+            # pg_dumpall refuses a server with a newer major version, so this image's major must be
+            # at least the server's (18; postgresql-release.yaml). Until 2026-11-12 it was 17: every
+            # nightly dump aborted, the job still succeeded (no pipefail, so only gzip's exit status
+            # counted), and the empty files rotated the real dumps away. A newer client is fine.
             - name: pg-dump
-              image: postgres:17-alpine
+              image: postgres:18-alpine
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:
                   drop: ["ALL"]
+              # The dump goes to a .part file and only becomes postgres-<day>.sql.gz once it ends with
+              # pg_dumpall's closing line; otherwise the job fails ("Backup is stale" reports it) and
+              # the previous dumps stay. Rotation therefore only ever counts complete dumps.
               command:
                 - sh
                 - -c
                 - |
-                  set -e
-                  FILENAME="/backup/postgres-$(date +%Y-%m-%d).sql.gz"
+                  set -eu -o pipefail
+                  DAY="$(date +%Y-%m-%d)"
+                  FILENAME="/backup/postgres-$DAY.sql.gz"
+                  TMP="/backup/.postgres-$DAY.sql.gz.part"
+                  trap 'rm -f "$TMP"' EXIT
                   echo "Starting backup to $FILENAME"
-                  pg_dumpall -h postgresql.flux-system.svc.cluster.local -U postgres | gzip > "$FILENAME"
-                  echo "Backup complete: $(du -sh $FILENAME)"
-                  # Rotate: keep last 7 dumps
+                  pg_dumpall -h postgresql.flux-system.svc.cluster.local -U postgres | gzip > "$TMP"
+                  if ! gzip -dc "$TMP" | tail -n 5 | grep -q "PostgreSQL database cluster dump complete"; then
+                    echo "The dump is incomplete; keeping the previous dumps" >&2
+                    exit 1
+                  fi
+                  mv "$TMP" "$FILENAME"
+                  echo "Backup complete: $(du -h "$FILENAME" | cut -f1) $FILENAME"
+                  # The empty 20-byte files left by the failed runs before 2026-11-12.
+                  find /backup -maxdepth 1 -name 'postgres-*.sql.gz' -size -1k -print -delete
+                  # Keep the newest 7 dumps.
                   ls -t /backup/postgres-*.sql.gz | tail -n +8 | xargs -r rm -v
               env:
                 - name: PGPASSWORD
