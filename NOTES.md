@@ -2835,3 +2835,14 @@ and the "Upgrading" section of the community chart's README (grafana-community/h
   nothing uses it (Grafana and Alloy use `grafana-loki:3100`). It needs deleting by hand.
 - **After the merge:** the HelmRelease Ready on 21.x, `grafana-loki-0` running 3.7.9, new log lines
   arriving (Alloy retries while Loki restarts), and the old 31 days still queryable.
+
+## 2026-11-12 — The orphaned Loki gateway, deleted by hand
+
+- **What:** the Deployment, Service and ConfigMap `grafana-loki-gateway` in `monitoring`, from
+  Loki's first install on 2026-06-18 (see the Loki entry above). Neither Helm release record listed
+  them, so no chart upgrade would ever remove them.
+- **Checked first:** nothing referred to it (no HTTPRoute, no ExternalName; Grafana and Alloy use
+  `grafana-loki:3100`), and its nginx access log for the last 4 days held only health probes.
+- **Deleted** with `kubectl delete` (the ReplicaSet, pod and EndpointSlice went with them). A
+  `grafana-loki` HelmRelease reconcile afterwards didn't bring them back; Loki kept ingesting and
+  Alloy logged no push errors.
