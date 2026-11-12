@@ -1,6 +1,7 @@
 # Bitnami PostgreSQL → CloudNativePG
 
-**Status: plan, waiting on the decisions at the bottom.** Nothing in this document has been applied.
+**Status: plan, decided (2026-11-12), not built.** Nothing in this document has been applied. It
+waits on the items under "Before building".
 
 ## Why
 
@@ -12,8 +13,19 @@
 
 ## Decided
 
-- **One instance on the NAS (`qnap-nfs`), like today** (2026-11-12). No local-disk replicas: the
-  nodes' disks are small, and Longhorn once filled them.
+All on 2026-11-12:
+
+- **One instance on the NAS (`qnap-nfs`), like today.** No local-disk replicas: the nodes' disks
+  are small, and Longhorn once filled them.
+- **Downtime is accepted:** every PostgreSQL app down for an estimated 15–30 minutes. The moment
+  is agreed when the plan is carried out.
+- **The superuser secret:** you create a 1Password item (e.g. `postgresql-superuser` in vault
+  Gembercluster) with fields `username` = `postgres` and `password` = today's postgres password,
+  before the plan is carried out. You make it, not Claude, because it holds the password.
+- **Databases:** VortexPlotboek is kept, just in case. VortexPlotboekLocal, VortexLnv,
+  VortexLnvLocal, LanderijenVolken and werkplaats are left out of the import. They stay in the old
+  volume until it's deleted, and in the nightly dumps until those rotate out.
+- **Namespace:** `postgresql`. The database moves out of `flux-system`.
 
 ## Today (checked 2026-11-12)
 
@@ -25,11 +37,16 @@
 | Roles | the `postgres` superuser, plus 12 app roles (the Zeef apps, spacetraders, `spacetraders_ro`, charactercreator, datumprikker) |
 | Connects as `postgres` | adventureengine, armabotcs, bot-on-the-clocktower, curatool, dungeontable, ebi-cs-api, kluskat, plotboek-generator (their databases are owned by `postgres`), and the backup CronJob |
 | Extensions | none besides `plpgsql`. Bitnami preloads `pgaudit`, but nothing uses it |
+| FIPS | the Bitnami image runs PostgreSQL in FIPS mode, where `md5()` fails (why Chaptarr isn't on it; see `apps/zeef/chaptarr.yaml`). CNPG's images don't, which changes nothing for the import |
 | Load | 38 of 100 connections |
 | Backup | `infrastructure/postgresql-backup/`: nightly `pg_dumpall` to NFS, 7 kept |
 
-Probably unused, and already on the clean-up list: VortexPlotboek, VortexPlotboekLocal, VortexLnv,
-VortexLnvLocal, LanderijenVolken, werkplaats.
+Unused:
+
+- VortexPlotboek, VortexPlotboekLocal, VortexLnv, VortexLnvLocal, LanderijenVolken, werkplaats.
+  Only VortexPlotboek is kept (see "Decided").
+- chaptarr-main, chaptarr-log, chaptarr-cache, with no connections. Chaptarr runs on SQLite, and
+  these are left over from trying PostgreSQL first. Not decided yet: see "Before building".
 
 ## Target
 
@@ -58,8 +75,16 @@ VortexLnvLocal, LanderijenVolken, werkplaats.
   switch-over. The apps can move to the new name later, one at a time, and the ExternalName goes
   last.
 - **Data:** `bootstrap.initdb.import`, type `monolith`, from an `externalClusters` entry for the
-  Bitnami server (as `postgres`). It lists the 25 databases in use and all the app roles. CNPG
-  runs `pg_dump`/`pg_restore` itself, and only reads from the source.
+  Bitnami server (as `postgres`), with all the app roles. CNPG runs `pg_dump`/`pg_restore` itself,
+  and only reads from the source. The databases it lists:
+  - **Apps:** adventure, ArmaBotCs, BotOnTheClocktower, charactercreator, curatool, datumprikker,
+    dungeontable, ebi_cs_api, KlusKat, plotboek_generator, spacetraders.
+  - **Zeef:** audiobookrequest, bazarr, cleanuparr, prowlarr-main, prowlarr-log, radarr-main,
+    radarr-log, seerr, sonarr-main, sonarr-log.
+  - **Kept just in case:** VortexPlotboek.
+  - **Open:** chaptarr-main, chaptarr-log, chaptarr-cache (see "Before building").
+  - **Not imported:** the five dropped databases above, and `postgres` itself, which CNPG
+    creates.
 - **Backup:** the nightly `pg_dumpall` CronJob stays, through the same DNS name. CNPG's own
   backups (Barman) need object storage, which could come from the QNAP's S3 service later. That's
   out of scope here.
@@ -108,12 +133,10 @@ VortexLnvLocal, LanderijenVolken, werkplaats.
 - **After PR C:** put the Bitnami HelmRelease and OCIRepository back. The data volume is still
   there. Anything written to CNPG since the switch would need a dump and restore back.
 
-## Decisions needed
+## Before building
 
-1. **When:** the downtime window (all PostgreSQL apps, est. 15–30 min).
-2. **The superuser secret:** a new 1Password item (e.g. `postgresql-superuser` in vault
-   Gembercluster) with fields `username` = `postgres` and `password` = today's postgres password.
-   You create it, because it holds the password.
-3. **The six unused databases:** leave them out of the import? They stay in the old volume and in
-   the last nightly dumps.
-4. **The namespace:** `postgresql` (recommended), or keep the database in `flux-system`.
+1. **The 1Password item** for the superuser exists (see "Decided"). PR A's `OnePasswordItem`
+   points at it.
+2. **Chaptarr's three PostgreSQL databases:** import them or leave them out. They are unused
+   (Chaptarr runs on SQLite).
+3. **The moment** for the downtime window.
