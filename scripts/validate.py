@@ -5,7 +5,8 @@
 
 Needs PyYAML, and flux, kubeconform and helm on PATH (.github/workflows/validate.yaml pins them).
 
-1. Every YAML/JSON file parses, without duplicate keys.
+1. Every YAML/JSON file parses, without duplicate keys. An app's own config file that a
+   configMapGenerator reads (Home Assistant's configuration.yaml) may use the app's tags, as in 5.
 2. Every Flux Kustomization builds with `flux build kustomization`, as kustomize-controller does.
 3. What they build passes kubeconform in strict mode: Kubernetes schemas, Flux's schemas for the
    Flux version in gotk-components.yaml, and the CRD catalog for the other custom resources.
@@ -119,7 +120,26 @@ def parse_error(exc):
     return str(exc).replace("\n", " "), mark.line + 1 if mark else None
 
 
+def generator_inputs(files):
+    """Files a kustomization.yaml feeds to a configMapGenerator or secretGenerator: an app's own
+    config (Home Assistant's configuration.yaml), not manifests, so they may use the app's tags."""
+    inputs = set()
+    for f in files:
+        if os.path.basename(f) != "kustomization.yaml":
+            continue
+        with open(f, encoding="utf-8") as fh:
+            try:
+                k = yaml.safe_load(fh) or {}
+            except yaml.YAMLError:
+                continue  # reported by check_syntax
+        for gen in (k.get("configMapGenerator") or []) + (k.get("secretGenerator") or []):
+            for entry in (gen.get("files") or []) + (gen.get("envs") or []):
+                inputs.add(os.path.normpath(os.path.join(os.path.dirname(f), entry.split("=", 1)[-1])))
+    return inputs
+
+
 def check_syntax(files):
+    app_config = generator_inputs(files)
     for f in files:
         if not f.endswith((".yaml", ".yml", ".json")):
             continue
@@ -127,6 +147,8 @@ def check_syntax(files):
             with open(f, encoding="utf-8") as fh:
                 if f.endswith(".json"):
                     json.load(fh)
+                elif os.path.normpath(f) in app_config:
+                    embedded_yaml_docs(fh.read())
                 else:
                     yaml_docs(fh.read())
         except (yaml.YAMLError, json.JSONDecodeError) as exc:

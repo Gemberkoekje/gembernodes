@@ -2895,6 +2895,9 @@ and the "Upgrading" section of the community chart's README (grafana-community/h
     `configuration.yaml` itself. With ours from Git they would be missing, and the includes would
     fail.
   - HACS 2 appears in the sidebar only after it is added as an integration (GitHub login).
+  - `scripts/validate.py` read every `.yaml` file with a loader that rejects unknown tags, so
+    `configuration.yaml`'s `!include` failed CI. Files a `configMapGenerator` reads are now parsed
+    like YAML inside ConfigMaps: app tags allowed, syntax and duplicate keys still checked.
 - **Tested** locally in Docker, not yet on the cluster: HA 2026.11.1 with this
   `configuration.yaml` read-only and a PostgreSQL 18 recorder (the database made by
   `create-database.sql`) started in 6 s, with the 13 recorder tables created and nothing logged at
