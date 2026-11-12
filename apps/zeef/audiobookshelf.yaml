@@ -46,7 +46,7 @@ spec:
         # made by the CSI driver, not by UID 1000), as with Jellyfin's backup volume. This sets
         # the owner of their roots only, never recursively.
         - name: own-dirs
-          image: busybox:1.36
+          image: busybox:1.38
           command:
             - sh
             - -c
