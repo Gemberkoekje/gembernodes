@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: health
-          image: caddy:2.10.2-alpine
+          image: caddy:2.11-alpine
           command:
             - caddy
           args:
