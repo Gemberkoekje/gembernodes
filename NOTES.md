@@ -2581,3 +2581,20 @@ To understand this, read `namespaces/flux-system-namespace.yaml` and
 - **Checked:** both builds carry the annotation, and server-side dry runs accept them.
 - **After the merge:** the live Namespace carries the annotation, and still does after a
   `flux-system` reconcile and a `namespaces` reconcile.
+
+## 2026-11-12 — The flux-system Namespace: one owner (step 2 of 2)
+
+To understand this, read the step 1 entry above and `clusters/home/flux-system/kustomization.yaml`.
+
+- **The change:** `namespaces/flux-system-namespace.yaml` is gone, along with its kustomization
+  line. The `flux-system` Kustomization (gotk-components plus the prune-disabled patch) is now the
+  Namespace's only owner. Its comment carries the explanation the removed file had.
+- **Why it's safe:** step 1 made the annotation live and stable through both Kustomizations'
+  reconciles (checked after the merge: `prune=disabled` stayed while the owner label flipped
+  between `namespaces` and `flux-system`). The Namespace is still in `namespaces`' inventory, and
+  its clean-up skips objects carrying that annotation.
+- **After the merge:**
+  - The Namespace still exists, with owner label `flux-system`.
+  - `namespaces`' inventory no longer lists it.
+  - A `namespaces` reconcile no longer "configures" it.
+  - No more DependencyNotReady waves.

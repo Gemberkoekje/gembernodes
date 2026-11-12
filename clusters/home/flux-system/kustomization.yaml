@@ -3,8 +3,10 @@ kind: Kustomization
 resources:
 - gotk-components.yaml
 - gotk-sync.yaml
-# Never prune the Namespace Flux runs in. gotk-components.yaml is generated, so the annotation
-# goes on here; see namespaces/flux-system-namespace.yaml for why.
+# Never prune the Namespace Flux runs in (gotk-components.yaml is generated, so the annotation goes
+# on here). This Kustomization is its only owner: namespaces/ used to apply it too, and the two
+# overwrote each other's owner labels every ~10 minutes (NOTES.md, 2026-11-12). The annotation is
+# what let that copy be removed without the "namespaces" Kustomization deleting the Namespace.
 patches:
 - patch: |-
     apiVersion: v1
