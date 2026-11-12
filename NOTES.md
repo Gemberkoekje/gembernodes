@@ -1992,3 +1992,39 @@ To understand this, read `apps/zeef/sqlite-backup.yaml` (header comment and scri
      `kubectl -n zeef create job --from=cronjob/sqlite-backup-<app> sqlite-backup-<app>-first`.
   2. Check that the logs list every database and that the files are on the NAS.
   3. Restart Grafana for the new rule.
+
+## 2026-11-12 — The PostgreSQL backups were empty; fixed
+
+To understand this, read the comments in `infrastructure/postgresql-backup/backup-cronjob.yaml`.
+
+- **What was wrong.** The nightly job ran `pg_dumpall` 17 (`postgres:17-alpine`) against a
+  PostgreSQL 18 server (18.4; it has been 18.x since at least 2026-09-26). `pg_dumpall` aborts on a
+  newer server ("aborting because of server version mismatch").
+  - The script piped it into `gzip` without `pipefail`, so `set -e` only saw gzip succeed. The job
+    reported "Backup complete" with a 20-byte empty file every night.
+  - Its rotation (keep 7) then deleted the oldest real dump each time. On 2026-11-12 all seven files
+    on `postgresql-backup-pvc-qnap` were empty, so no logical backup existed. Whatever survives is in
+    the NAS's own older backups or snapshots.
+  - The CronJob counted as successful throughout, so even the new "Backup is stale" alert wouldn't
+    have noticed.
+- **Fix:**
+  - The image is `postgres:18-alpine`. The client's major version must be at least the server's,
+    and a newer client can dump an older server.
+  - The script runs with `set -eu -o pipefail`. The dump goes to a `.part` file that becomes
+    `postgres-<day>.sql.gz` only once it ends with pg_dumpall's "PostgreSQL database cluster dump
+    complete" line. A failed run fails the job and leaves the earlier dumps alone, so rotation only
+    ever counts complete dumps.
+  - Files under 1 KiB (the old empty ones) are deleted.
+  - Also new: `backoffLimit: 2`, `activeDeadlineSeconds: 1800`, and the `RuntimeDefault` seccomp
+    profile.
+- **Tested against the live server** (the script from this file, in throwaway pods on scratch
+  space):
+  - With `postgres:18-alpine`: a complete 22.5 MB dump, the seeded empty files deleted, exit 0.
+  - With `postgres:17-alpine`: exit 1, no file written, and the existing files untouched.
+- **A real backup was taken at once,** without waiting for the merge. The new script ran in a
+  one-off pod against `postgresql-backup-pvc-qnap` at 01:24Z on 2026-11-12. The result,
+  `postgres-2026-11-12.sql.gz` (22.5 MB), holds 30 databases and 13 roles and ends with the footer;
+  the seven empty files are gone.
+- **Unused databases in the dump,** worth dropping some day: `VortexPlotboek`,
+  `VortexPlotboekLocal`, `VortexLnv`, `VortexLnvLocal`, `LanderijenVolken` and `werkplaats`. The
+  `chaptarr-*` databases are left over from Chaptarr's PostgreSQL attempt (2026-11-09).
