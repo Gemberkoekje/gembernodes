@@ -5,3 +5,4 @@ resources:
   - certissuer-lan.yaml
   - certissuer-gateway.yaml
   - traefik-hsts.yaml
+  - postgresql-cluster.yaml
