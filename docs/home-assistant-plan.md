@@ -173,16 +173,22 @@ a minute.
 - **Boiler content % is always 0**, in the app as much as in HA. The user: it has never worked, in
   any mode (Smart control, a clock program at 65 °C nearly all day, the current one), while the
   display showed 60.1 °C. HA reads the same `boilerContent` the app shows, so the 0 comes from the
-  boiler or Itho's cloud; a fault for Itho or the installer to look at. Useless as a signal here.
+  boiler or Itho's cloud. The fork's own test notes (`docs/TEST_RESULTS.md`) show another boiler on
+  the same software version, 14.89.132, reporting `boilerContent` 0.81. So the field works
+  elsewhere, which points at something specific to this boiler: a question for the installer. The
+  fault history is empty, and Itho itself offers no support (only info@ithodaalderop.nl, a ticket
+  system). Useless as a signal here.
 - **The schedule sensors all say "No schedule", but the schedule is there.** Their raw attribute
   holds `{'36000': 65, '37800': 10, '75600': 65, '77400': 10}`: seconds after midnight, which is
   10:00 and 21:00 at 65 °C, then 10:30 and 21:30 at 10 °C. `sensor.py` only parses HHMM keys
   (`1000`) and drops the rest. The write path (`api.py`) passes keys above 2359 through unchanged,
   so setting the mode to Schedule from HA sends this schedule back intact. Keys below 2359 seconds
   (before 00:39) would be misread, but there are none here.
-- **No water temperature in HA.** `water_heater.py` reads the measured temperature
-  (`deviceTemperatureMeasured`), but `__init__.py` never loads the `water_heater` platform, so the
-  entity doesn't exist.
+- **No water temperature, and none to be had.** `water_heater.py` reads `deviceTemperatureMeasured`,
+  but `__init__.py` never loads it. That is deliberate: the fork's test notes found that Itho's API
+  (`GetDeviceStatus`) has no measured temperature at all, only the setpoint. The live signals the API
+  does give: device mode, online state, power (`devicePowerMeasured`, ~1.9 kW while heating) and
+  daily energy totals (`GetEnergyConsumption`).
 
 **Integration choice** (both unofficial, reverse-engineered, zero-star repos, so expect breakage when Itho changes their API):
 - **Primary:** `Rien-R/Itho-Daalderop-GES-HA` lineage (also `mjhagen/Itho-Daalderop-GES-HA` fork). Richest feature set: device mode select (SmartControl / Schedule / Continuous / Holiday), device state, boiler content %, power (kW), legionella timer, energy, connection status sensor. Polls status every 30 s.
@@ -210,11 +216,15 @@ a minute.
 - Write down the exact entity/value that flags it.
 
 **5b. Automate** (once the signal is known):
-- **Trigger:** the identified state/mode value. The fallback heuristic first planned here (boiler
-  content % low AND power 0 kW) can't work: content % is always 0, and 0 kW is normal outside the
-  two half-hour slots (D5) and inside them when the tank is already at 65 °C. A better fallback needs
-  the water temperature (missing, see phase 4): below ~40 °C after a slot has passed means it didn't
-  heat.
+- **Triggers,** with what the API offers (no content %, no water temperature; phase 4):
+  - **Mode:** device mode no longer Schedule. The app's four modes are Smart control, Klokprogramma,
+    Continu aan and Standby; the API's names are SmartControl, Schedule, Continuous and Holiday.
+    Holiday is probably the app's Standby (an assumption to confirm in 5a).
+  - **Connection:** online state or the connection sensor off for more than ~15 minutes: notify only.
+  - **Fallback for a standby the mode doesn't show:** no heating on a whole day. Standing losses
+    alone make a 65 °C boiler reheat every day, so 0 kWh in a day (daily energy history) means it
+    never switched on: notify. Power 0 kW all through a slot is weaker, because a tank still near
+    65 °C needn't heat: at most a hint.
 - **Guard:** `input_boolean.boiler_holiday`. When on, don't auto-recover. Holiday mode set on purpose must not be overridden.
 - **Actions:** set device mode back to **Schedule** (Klokprogramma, D5), then send a Companion app notification ("Boiler was in standby, switched back").
 - If 5a shows the mode can't be set back through the API (it may need the physical button), the automation becomes **notify-only**. Early warning is still the main win.
