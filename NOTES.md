@@ -2060,3 +2060,25 @@ MAP.md.
   images are far behind: `rancher/system-upgrade-controller:v0.20.2`, the demo reset's
   `curlimages/curl:8.5.0`, and the `postgres:17-alpine` init containers, where 18 matches the
   server.
+
+## 2026-11-12 — The first backup runs; Jellyfin's backup takes only jellyfin.db
+
+To understand this, read the Jellyfin CronJob in `apps/zeef/sqlite-backup.yaml`.
+
+- **First runs, by hand, after the merges** of #171 to #173 (01:36Z):
+  - **Chaptarr:** all four databases (`chaptarr.db` 2.2 MB gzipped).
+  - **Audiobookshelf:** 34 KB. **Maintainerr:** 10 KB.
+  - **PostgreSQL:** the fixed CronJob wrote a complete 22.5 MB dump.
+  - All are on the NAS. kube-state-metrics records their successes, so "Backup is stale" covers
+    them.
+  - Grafana was restarted and loaded 15 rules (9 in `cluster-health`).
+- **Jellyfin's job failed.** `jellyfin.db` was copied fine (5.4 MB gzipped, on both attempts), but
+  `kodisyncqueue.db` and `kodisyncqueue-log.db` gave "file is not a database". Their header says
+  `** This is a LiteDB file **`: the Kodi Sync Queue plugin uses LiteDB, not SQLite. The inventory
+  had counted them by their `.db` extension.
+  - **Fix:** the Jellyfin job names `jellyfin.db` instead of `*.db`.
+  - The Kodi Sync Queue only holds changes for Kodi clients to fetch, so losing it means one fuller
+    sync. A live LiteDB file can't be copied safely anyway.
+- **After the merge,** run it once
+  (`kubectl -n zeef create job --from=cronjob/sqlite-backup-jellyfin sqlite-backup-jellyfin-fixed`),
+  so its success counts and the stale-backup alert covers Jellyfin too.
