@@ -8,7 +8,9 @@ spec:
   chart:
     spec:
       chart: prometheus
-      version: "25.x"
+      # Chart 26 and later run Prometheus 3. Its TSDB still opens in Prometheus 2.55 (chart
+      # 25.30.x), but in nothing older.
+      version: "29.x"
       sourceRef:
         kind: HelmRepository
         name: prometheus-community

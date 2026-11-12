@@ -2288,3 +2288,39 @@ To understand this, read the "Path to 2.10" list below, then
     the CRDs included.
 - **After the merge:** `flux check`; all Kustomizations and HelmReleases Ready on the new
   revision; `gotk_resource_info` still reports every kind (the Flux dashboard).
+
+## 2026-11-12 — Prometheus chart 25.30.2 → 29.47.2 (Prometheus 2.55.1 → 3.16.0)
+
+To understand this, read `infrastructure/monitoring/prometheus-release.yaml`.
+
+- **The change:** only the chart range, `25.x` → `29.x`. Every value we set still exists, and no
+  chart major needs a step in between.
+- **Per major:**
+  - 26 moves to Prometheus 3.
+  - 27 verifies the apiserver certificate. It's signed by the k3s server CA, the same one as
+    `kube-root-ca.crt`, and its SANs include the node IPs.
+  - 28 renames the job `kubernetes-apiservers` → `kubernetes-api-servers`. Nothing here uses it.
+  - 29 moves service discovery from Endpoints to EndpointSlices. The `namespace`/`service`/`node`
+    labels stay the same.
+- **Subcharts:** kube-state-metrics 2.14 → 2.20, node-exporter 1.8.2 → 1.12.1. Selectors are the
+  same, so no objects need deleting. node-exporter gains restrictive security-context defaults;
+  the host mounts are unchanged.
+- **Prometheus 3:**
+  - 2.55 is the bridge release, so 3.16 reads the existing TSDB. Rolling back works to 2.55
+    (chart 25.30.x) but nothing older.
+  - Scrapes now fail without a valid Content-Type. Our targets all send one; SpaceTraders sends
+    `text/plain; version=0.0.4`.
+  - PromQL changes checked against the 18 alert rules and the dashboards:
+    - Regex `.` now matches newlines. None of our label values contain one.
+    - Range selectors are left-open, which costs at most one edge sample.
+    - Nothing uses `holt_winters` or `le`/`quantile` matchers.
+- **Checked:** chart 25.30.2 and 29.47.2 rendered with our values give the same 15 objects. The
+  server flags, the `Recreate` strategy and the selector are unchanged.
+- **Expect** a slow first start while the 400 MB WAL replays from NFS, and a memory peak. There's
+  no limit, and the last 7 days peaked at 2.9 GB.
+- **Noticed:** the TSDB is about 15 GB on a claim that says 2Gi. NFS doesn't enforce the size, so
+  nothing breaks, but the number means nothing.
+- **After the merge:**
+  - Every target is up on `/api/v1/targets`, `kubernetes-api-servers` included.
+  - `gotk_resource_info` still has its labels, and `node_*` metrics still carry `node`.
+  - The alerts evaluate without "no data", and the dashboards render.
