@@ -21,3 +21,11 @@ spec:
     global:
       leaderElection:
         namespace: cert-manager
+    # Gateway API support: issues the certificates that the listeners of the public Gateway
+    # (infrastructure/traefik/gateway.yaml) name, and answers ACME HTTP-01 challenges with
+    # temporary HTTPRoutes (ClusterIssuer letsencrypt-gateway in configuration/).
+    config:
+      apiVersion: controller.config.cert-manager.io/v1alpha1
+      kind: ControllerConfiguration
+      gatewayAPI:
+        enabled: true

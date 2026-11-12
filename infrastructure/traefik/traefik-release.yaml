@@ -84,6 +84,14 @@ spec:
         # overwriting the status.
         publishService:
           enabled: true
+      # Gateway API: the way new public routes are set up (HTTPRoutes on gateway.yaml's Gateway).
+      # The chart installs the Gateway API CRDs (standard channel) and the GatewayClass "traefik".
+      kubernetesGateway:
+        enabled: true
+    # The public Gateway is gateway.yaml in this folder rather than the chart's default one, so
+    # its listeners are plain Gateway API YAML next to the routes' rules (CLAUDE.md).
+    gateway:
+      enabled: false
     ports:
       websecure:
         transport:
