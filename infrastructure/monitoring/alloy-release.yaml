@@ -198,6 +198,16 @@ spec:
             forward_to = [loki.write.loki.receiver]
 
             stage.cri {}
+
+            // Blank out "password=..." / "pwd=..." values (connection strings, URLs) before they
+            // reach Loki. Sonarr v4 prints its database connection string, password included, to
+            // the console at every start: its console log isn't cleansed (fixed only in Sonarr v5,
+            // commit 609e964), unlike its log file and Radarr's and Prowlarr's console. Only the
+            // capture group, the value, is replaced. NOTES.md, 2026-11-12.
+            stage.replace {
+              expression = `(?i)(?:password|pwd)=([^;&\s"]+)`
+              replace    = "(removed)"
+            }
           }
 
           loki.write "loki" {
