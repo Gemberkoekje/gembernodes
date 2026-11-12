@@ -125,7 +125,7 @@ spec:
           containers:
             # jellyfin.db, plus the Kodi Sync Queue plugin's two databases.
             - name: backup
-              image: python:3.15.2-alpine3.24
+              image: python:3.16.0a1-alpine3.24
               command: ["python", "/scripts/backup.py", "jellyfin", "/config/data", "*.db"]
               securityContext:
                 allowPrivilegeEscalation: false
@@ -209,7 +209,7 @@ spec:
           containers:
             # chaptarr.db, plus staging.db, cache.db and logs.db (small; restoring one alone works).
             - name: backup
-              image: python:3.15.2-alpine3.24
+              image: python:3.16.0a1-alpine3.24
               command: ["python", "/scripts/backup.py", "chaptarr", "/config", "*.db"]
               securityContext:
                 allowPrivilegeEscalation: false
@@ -292,7 +292,7 @@ spec:
                   memory: 64Mi
           containers:
             - name: backup
-              image: python:3.15.2-alpine3.24
+              image: python:3.16.0a1-alpine3.24
               command: ["python", "/scripts/backup.py", "audiobookshelf", "/config", "absdatabase.sqlite"]
               securityContext:
                 allowPrivilegeEscalation: false
@@ -376,7 +376,7 @@ spec:
                   memory: 64Mi
           containers:
             - name: backup
-              image: python:3.15.2-alpine3.24
+              image: python:3.16.0a1-alpine3.24
               command: ["python", "/scripts/backup.py", "maintainerr", "/opt/data", "maintainerr.sqlite"]
               securityContext:
                 allowPrivilegeEscalation: false
