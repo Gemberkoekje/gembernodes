@@ -170,8 +170,10 @@ the boiler's own display: mode Schedule = Klokprogramma, boiler content 0% = the
 a minute.
 
 **What the integration gets wrong or leaves out** (checked in its code and in the recorder):
-- **Boiler content % is always 0**, in the app as much as in HA (the user: it "has never worked"),
-  while the display showed 60.1 °C. It's Itho's own value, so it's useless as a signal.
+- **Boiler content % is always 0**, in the app as much as in HA. The user: it has never worked, in
+  any mode (Smart control, a clock program at 65 °C nearly all day, the current one), while the
+  display showed 60.1 °C. HA reads the same `boilerContent` the app shows, so the 0 comes from the
+  boiler or Itho's cloud; a fault for Itho or the installer to look at. Useless as a signal here.
 - **The schedule sensors all say "No schedule", but the schedule is there.** Their raw attribute
   holds `{'36000': 65, '37800': 10, '75600': 65, '77400': 10}`: seconds after midnight, which is
   10:00 and 21:00 at 65 °C, then 10:30 and 21:30 at 10 °C. `sensor.py` only parses HHMM keys
