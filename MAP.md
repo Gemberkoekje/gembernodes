@@ -60,8 +60,7 @@ There are three ways in:
   - **`https-<app>`:** one per subdomain.
 
   cert-manager issues each HTTPS listener's certificate through `letsencrypt-gateway` (HTTP-01 via a
-  temporary HTTPRoute). The `nginx-public` IngressClass and Traefik's Ingress NGINX provider are
-  still installed but unused, until their clean-up.
+  temporary HTTPRoute).
 - **On the LAN, by name:** `<app>.lan.gemberkoekje.nl` → Caddy (.236) →
   the in-cluster Service. The routes are in
   [infrastructure/lan-proxy/Caddyfile](infrastructure/lan-proxy/Caddyfile). Caddy serves a wildcard
@@ -90,7 +89,7 @@ every node.
 | **NFS volumes**: StorageClass `qnap-nfs` | [infrastructure/nfs-provisioner/](infrastructure/nfs-provisioner/) | Most PVCs, kept in [infrastructure/pvcs/](infrastructure/pvcs/) (one file per namespace). On the NAS at `/gembernodes-pvcs/<namespace>/<pvc>` |
 | **Node disk**: StorageClass `local-path` | built into k3s | SQLite, which must stay off NFS: Jellyfin, Maintainerr, Audiobookshelf's config, Chaptarr. Each pins its pod to one node. These volumes aren't on the NAS; their databases reach it through the nightly SQLite backups (row above) |
 | The Multimedia share | `infrastructure/pvcs/zeef.yaml` (static PV `multimedia-nfs`, PVC `zeef/multimedia`) | Zeef's media apps, mounted at `/data` (Jellyfin: `/media`, read-only) |
-| **Certificates**: cert-manager | [infrastructure/certmanager/](infrastructure/certmanager/), issuers in [configuration/](configuration/) | The public Gateway's listeners (`letsencrypt-gateway`, Secrets in `traefik`) and Caddy's wildcard certificate (`letsencrypt-lan`). `letsencrypt-prod` served the Ingresses and is unused until its clean-up |
+| **Certificates**: cert-manager | [infrastructure/certmanager/](infrastructure/certmanager/), issuers in [configuration/](configuration/) | The public Gateway's listeners (`letsencrypt-gateway`, Secrets in `traefik`) and Caddy's wildcard certificate (`letsencrypt-lan`) |
 
 ## Apps
 
@@ -132,7 +131,7 @@ Designs and runbooks live in Gemberkoekje/projects.
 | Component | Folder | Role |
 |---|---|---|
 | MetalLB | `infrastructure/metallb` | LoadBalancer IPs (pool in `configuration/`) |
-| Traefik | `infrastructure/traefik` | Public entry point on .231. Also holds the public Gateway (`gateway.yaml`), and the unused `nginx-public` IngressClass until its clean-up |
+| Traefik | `infrastructure/traefik` | Public entry point on .231, serving the Gateway API routes. Also holds the public Gateway (`gateway.yaml`) |
 | cert-manager | `infrastructure/certmanager` | Certificates |
 | 1Password Connect | `infrastructure/externalsecrets` | Secrets from the `Gembercluster` vault |
 | Reflector | `infrastructure/reflector` | Copies `ghcr-login` into namespaces |

@@ -1,9 +1,9 @@
 # Plan: replace ingress-nginx with Traefik
 
-Status (2026-11-12): phases 0–4 are done. Public traffic has gone through Traefik since
-2026-09-26, and ingress-nginx is removed (see the progress log at the end). Phase 5: every route is
-a Gateway API HTTPRoute. Left: removing the unused `nginx-public` IngressClass, Traefik's Ingress
-NGINX provider and `letsencrypt-prod`.
+Status (2026-11-12): done. Public traffic has gone through Traefik since 2026-09-26, ingress-nginx is
+removed, and every route is a Gateway API HTTPRoute. The nginx compatibility (the `nginx-public`
+IngressClass, Traefik's Ingress NGINX provider) and `letsencrypt-prod` are gone too. See the progress
+log at the end.
 
 To understand this, start by reading the 2026-09-26 section of [NOTES.md](../NOTES.md), then
 [infrastructure/nginx/nginx-release.yaml](../infrastructure/nginx/nginx-release.yaml),
@@ -396,6 +396,35 @@ change (`ingress/*-route.yaml`, `infrastructure/monitoring/grafana-internal-rout
   - All 28 old host-and-path rules have a matching route on the right listener.
   - A baseline of 74 URLs through `.231` (status, redirect target, certificate) was recorded, to
     compare after the merge.
+
+**After the merge (#184).** Flux applied it between 02:14 and 02:15Z.
+
+- **Certificates:** the 15 new ones were Ready by 02:15:14. 11 of them were ready before the
+  Ingresses went at 02:14:57, so at most 5 hosts showed Traefik's default certificate, for 11–17
+  seconds.
+- **Status:** all 17 listeners are Programmed, all 43 HTTPRoutes Accepted and resolved, and Traefik
+  logged no errors.
+- **The 74-URL check:** 66 URLs behave exactly as before, and all 44 HTTPS ones present valid
+  certificates. The 8 differences are the expected ones:
+  - ebi-frontend's subdomain serves every path;
+  - one-step redirects on port 80 for `/plotboek`, `/vortexplotboek` and the vortexplotboek host;
+  - `http://gemberkoekje.nl/` redirects;
+  - kluskat answers 308;
+  - vortexplotboek's subdomain keeps the query string.
+- **Deleted by hand:** the 15 old certificate Secrets in the app namespaces. No Certificate from
+  `letsencrypt-prod` was left.
+
+**2026-11-12, the end of phase 5: the nginx leftovers removed.**
+
+- **`infrastructure/traefik/ingressclass.yaml` is deleted.** Flux prunes the `nginx-public`
+  IngressClass.
+- **Traefik's `kubernetesIngressNGINX` provider is removed.** In the chart render this drops its
+  arguments and its Ingress permissions (`ingresses`, `ingresses/status`, `ingressclasses`). The
+  Gateway provider keeps its own permissions, `namespaces` list/watch among them. The standard
+  Ingress provider stays off.
+- **`configuration/certissuer.yaml` (`letsencrypt-prod`) is deleted.** Every certificate comes from
+  `letsencrypt-gateway`. Its ACME account key, Secret `cert-manager/letsencrypt-prod`, isn't owned by
+  Flux and stays until deleted by hand.
 
 ## Sources
 
