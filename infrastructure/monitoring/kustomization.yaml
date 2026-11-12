@@ -8,7 +8,6 @@ resources:
   - grafana-alerting-provisioning.yaml
   - grafana-release.yaml
   - loki-release.yaml
-  - promtail-release.yaml
   - alloy-release.yaml
   - grafana-internal-route.yaml
 # Provisioned into Grafana by grafana-release.yaml (dashboardsConfigMaps). The name must stay

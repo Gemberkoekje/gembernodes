@@ -2459,3 +2459,29 @@ To understand this, read the "Path to 2.10" list in the Flux 2.7.5 entry above, 
 - **After the merge:** `flux check`; all Kustomizations and HelmReleases Ready on the new
   revision; `flux migrate` again (Alert/Provider storage → v1); `gotk_resource_info` still
   reports every kind.
+
+## 2026-11-12 — Promtail removed (Promtail → Alloy, step 2 of 2)
+
+To understand this, read the Alloy step 1 entry above and
+`infrastructure/monitoring/alloy-release.yaml`.
+
+- **The overlap checked out** (Alloy started 03:20Z):
+  - Each node converted Promtail's positions file.
+  - `loki_write_dropped_entries_total` is 0.
+  - Loki's label list is unchanged.
+  - Streams per app namespace are unchanged, with no pod/container/stream showing up twice with
+    different labels, and line counts didn't double.
+- **The change:**
+  - `promtail-release.yaml` is gone, along with its kustomization line. Flux prunes the
+    HelmRelease, and Helm removes the DaemonSet, RBAC and config Secret.
+  - Alloy drops `legacy_positions_file` and the read-only `/run/promtail` mount. Each node already
+    keeps its own positions in `/var/lib/alloy/data/loki.source.file.pods/positions.yml`. The pods
+    restart once and carry on from there.
+  - Comments that named Promtail now name Alloy (`loki-release.yaml`, the alert rules,
+    `repos/grafana-community-repo.yaml`), and so does MAP.md.
+- **Kept:** the `grafana` HelmRepository. Loki and Alloy still install from it.
+- **Left behind:** `/run/promtail` on the nodes. It's tmpfs, so the next reboot clears it.
+- **Checked:** the new Alloy config passes `alloy validate` inside a running Alloy pod (same
+  image), and the monitoring kustomization builds.
+- **After the merge:** Promtail's pods are gone, `ds/alloy` is 3/3 after its restart, Loki keeps
+  receiving every namespace, and there's no volume spike from re-reading files.
