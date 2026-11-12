@@ -18,6 +18,11 @@ spec:
       ingressClassResource:
         name: nginx-public
         enabled: true
+        # Phase 4 of docs/ingress-nginx-migration-plan.md: Traefik serves this class too, so it
+        # must outlive ingress-nginx. Helm leaves a resource marked "keep" in place on uninstall;
+        # infrastructure/traefik/ingressclass.yaml owns it from then on.
+        annotations:
+          helm.sh/resource-policy: keep
       ingressClass: nginx-public
       # Two replicas on different nodes so a kured drain never takes ingress down. With more
       # than one replica the chart also creates a PodDisruptionBudget (minAvailable: 1).

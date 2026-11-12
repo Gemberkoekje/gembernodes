@@ -53,9 +53,10 @@ embedded etcd. MetalLB hands out 192.168.1.230–.239 in L2 mode
 There are three ways in:
 
 - **From the internet:** `*.gemberkoekje.nl` → public IP → router (80/443) → Traefik (.231) → the
-  Ingress objects in `ingress/` → the app's Service. The Ingresses use class `nginx-public`, which
-  Traefik reads through its Ingress NGINX provider. Most apps answer on their own subdomain and on a
-  path of `gemberkoekje.nl`. Certificates come from cert-manager's `letsencrypt-prod` (HTTP-01).
+  Ingress objects in `ingress/` → the app's Service. The Ingresses use class `nginx-public`
+  (defined in `infrastructure/traefik/ingressclass.yaml`), which Traefik reads through its Ingress
+  NGINX provider. Most apps answer on their own subdomain and on a path of `gemberkoekje.nl`.
+  Certificates come from cert-manager's `letsencrypt-prod` (HTTP-01).
 - **On the LAN, by name:** `<app>.lan.gemberkoekje.nl` → Caddy (.236) →
   the in-cluster Service. The routes are in
   [infrastructure/lan-proxy/Caddyfile](infrastructure/lan-proxy/Caddyfile). Caddy serves a wildcard

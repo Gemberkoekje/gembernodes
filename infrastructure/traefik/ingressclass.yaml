@@ -1,0 +1,12 @@
+# The IngressClass every Ingress in ingress/ names. ingress-nginx's chart created it, but Traefik's
+# Ingress NGINX provider serves the Ingresses of this class (traefik-release.yaml: ingressClass
+# nginx-public, controllerClass k8s.io/ingress-nginx), so it has to outlive ingress-nginx.
+# The chart marks it helm.sh/resource-policy: keep, so uninstalling ingress-nginx leaves it in
+# place, and this file owns it from then on (docs/ingress-nginx-migration-plan.md, phase 4).
+# spec.controller can't change on a live IngressClass; keep it equal to the chart's value.
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: nginx-public
+spec:
+  controller: k8s.io/ingress-nginx
