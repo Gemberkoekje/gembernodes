@@ -39,7 +39,7 @@ spec:
         # and Jellyfin (UID 1000) can't write its databases there. This hands those folders, and
         # the backup volume's root, to UID 1000. Only these directories, never recursively.
         - name: own-dirs
-          image: busybox:1.36
+          image: busybox:1.38
           command:
             - sh
             - -c
