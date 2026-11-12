@@ -2646,3 +2646,35 @@ first; this is its step 2.
 - **Nothing changes for the apps:** the Bitnami server keeps running until PR C.
 - **After the merge:** the operator pod and its webhook are Ready, the `postgresql.cnpg.io` CRDs
   exist, and the Secret `postgresql/postgresql-superuser` has `username` and `password`.
+
+## 2026-11-12 — CloudNativePG: the Cluster and the import (PR B)
+
+To understand this, read [configuration/postgresql-cluster.yaml](configuration/postgresql-cluster.yaml)
+and [docs/cloudnativepg-migration-plan.md](docs/cloudnativepg-migration-plan.md).
+
+- **The change:** the CNPG Cluster `postgres` in namespace `postgresql`, one instance on `qnap-nfs`,
+  bootstrapped with a `monolith` import from the Bitnami server: 22 databases and 11 roles (the
+  plan's list; Chaptarr's three databases and its role left out, as decided).
+- **Image:** `ghcr.io/cloudnative-pg/postgresql:18.6-<build>-standard-trixie`, not the plan's
+  `system` flavour. `system` is deprecated (it only adds the in-tree Barman Cloud), and
+  `standard` has every locale; `minimal` only has `C.UTF-8`, and all 31 databases are
+  `en_US.UTF-8`.
+- **How the import works (read in CNPG 1.30.1's source, `pkg/management/postgres/logicalimport`):**
+  - Roles are recreated with `CREATE ROLE ... PASSWORD '<the source's SCRAM hash>'`, so the app
+    passwords carry over unchanged. Per-role settings (`ALTER ROLE ... SET`) are not copied: the
+    one we have, `spacetraders_ro`'s `default_transaction_read_only = on`, is set again by hand
+    after the import.
+  - Each database is dumped with `pg_dump -Fd` and restored with `pg_restore --create`, so it keeps
+    its owner, locale and database-level rights (most databases have no `CONNECT` for `PUBLIC`).
+    The initdb locale only matters for databases created later; it's `en_US.UTF-8` too.
+- **The rehearsal** (a throwaway Cluster `rehearsal` in namespace `pg-rehearsal`, applied by
+  hand, same spec): initdb on NFS took about 2 minutes, the roles and dumps about 1, the restore
+  about 11 (about 20 s per database, 2 minutes for spacetraders). No errors.
+- **TLS:** CNPG always offers TLS with its own certificate; Bitnami had it off. The apps use
+  Npgsql's default `SslMode=Prefer`, which accepts any certificate (checked in Npgsql 7.0 and 8.0's
+  `NpgsqlConnector`), and libpq's `prefer` doesn't check one either.
+- **Metrics left out:** annotating the pods via `inheritedMetadata` also annotates the Services,
+  and the Prometheus chart's `kubernetes-service-endpoints` job would scrape the same metrics two
+  or three times over. A scrape job on the `cnpg.io/cluster` label is the clean way; not done yet.
+- **Shutdown:** `smartShutdownTimeout: 15` (default 180 s): the apps' pooled connections keep a
+  smart shutdown waiting, the same problem the Bitnami release solved with its `preStop` hook.
