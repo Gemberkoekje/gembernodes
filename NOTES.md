@@ -2765,3 +2765,19 @@ To understand this, read the `stage.replace` block in
   chart follows an `x` range. `2.4.x` lets Flux take the next security patch by itself.
 - **After the merge:** the `connect` HelmRelease Ready on 2.4.3, the Connect and operator pods
   running the new images, and a OnePasswordItem still syncing (e.g. `postgresql-superuser`).
+
+## 2026-11-12 — Traefik chart 41.x → 42.x (Traefik 3.7.14 → 3.7.17)
+
+To understand this, read the v42.0.0 release notes of traefik/traefik-helm-chart.
+
+- **Breaking changes in 42.0.0, none of which apply:** Kubernetes 1.30+ required (we run 1.37);
+  Traefik Hub's Secret write rights scoped to its namespace; Hub transparency-log witness defaults.
+  We don't use Hub.
+- **Checked by rendering 41.7.1 and 42.3.2 with our values** (`helm template`, kube 1.37.2):
+  the only differences are the image (3.7.14 → 3.7.17) and a new `app.kubernetes.io/version`
+  label on object metadata and the pod template. It isn't in the Deployment's selector, which
+  can't change on an existing Deployment.
+- **CRDs** (`install/upgrade.crds: CreateReplace`): 42.3.2's `traefik.io` CRDs only add fields
+  (for Traefik 3.8); the only removed lines are descriptions and documentation links.
+- **After the merge:** both Traefik pods roll one at a time (maxUnavailable 0, PDB 1), the
+  HelmRelease is Ready on 42.3.2, and the 74 public routes answer as before.
