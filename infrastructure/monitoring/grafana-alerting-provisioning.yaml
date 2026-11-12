@@ -230,6 +230,76 @@ data:
             for: 15m
             annotations:
               summary: '{{ $labels.namespace }}/{{ $labels.pod }} container {{ $labels.container }} has been in {{ $labels.reason }} for 15 minutes'
+          # One alert per kill: the container's last exit was OOMKilled and it restarted in the last
+          # 10 minutes. max_over_time also catches a crash-looping container whose OOMKilled reason
+          # is overwritten by its next exit within a scrape or two (spacetraders-api, 2026-11-11).
+          # Nothing alerted when the Tailscale subnet router was OOM-killed that night; it showed up
+          # as stuttering Jellyfin streams. Backtested on 14 days: those two kills, nothing else.
+          - uid: container-oom-killed
+            title: Container killed for running out of memory
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 600
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  refId: A
+                  expr: '(max by (namespace, pod, container) (max_over_time(kube_pod_container_status_last_terminated_reason{reason="OOMKilled"}[10m])) == 1) and on (namespace, pod, container) (max by (namespace, pod, container) (increase(kube_pod_container_status_restarts_total[10m])) > 0)'
+                  instant: true
+              - refId: C
+                datasourceUid: "__expr__"
+                model:
+                  refId: C
+                  type: threshold
+                  expression: A
+                  conditions:
+                    - evaluator:
+                        type: gt
+                        params:
+                          - 0
+            noDataState: OK
+            execErrState: Error
+            for: 0s
+            annotations:
+              summary: '{{ $labels.namespace }}/{{ $labels.pod }} container {{ $labels.container }} was killed for exceeding its memory limit and restarted. Raise its memory limit if this repeats'
+          # The warning before the kill: over 90% of its memory limit and more than 50 major page
+          # faults per second. The kernel is then evicting the container's own code and reading it
+          # back from disk. That stalls the container and loads the node's disk: the router read
+          # about 300 MB/s and pushed node-02's iowait to 50%. Either half alone is noisy (promtail
+          # and qBittorrent sit above 90% for hours without trouble), the faults are not. for: 1m
+          # still catches the router's shortest episode (22:17-22:18). Backtested on 14 days: only
+          # the router's three episodes on 2026-11-11.
+          - uid: container-memory-thrashing
+            title: Container thrashing at its memory limit
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 600
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  refId: A
+                  expr: '(sum by (namespace, pod, container) (rate(container_memory_failures_total{failure_type="pgmajfault", scope="container", container!=""}[5m])) > 50) and on (namespace, pod, container) (max by (namespace, pod, container) (container_memory_working_set_bytes{container!="", container!="POD"}) / max by (namespace, pod, container) (container_spec_memory_limit_bytes{container!="", container!="POD"} > 0) > 0.9)'
+                  instant: true
+              - refId: C
+                datasourceUid: "__expr__"
+                model:
+                  refId: C
+                  type: threshold
+                  expression: A
+                  conditions:
+                    - evaluator:
+                        type: gt
+                        params:
+                          - 0
+            noDataState: OK
+            execErrState: Error
+            for: 1m
+            annotations:
+              summary: '{{ $labels.namespace }}/{{ $labels.pod }} container {{ $labels.container }} is at its memory limit and thrashing ({{ printf "%.0f" $values.A.Value }} major page faults/s). Raise its memory limit'
           - uid: node-not-ready
             title: Node not ready
             condition: C

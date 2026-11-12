@@ -41,7 +41,7 @@ embedded etcd. MetalLB hands out 192.168.1.230–.239 in L2 mode
 
 | Address | What answers |
 |---|---|
-| 192.168.1.211 | The QNAP NAS (NFS) |
+| 192.168.1.211 | The QNAP NAS (NFS). It keeps a local backup and copies offsite nightly (Hybrid Backup Sync), which covers everything the cluster stores there |
 | 192.168.1.231 | Traefik: the router forwards public 80/443 here. Also serves Grafana at `/grafana` and the SpaceTraders dashboard (LAN only) |
 | 192.168.1.232 | PostgreSQL, for LAN clients (in the cluster: `postgresql.flux-system.svc.cluster.local`) |
 | 192.168.1.233 | print-manager-test (80, 631, 8100, 8101) |
@@ -84,7 +84,7 @@ SpaceTraders dashboard (`http://192.168.1.231/spacetraders/dashboard/`) and Graf
 | **Secrets**: 1Password Connect and operator | [infrastructure/externalsecrets/](infrastructure/externalsecrets/) | Each `OnePasswordItem` (`vaults/Gembercluster/items/<name>`) becomes a Secret of the same name in its namespace. The items sit next to the app that uses them |
 | Image pull secret `ghcr-login` | [infrastructure/reflector/](infrastructure/reflector/) | Reflector copies it into every namespace (a few apps also have their own copy as a `OnePasswordItem`) |
 | **NFS volumes**: StorageClass `qnap-nfs` | [infrastructure/nfs-provisioner/](infrastructure/nfs-provisioner/) | Most PVCs, kept in [infrastructure/pvcs/](infrastructure/pvcs/) (one file per namespace). On the NAS at `/gembernodes-pvcs/<namespace>/<pvc>` |
-| **Node disk**: StorageClass `local-path` | built into k3s | SQLite, which must stay off NFS: Jellyfin, Maintainerr, Audiobookshelf's config, Chaptarr. Each pins its pod to one node |
+| **Node disk**: StorageClass `local-path` | built into k3s | SQLite, which must stay off NFS: Jellyfin, Maintainerr, Audiobookshelf's config, Chaptarr. Each pins its pod to one node. These volumes aren't on the NAS, so its backups don't cover them; Jellyfin's weekly backup puts its database there |
 | The Multimedia share | `infrastructure/pvcs/zeef.yaml` (static PV `multimedia-nfs`, PVC `zeef/multimedia`) | Zeef's media apps, mounted at `/data` (Jellyfin: `/media`, read-only) |
 | **Certificates**: cert-manager | [infrastructure/certmanager/](infrastructure/certmanager/), issuers in [configuration/](configuration/) | The public Gateway's listeners (`letsencrypt-gateway`, Secrets in `traefik`), the public Ingresses (`letsencrypt-prod`) and Caddy's wildcard certificate (`letsencrypt-lan`) |
 
