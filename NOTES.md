@@ -1795,3 +1795,24 @@ To understand this, read [MAP.md](MAP.md), then [CLAUDE.md](CLAUDE.md).
     `scripts/validate.py` doesn't treat archived files as manifests.
 - **The Traefik header comment is fixed.** It still said the router sent public traffic to
   ingress-nginx on .230. The router has pointed at Traefik (.231) since 2026-09-26.
+
+## 2026-11-12 — Traefik phase 4, step 1: keep the IngressClass
+
+To understand this, read phase 4 and the last progress-log entry in
+[docs/ingress-nginx-migration-plan.md](docs/ingress-nginx-migration-plan.md), then
+`infrastructure/traefik/ingressclass.yaml`.
+
+- **Why.** ingress-nginx gets no security fixes and has served nothing since the cutover, so it can
+  go. Uninstalling it would make Helm delete IngressClass `nginx-public`, which every Ingress names
+  and which Traefik's Ingress NGINX provider serves. Step 1 makes the class survive the uninstall.
+- **Change:**
+  - The keep annotation in `infrastructure/nginx/nginx-release.yaml`.
+  - The IngressClass in `infrastructure/traefik/ingressclass.yaml`, listed in its
+    `kustomization.yaml`.
+  - A line in MAP.md saying where the class is defined.
+- **Checked:**
+  - Chart 4.15.1 renders the annotation, and nothing else in the render changes.
+  - A server-side dry run as kustomize-controller accepted the IngressClass.
+  - `flux build` of `infrastructure` passes.
+  - The checks for removal (certificates, traffic, Grafana) are in the plan's log.
+- **The next PR (step 2) waits** until the live IngressClass shows the keep annotation.

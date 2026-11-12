@@ -1,7 +1,8 @@
 # Plan: replace ingress-nginx with Traefik
 
-Status (2026-09-26): phases 0–3 are done, and public traffic goes through Traefik (see the
-progress log at the end). Next: phase 4, removing ingress-nginx, after a few quiet days.
+Status (2026-11-12): phases 0–3 are done, and public traffic has gone through Traefik since
+2026-09-26 (see the progress log at the end). Phase 4 has started: step 1 keeps the IngressClass.
+Next: steps 2 and 3, once the live IngressClass carries the keep annotation.
 
 To understand this, start by reading the 2026-09-26 section of [NOTES.md](../NOTES.md), then
 [infrastructure/nginx/nginx-release.yaml](../infrastructure/nginx/nginx-release.yaml),
@@ -243,6 +244,34 @@ on 2026-09-26 around 16:02Z; check `kubectl get certificate -A`) and a night's k
 cycle. Decision for phase 4: Traefik keeps `192.168.1.231`, since the router already points there,
 so ingress-nginx's `.230` is simply released. That means `grafana.ini.server.domain` and Grafana
 bookmarks move to `.231`.
+
+**2026-11-12, phase 4 step 1.** First, the checks for removal:
+
+- **Certificates renew through Traefik.** cert-manager has issued six through Traefik's HTTP-01
+  solver since the cutover, among them the two ebi-cs-api ones (15:04Z on 2026-09-26). The nine
+  issued at about 09:10Z on 2026-09-26 renew around 2026-11-25.
+- **ingress-nginx serves nothing.** Its two pods (up since 2026-11-08 and 2026-11-09) served one
+  request in that time, a test. No Grafana alert or dashboard uses its metrics.
+- **Grafana works on `.231`.** `/grafana` answers there as well as on `.230`. Grafana's `domain` has
+  been `grafana.lan.gemberkoekje.nl` since 2026-11-06, so the `grafana.ini.server.domain` change in
+  phase 3 no longer applies.
+
+The change itself:
+
+- `nginx-release.yaml` sets `controller.ingressClassResource.annotations` to
+  `helm.sh/resource-policy: keep`. Chart 4.15.1 has that value. Rendered with the full values, the
+  chart differs from before only by the annotation.
+- `infrastructure/traefik/ingressclass.yaml` declares `nginx-public` with controller
+  `k8s.io/ingress-nginx`, the same as the live object. A server-side dry run as kustomize-controller
+  accepted it.
+
+**Before step 2:** `kubectl get ingressclass nginx-public -o yaml` must show the
+`helm.sh/resource-policy: keep` annotation and the `kustomize.toolkit.fluxcd.io/*` labels. Helm
+reads the policy from its stored release, so the upgrade has to have run, not just the merge.
+
+**Step 2 then also covers** step 3 (`publishService`), releasing `.230`, and updating MAP.md, the
+Traefik and Grafana comments, the spacetraders Ingress comment and this plan. A Grafana bookmark on
+`http://192.168.1.230/grafana` stops working; use `https://grafana.lan.gemberkoekje.nl`.
 
 ## Sources
 
