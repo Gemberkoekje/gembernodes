@@ -110,7 +110,7 @@ on 2026-11-12 (NOTES.md).
   `https://homeassistant.lan.gemberkoekje.nl`. It works at home and over Tailscale alike.
 - [ ] **Look at the Marketplace** (Settings → Marktplaats): HACS, built in. Browsing and installing
   from its catalog needs no GitHub account. Connecting GitHub (Settings → Devices & services →
-  Marktplaats → Reconfigure) is only needed for custom repositories, which phase 4 does need.
+  Marktplaats → Reconfigure) is only needed for custom repositories, which phases 3 and 4 both need.
 - [ ] Enable HA's **automatic backups** (daily, keep ~7). They land in `/config/backups`, on the NAS.
   HA encrypts them: **store the encryption key in 1Password**, or the backups can't be restored.
 - [ ] Install the **HA Companion app** on the phone. It's the notification target for Phase 5.
@@ -123,7 +123,7 @@ on 2026-11-12 (NOTES.md).
 ## Phase 3 — Calex lamps (local)
 
 1. **Quick win (optional, ~5 min):** add the built-in **Tuya** integration. Enter the User Code from the Calex app (Account → Settings → Account and Security) and scan the QR code with the Calex app. This confirms the lamps are reachable and gives temporary cloud control.
-2. **Install `tuya-local`** from the Marketplace (Settings → Marktplaats, search "Tuya Local", `make-all/tuya-local`), then restart HA.
+2. **Install `tuya-local`** (`make-all/tuya-local`, shown as "Tuya Local"), then restart HA. It is **not in the Marketplace's own catalog** (checked 2026-11-12; its README says to add it as a custom repository). So: connect the Marketplace to GitHub (phase 2), then in Settings → Marktplaats use ⋮ → Custom repositories to add `https://github.com/make-all/tuya-local` (category: Integration), and download it. Don't confuse it with **LocalTuya** ("Local Tuya", `rospogrigio/localtuya`), which *is* in the catalog: a different project that needs Tuya developer-platform credentials (Client ID, Secret, User ID) instead of the Calex app's User Code.
 3. Add each lamp through tuya-local's **cloud-assisted setup**. It logs in to Tuya once to fetch each device's ID and **local key**, then finds the lamp on the LAN (192.168.1.50–.59). Do lamps **one at a time** and label them physically.
 4. Once all lamps work through tuya-local, **remove the cloud Tuya integration** to avoid duplicate entities.
 5. Group lamps into Areas.
