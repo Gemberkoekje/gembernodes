@@ -2846,3 +2846,24 @@ and the "Upgrading" section of the community chart's README (grafana-community/h
 - **Deleted** with `kubectl delete` (the ReplicaSet, pod and EndpointSlice went with them). A
   `grafana-loki` HelmRelease reconcile afterwards didn't bring them back; Loki kept ingesting and
   Alloy logged no push errors.
+
+## 2026-11-12 — Pruned unused container images on the nodes
+
+- **Why:** root disks were at 80% (gembernode-01) and 81% (-03); the kubelet only garbage-collects
+  images above 85%, and every deploy with a new tag leaves the old image behind (as in September).
+- **How, without SSH:** a `kubectl debug node/<node> --profile=sysadmin --image=busybox:1.37` pod per
+  node, running `chroot /host /usr/local/bin/k3s crictl --timeout 120s rmi --prune` (as root, so
+  no sudo or password). One node at a time, checking its pods after each; the debug pods (in
+  `default`) were deleted afterwards. `--prune` only removes images no running container uses;
+  anything removed is pulled again when next needed (CronJobs, a pod moving node).
+- **Gotcha:** from Git Bash, set `MSYS_NO_PATHCONV=1`, or `/host` becomes `C:/Program Files/Git/host`
+  and the chroot fails (nothing runs on the node; the first attempt did exactly that).
+- **Result:**
+
+  | Node | Before | After | Images |
+  |---|---|---|---|
+  | gembernode-01 | 80% (44 GB) | 45% (25 GB) | 224 → 37 |
+  | gembernode-02 | 58% (31 GB) | 31% (17 GB) | 125 → 30 |
+  | gembernode-03 | 81% (44 GB) | 47% (25 GB) | 157 → 43 |
+
+  About 52 GB freed in total. Every pod stayed up.
