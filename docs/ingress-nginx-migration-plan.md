@@ -1,8 +1,9 @@
 # Plan: replace ingress-nginx with Traefik
 
 Status (2026-11-12): phases 0–4 are done. Public traffic has gone through Traefik since
-2026-09-26, and ingress-nginx is removed (see the progress log at the end). Phase 5 has started:
-routes move to the Gateway API, kluskat first.
+2026-09-26, and ingress-nginx is removed (see the progress log at the end). Phase 5: every route is
+a Gateway API HTTPRoute. Left: removing the unused `nginx-public` IngressClass, Traefik's Ingress
+NGINX provider and `letsencrypt-prod`.
 
 To understand this, start by reading the 2026-09-26 section of [NOTES.md](../NOTES.md), then
 [infrastructure/nginx/nginx-release.yaml](../infrastructure/nginx/nginx-release.yaml),
@@ -359,6 +360,42 @@ before the merge:
   `https://<host>/<path>?<query>`, so `kluskat-route.yaml` drops it.
 - **Cleaned up:** the old Secret `kluskat/kluskat-tls`. Nothing referenced it once its Ingress and
   Certificate were gone.
+
+**2026-11-12, phase 5: all the other routes.** The 16 remaining Ingresses became HTTPRoutes in one
+change (`ingress/*-route.yaml`, `infrastructure/monitoring/grafana-internal-route.yaml`).
+
+- **The Gateway gained 15 listeners:** one per subdomain, plus `https-gemberkoekje-nl` for the bare
+  domain. Ten apps also answer on a path of it, and its `allowedRoutes` lists their namespaces.
+- **Every host's port 80 redirects with 308,** as nginx's `ssl-redirect` did; kluskat moved from
+  301 to 308 to match.
+- **The special cases:**
+  - **ebi-frontend:** `rewrite-target /$2` became a `URLRewrite` that strips `/ebi-frontend`. Its
+    subdomain's regex `/(/|$)(.*)` had only let `/` itself through (its assets gave 404); now every
+    path reaches the app.
+  - **plotboek:** the `/plotboek` short link became a `RequestRedirect` to `plotboek.gemberkoekje.nl`
+    with the prefix replaced by `/`.
+  - **vortexplotboek:** both redirects are `RequestRedirect`s, with no backend. Its pod-less Service
+    went to `archive/`. The subdomain's redirect now keeps the query string, which nginx dropped.
+  - **LAN-only paths:** `/grafana` and `/spacetraders/*` are HTTPRoutes without a hostname on
+    `http`, behind a Traefik `ipAllowList` Middleware via `ExtensionRef`.
+  - **Not carried over:** nginx's `proxy-buffer-*` (plotboek's and vortexplotboek's OIDC cookies)
+    and `proxy-body-size: 200m` (fileserver), since Traefik has no such small limits.
+- **Tested first on throwaway routes** (fake hostnames on `http`, a `whoami` echo backend, deleted
+  afterwards):
+  - the rewrite (`/ebi-frontend/a/b?q=1` arrived as `/a/b?q=1`; `/ebi-frontendx` didn't match);
+  - both redirect styles, with path and query as above;
+  - 308, with no port in the Location;
+  - the allowlist (200 from the LAN, 403 when excluded).
+- **A finding from that test:** a route without a hostname for a longer path beat a
+  hostname-specific catch-all. Traefik ranks path length above hostname, so the LAN-only paths win
+  on every hostname's port 80. They did as host-less Ingresses too, and the allowlist covers them.
+- **Checked before the merge:**
+  - Server-side dry runs of all objects, and `flux build` of apps, infrastructure and ingress (42
+    HTTPRoutes, no Ingress left).
+  - Every manifest is applied by a Kustomization.
+  - All 28 old host-and-path rules have a matching route on the right listener.
+  - A baseline of 74 URLs through `.231` (status, redirect target, certificate) was recorded, to
+    compare after the merge.
 
 ## Sources
 

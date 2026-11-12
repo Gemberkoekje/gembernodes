@@ -7,7 +7,6 @@ resources:
   - bot-on-the-clocktower
   - ebi-cs-api
   - ebi-cs-frontend
-  - vortexplotboek
   - cov-website
   - curatool
   - healthcheck

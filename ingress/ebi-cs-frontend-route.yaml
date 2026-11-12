@@ -1,0 +1,75 @@
+# ebi-frontend.gemberkoekje.nl through the public Gateway (infrastructure/traefik/gateway.yaml),
+# set up like every public route (CLAUDE.md, "Public routes").
+# Also on gemberkoekje.nl/ebi-frontend.
+#
+# On gemberkoekje.nl the app lives under /ebi-frontend, which is stripped before the request
+# reaches it (nginx's old rewrite-target /$2). Its subdomain used to match the regex
+# "/(/|$)(.*)", which only let "/" itself through; now every path reaches the app.
+#
+# Port 80: redirect to HTTPS (308, so a POST stays a POST). cert-manager's ACME challenge routes on
+# the same listener match an exact path, so they take precedence over this catch-all.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: ebi-cs-frontend-redirect
+  namespace: ebi-cs-api
+spec:
+  parentRefs:
+    - name: public
+      namespace: traefik
+      sectionName: http
+  hostnames:
+    - ebi-frontend.gemberkoekje.nl
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: 308
+---
+# Port 443: the app. TLS ends at the Gateway; HSTS comes from Traefik's websecure entrypoint.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: ebi-cs-frontend
+  namespace: ebi-cs-api
+spec:
+  parentRefs:
+    - name: public
+      namespace: traefik
+      sectionName: https-ebi-frontend
+  hostnames:
+    - ebi-frontend.gemberkoekje.nl
+  rules:
+    - backendRefs:
+        - name: ebi-cs-frontend-service
+          port: 80
+---
+# gemberkoekje.nl/ebi-frontend, on the shared https-gemberkoekje-nl listener,
+# with the prefix stripped.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: ebi-cs-frontend-apex
+  namespace: ebi-cs-api
+spec:
+  parentRefs:
+    - name: public
+      namespace: traefik
+      sectionName: https-gemberkoekje-nl
+  hostnames:
+    - gemberkoekje.nl
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /ebi-frontend
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: ebi-cs-frontend-service
+          port: 80

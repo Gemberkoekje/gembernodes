@@ -1,0 +1,65 @@
+# hackerminigames.gemberkoekje.nl through the public Gateway (infrastructure/traefik/gateway.yaml),
+# set up like every public route (CLAUDE.md, "Public routes").
+# Also on gemberkoekje.nl/hackerminigames.
+#
+# Port 80: redirect to HTTPS (308, so a POST stays a POST). cert-manager's ACME challenge routes on
+# the same listener match an exact path, so they take precedence over this catch-all.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: hackerminigames-redirect
+  namespace: hackerminigames
+spec:
+  parentRefs:
+    - name: public
+      namespace: traefik
+      sectionName: http
+  hostnames:
+    - hackerminigames.gemberkoekje.nl
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: 308
+---
+# Port 443: the app. TLS ends at the Gateway; HSTS comes from Traefik's websecure entrypoint.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: hackerminigames
+  namespace: hackerminigames
+spec:
+  parentRefs:
+    - name: public
+      namespace: traefik
+      sectionName: https-hackerminigames
+  hostnames:
+    - hackerminigames.gemberkoekje.nl
+  rules:
+    - backendRefs:
+        - name: hackerminigames-service
+          port: 80
+---
+# gemberkoekje.nl/hackerminigames, on the shared https-gemberkoekje-nl listener.
+# The app gets the path as is.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: hackerminigames-apex
+  namespace: hackerminigames
+spec:
+  parentRefs:
+    - name: public
+      namespace: traefik
+      sectionName: https-gemberkoekje-nl
+  hostnames:
+    - gemberkoekje.nl
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /hackerminigames
+      backendRefs:
+        - name: hackerminigames-service
+          port: 80
