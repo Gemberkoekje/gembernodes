@@ -1890,3 +1890,16 @@ To understand this, read the "Public routes" section of [CLAUDE.md](CLAUDE.md), 
   - `https://kluskat.gemberkoekje.nl` answers with a valid certificate and an HSTS header, and
     `http://` gives a 301 to `https://` without a port.
   - Then delete the old Secret `kluskat/kluskat-tls`.
+
+## 2026-11-12 — kluskat's Gateway route checked; redirect without a port
+
+To understand this, read `ingress/kluskat-route.yaml`, then the last progress-log entry in
+[docs/ingress-nginx-migration-plan.md](docs/ingress-nginx-migration-plan.md).
+
+- **Everything from the list above checked out** except one thing. kluskat's certificate came from
+  the Gateway in about 40 seconds, and HTTPS, HSTS and the public IP all work. The old
+  `kluskat/kluskat-tls` Secret is deleted.
+- **The exception:** the HTTP redirect's Location carried `:443`, because the redirect filter set
+  `port: 443`. Without `port`, Traefik leaves the port out (tested with a throwaway HTTPRoute,
+  deleted again), so the filter now only sets `scheme: https` and `statusCode: 301`.
+  `kluskat-route.yaml` is the model that CLAUDE.md tells new routes to copy.

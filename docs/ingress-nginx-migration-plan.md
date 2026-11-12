@@ -343,6 +343,23 @@ before the merge:
   HTTPRoutes and both HelmReleases.
 - **Built:** infrastructure, configuration and ingress, with `kubectl kustomize` and `flux build`.
 
+**After the merge (#168).** Flux applied it at about 00:48Z.
+
+- **The Gateway came up.** GatewayClass `traefik` is Accepted, and Gateway `public` is Programmed
+  on 192.168.1.231 with both listeners Programmed. Both HTTPRoutes are Accepted and resolved.
+- **The certificate was issued in about 40 seconds:** `traefik/kluskat-tls` from Let's Encrypt
+  (YR2), Ready at 00:48:56Z, through the temporary HTTPRoute on `http`. So the exact-path challenge
+  route did win over the redirect. cert-manager logged "ACME client for issuer not initialised" a
+  few times until `letsencrypt-gateway` had registered its account; that's harmless.
+- **kluskat works:** HTTPS with a valid certificate, the app's own login redirect, and the HSTS
+  header (the websecure entrypoint's middleware also covers Gateway routes). It answers through
+  the public IP as well. The other 15 hosts answer as before.
+- **One fix:** the HTTP redirect said `https://kluskat.gemberkoekje.nl:443/…`, because the filter
+  set `port: 443`. A throwaway HTTPRoute without `port` gave a clean
+  `https://<host>/<path>?<query>`, so `kluskat-route.yaml` drops it.
+- **Cleaned up:** the old Secret `kluskat/kluskat-tls`. Nothing referenced it once its Ingress and
+  Certificate were gone.
+
 ## Sources
 
 - Kubernetes blog, [Ingress NGINX Retirement: What You Need to Know](https://www.kubernetes.io/blog/2025/11/11/ingress-nginx-retirement/) (2025-11-11)
