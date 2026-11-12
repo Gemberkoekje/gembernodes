@@ -123,10 +123,12 @@ spec:
                 limits:
                   memory: 64Mi
           containers:
-            # jellyfin.db, plus the Kodi Sync Queue plugin's two databases.
+            # Only jellyfin.db. The Kodi Sync Queue plugin's kodisyncqueue*.db files next to it are
+            # LiteDB, not SQLite ("file is not a database"), and only hold changes for Kodi clients
+            # to fetch; without them Kodi does a fuller sync.
             - name: backup
               image: python:3.15.2-alpine3.24
-              command: ["python", "/scripts/backup.py", "jellyfin", "/config/data", "*.db"]
+              command: ["python", "/scripts/backup.py", "jellyfin", "/config/data", "jellyfin.db"]
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:
