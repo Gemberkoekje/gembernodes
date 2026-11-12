@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - onepassword-repo.yaml
   - grafana-repo.yaml
+  - grafana-community-repo.yaml
   - metallb-repo.yaml
   - postgresql-repo.yaml
   - prometheus-repo.yaml
