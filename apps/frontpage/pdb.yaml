@@ -1,0 +1,11 @@
+# kured drains one node at a time; this keeps one front page pod serving while it does.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: frontpage
+  namespace: frontpage
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: frontpage

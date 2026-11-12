@@ -2598,3 +2598,36 @@ To understand this, read the step 1 entry above and `clusters/home/flux-system/k
   - `namespaces`' inventory no longer lists it.
   - A `namespaces` reconcile no longer "configures" it.
   - No more DependencyNotReady waves.
+
+## 2026-11-12 — The front page on gemberkoekje.nl
+
+To understand this, read `apps/frontpage/rbac.yaml` and `ingress/frontpage-route.yaml`, then the
+app's own design in Gemberkoekje/projects `FrontPage/DESIGN.md`.
+
+- **What:** `gemberkoekje.nl/` served a 404. It now serves the front page (`frontpage`, image
+  `ghcr.io/gemberkoekje/frontpage`, built by the projects repo): who I am, the public and private
+  tools, and a live summary of this cluster.
+- **The route:** one HTTPRoute on the shared `https-gemberkoekje-nl` listener with `PathPrefix: /`,
+  and `frontpage` added to that listener's `allowedRoutes`. Every longer path keeps its app:
+  `/adventureengine`, `/dnd`, `/plotboek`, `/healthcheck` and the rest win on length. Port 80
+  already redirects through `gemberkoekje-nl-route.yaml` (its comment no longer says "/" is a 404).
+- **The live view and its access:** the browser asks the app's `/api/cluster`, which answers from
+  memory; each pod reads the cluster every 30 seconds as ServiceAccount `frontpage`. Its
+  ClusterRole can only `get`/`list` nodes, pods, Deployments, StatefulSets and node metrics, and
+  `get` the GitRepository named `flux-system`. No edit or admin (the Flux escalation in the Security
+  quirk of the cluster notes). What leaves the app: node names, Ready, CPU and memory %, the kubelet
+  version, pod and app counts, the gembernodes commit, and up/down for the tools on the page.
+- **Hardened because it's the front door:** namespace on Pod Security `restricted`; non-root,
+  read-only root filesystem (an `emptyDir` for `/tmp`), no capabilities, `RuntimeDefault` seccomp;
+  two replicas spread over the nodes with a PodDisruptionBudget of one, so kured never drains both.
+- **Checked:** `flux build kustomization` for namespaces, apps, ingress and infrastructure; a
+  server-side dry run of the Namespace, ClusterRole and ClusterRoleBinding; the image run locally
+  with a read-only root filesystem and no capabilities, reading the live cluster through a
+  kubeconfig (about 77 MiB, limit 192 Mi). `scripts/validate.py` stops at kubeconform on this PC;
+  the pull request's CI runs it.
+- **After the merge:**
+  - `https://gemberkoekje.nl/` shows the page; `/adventureengine`, `/dnd` and `/plotboek` still
+    reach their apps.
+  - `https://gemberkoekje.nl/api/cluster` says `"available": true` with three nodes.
+  - `kubectl auth can-i --as=system:serviceaccount:frontpage:frontpage list pods -A` says yes,
+    and `create deployments -n frontpage` says no.

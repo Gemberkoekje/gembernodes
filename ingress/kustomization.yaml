@@ -11,6 +11,7 @@ resources:
   - ebi-cs-api-route.yaml
   - ebi-cs-frontend-route.yaml
   - fileserver-route.yaml
+  - frontpage-route.yaml
   - gemberkoekje-nl-route.yaml
   - hackerminigames-route.yaml
   - healthcheck-route.yaml

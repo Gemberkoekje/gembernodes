@@ -56,7 +56,8 @@ There are three ways in:
   (`infrastructure/traefik/gateway.yaml`), which has these listeners:
   - **`http`:** every host's redirect to HTTPS (308), plus the LAN-only paths below.
   - **`https-gemberkoekje-nl`:** the bare domain, shared by the apps that also answer on a path of
-    it (`/adventureengine`, `/dnd`, `/plotboek`...).
+    it (`/adventureengine`, `/dnd`, `/plotboek`...). Every other path, `/` included, is the front
+    page (`frontpage`): its `PathPrefix: /` loses to any longer path.
   - **`https-<app>`:** one per subdomain.
 
   cert-manager issues each HTTPS listener's certificate through `letsencrypt-gateway` (HTTP-01 via a
@@ -107,6 +108,7 @@ every node.
 | dungeontable | `apps/dungeontable` | `dungeontable.gemberkoekje.nl` | PostgreSQL, NFS volumes (uploads, data protection keys) |
 | ebi-cs-api, ebi-cs-frontend | `apps/ebi-cs-api`, `apps/ebi-cs-frontend` → both in `ebi-cs-api` | `ebi-cs-api.`, `ebi-frontend.gemberkoekje.nl` | PostgreSQL |
 | fileserver (File Browser) | `apps/fileserver` → `file-server` | `fileserver.gemberkoekje.nl` | NFS volume |
+| frontpage | `apps/frontpage` | `gemberkoekje.nl/` | Its own read-only ClusterRole (`apps/frontpage/rbac.yaml`): nodes, pods, Deployments, StatefulSets, node metrics (metrics-server) and the `flux-system` GitRepository, for the page's live cluster view |
 | hackerminigames | `apps/hackerminigames` | `hackerminigames.gemberkoekje.nl` | |
 | healthcheck | `apps/healthcheck` → `cluster-healthcheck` | `healthcheck.gemberkoekje.nl` | A static page served by Caddy |
 | kluskat | `apps/kluskat` | `kluskat.gemberkoekje.nl` | PostgreSQL |
