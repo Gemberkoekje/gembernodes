@@ -3,7 +3,8 @@
 # where cert-manager issues the certificate.
 #
 # Port 80: redirect to HTTPS. cert-manager's ACME challenge routes on the same listener match an
-# exact path, so they take precedence over this catch-all.
+# exact path, so they take precedence over this catch-all. No port in the filter: Traefik then
+# leaves it out of the Location header, while an explicit 443 shows up there as ":443".
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -21,7 +22,6 @@ spec:
         - type: RequestRedirect
           requestRedirect:
             scheme: https
-            port: 443
             statusCode: 301
 ---
 # Port 443: the app. TLS ends at the Gateway; HSTS comes from Traefik's websecure entrypoint.
