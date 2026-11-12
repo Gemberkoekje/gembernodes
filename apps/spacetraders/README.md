@@ -122,9 +122,8 @@ Then, once the bot has started:
    REVOKE SELECT ON stored_credentials FROM spacetraders_ro;
    ```
 
-4. Open http://192.168.1.231/spacetraders/dashboard/ on the LAN (`.230` works too while
-   ingress-nginx runs). From outside it, for example a phone on mobile data,
-   https://gemberkoekje.nl/spacetraders/dashboard/ must be refused.
+4. Open http://192.168.1.231/spacetraders/dashboard/ on the LAN. From outside it, for example a
+   phone on mobile data, https://gemberkoekje.nl/spacetraders/dashboard/ must be refused.
 
 What to watch in the first hours and days is slice 4.3 of the plan.
 

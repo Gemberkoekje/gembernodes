@@ -1,8 +1,7 @@
 # Plan: replace ingress-nginx with Traefik
 
-Status (2026-11-12): phases 0–3 are done, and public traffic has gone through Traefik since
-2026-09-26 (see the progress log at the end). Phase 4 has started: step 1 keeps the IngressClass.
-Next: steps 2 and 3, once the live IngressClass carries the keep annotation.
+Status (2026-11-12): phases 0–4 are done. Public traffic has gone through Traefik since
+2026-09-26, and ingress-nginx is removed (see the progress log at the end). Phase 5 is optional.
 
 To understand this, start by reading the 2026-09-26 section of [NOTES.md](../NOTES.md), then
 [infrastructure/nginx/nginx-release.yaml](../infrastructure/nginx/nginx-release.yaml),
@@ -272,6 +271,27 @@ reads the policy from its stored release, so the upgrade has to have run, not ju
 **Step 2 then also covers** step 3 (`publishService`), releasing `.230`, and updating MAP.md, the
 Traefik and Grafana comments, the spacetraders Ingress comment and this plan. A Grafana bookmark on
 `http://192.168.1.230/grafana` stops working; use `https://grafana.lan.gemberkoekje.nl`.
+
+**2026-11-12, phase 4 steps 2–4.** Step 1 was live first. Helm release v16 is `deployed`, and its
+stored manifest has the IngressClass with `helm.sh/resource-policy: keep`. The live object carries
+that annotation and Flux's `kustomize.toolkit.fluxcd.io/*` labels.
+
+- **Step 2:** `infrastructure/nginx/` and `repos/nginx-repo.yaml` are deleted and dropped from
+  their `kustomization.yaml`. On the merge, Flux prunes the HelmRelease and helm-controller
+  uninstalls ingress-nginx: its Deployment, its LoadBalancer Service on `.230` and its admission
+  webhook go, and the IngressClass stays.
+- **Step 3:** Traefik's NGINX provider has `publishService.enabled: true`, so the Ingresses' status
+  shows `192.168.1.231` instead of ingress-nginx's stale `.230`.
+- **Step 4:** Traefik keeps `.231`, and `.230` is free in the MetalLB pool.
+- **Text that pointed at `.230` or ingress-nginx** now points at `.231` or Traefik: MAP.md,
+  `traefik-release.yaml`, `ingressclass.yaml`, `grafana-release.yaml`, `traefik-hsts.yaml`, the
+  spacetraders Ingress and README, and the print-manager-test Service.
+- **After the merge, check:**
+  - No pods labelled `app.kubernetes.io/name=ingress-nginx` remain, and the HelmRelease is gone.
+  - IngressClass `nginx-public` is still there.
+  - `kubectl get ingress -A` shows `192.168.1.231` everywhere.
+  - The sites answer through `.231`.
+  - No ingress-nginx ValidatingWebhookConfiguration is left.
 
 ## Sources
 

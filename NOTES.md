@@ -1816,3 +1816,33 @@ To understand this, read phase 4 and the last progress-log entry in
   - `flux build` of `infrastructure` passes.
   - The checks for removal (certificates, traffic, Grafana) are in the plan's log.
 - **The next PR (step 2) waits** until the live IngressClass shows the keep annotation.
+
+## 2026-11-12 — Traefik phase 4, steps 2–4: ingress-nginx removed
+
+To understand this, read the last progress-log entry in
+[docs/ingress-nginx-migration-plan.md](docs/ingress-nginx-migration-plan.md), then
+`infrastructure/traefik/traefik-release.yaml` and `infrastructure/traefik/ingressclass.yaml`.
+
+- **Step 1 was live first.** Helm release v16 is `deployed` and stores the IngressClass with
+  `helm.sh/resource-policy: keep`. The live object has the annotation and Flux's labels.
+- **Removed:** `infrastructure/nginx/` (the HelmRelease: the controller, its LoadBalancer on .230
+  and its admission webhook) and `repos/nginx-repo.yaml`.
+- **Traefik's `publishService` is on.** The Ingresses' status shows .231 instead of ingress-nginx's
+  stale .230. In the chart render this adds one argument,
+  `--providers.kubernetesingressnginx.publishservice=traefik/traefik`; the ClusterRole already
+  allows updating `ingresses/status`.
+- **.230 is free.** Grafana by IP is now `http://192.168.1.231/grafana`; the main address stays
+  `https://grafana.lan.gemberkoekje.nl`.
+- **Text updated** wherever it still pointed at .230 or ingress-nginx: MAP.md, the plan, and the
+  comments in the Traefik release, the IngressClass, the Grafana release, the HSTS middleware, the
+  spacetraders Ingress and README, and the print-manager-test Service.
+- **Checked:**
+  - The Traefik render differs only by the `publishService` argument.
+  - A server-side dry run of the HelmRelease was accepted.
+  - `kubectl kustomize` builds infrastructure, repos, configuration, ingress and apps, and
+    `flux build` builds infrastructure and repos with no nginx objects left.
+- **Left behind by the uninstall:** `kube-system/nginx-ingress-public-ingress-nginx-admission`, the
+  webhook's certificate secret. A hook job created it, so Helm doesn't track it. Three more such
+  secrets survive from ingress-nginx releases removed over a year ago
+  (`nginx-ingress-ingress-nginx-admission`, `nginx-ingress-internal-…`, `nginx-ingress-private-…`).
+  None is used, and none is in Git; delete them by hand.

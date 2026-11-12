@@ -39,8 +39,8 @@ spec:
       server:
         # Grafana is reached at https://grafana.lan.gemberkoekje.nl (LAN and Tailscale only), through
         # the LAN name switchboard in infrastructure/lan-proxy. root_url is built from this, and so
-        # are the links in alert emails. The old route, http://192.168.1.230/grafana through the
-        # ingress-nginx VIP (grafana-internal-ingress.yaml), keeps working until ingress-nginx goes.
+        # are the links in alert emails. On the LAN, http://192.168.1.231/grafana (Traefik, through
+        # grafana-internal-ingress.yaml) works too.
         domain: grafana.lan.gemberkoekje.nl
         # https: the name is served with a Let's Encrypt certificate by infrastructure/lan-proxy.
         root_url: "https://%(domain)s/grafana/"

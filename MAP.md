@@ -42,8 +42,7 @@ embedded etcd. MetalLB hands out 192.168.1.230–.239 in L2 mode
 | Address | What answers |
 |---|---|
 | 192.168.1.211 | The QNAP NAS (NFS) |
-| 192.168.1.230 | ingress-nginx: retired, still running until it is removed ([docs/ingress-nginx-migration-plan.md](docs/ingress-nginx-migration-plan.md), phase 4). Also serves Grafana at `/grafana` |
-| 192.168.1.231 | Traefik: the router forwards public 80/443 here |
+| 192.168.1.231 | Traefik: the router forwards public 80/443 here. Also serves Grafana at `/grafana` and the SpaceTraders dashboard (LAN only) |
 | 192.168.1.232 | PostgreSQL, for LAN clients (in the cluster: `postgresql.flux-system.svc.cluster.local`) |
 | 192.168.1.233 | print-manager-test (80, 631, 8100, 8101) |
 | 192.168.1.234 | The Zeef web UIs, one port per app ([apps/zeef/README.md](apps/zeef/README.md)) |
@@ -69,7 +68,7 @@ There are three ways in:
 
 Reachable on the LAN by IP only, with an allowlist of 192.168.0.0/16 and 10.0.0.0/8: the
 SpaceTraders dashboard (`http://192.168.1.231/spacetraders/dashboard/`) and Grafana
-(`http://192.168.1.230/grafana`). Dockhand listens on NodePort 30080 on every node.
+(`http://192.168.1.231/grafana`). Dockhand listens on NodePort 30080 on every node.
 
 ## Shared services the apps lean on
 
@@ -124,8 +123,7 @@ Designs and runbooks live in Gemberkoekje/projects.
 | Component | Folder | Role |
 |---|---|---|
 | MetalLB | `infrastructure/metallb` | LoadBalancer IPs (pool in `configuration/`) |
-| Traefik | `infrastructure/traefik` | Public entry point on .231 |
-| ingress-nginx | `infrastructure/nginx` | Retired, on .230, waiting for removal |
+| Traefik | `infrastructure/traefik` | Public entry point on .231. Also holds the `nginx-public` IngressClass |
 | cert-manager | `infrastructure/certmanager` | Certificates |
 | 1Password Connect | `infrastructure/externalsecrets` | Secrets from the `Gembercluster` vault |
 | Reflector | `infrastructure/reflector` | Copies `ghcr-login` into namespaces |
