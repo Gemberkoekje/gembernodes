@@ -1,8 +1,9 @@
-# Traefik, replacing the retired ingress-nginx (docs/ingress-nginx-migration-plan.md).
-# It serves the existing Ingress objects (class nginx-public) through its Ingress NGINX
-# provider, which understands the nginx.ingress.kubernetes.io annotations in ingress/. Until the
-# cutover it runs next to ingress-nginx on its own MetalLB IP (192.168.1.231); the router still
-# sends public traffic to ingress-nginx on 192.168.1.230.
+# Traefik, the public entry point, replacing the retired ingress-nginx
+# (docs/ingress-nginx-migration-plan.md). It serves the existing Ingress objects (class
+# nginx-public) through its Ingress NGINX provider, which understands the
+# nginx.ingress.kubernetes.io annotations in ingress/. Since 2026-09-26 the router forwards public
+# 80/443 to its MetalLB IP, 192.168.1.231. ingress-nginx still runs on 192.168.1.230 until phase 4
+# of the plan removes it; Traefik keeps .231.
 # Value keys checked against the chart's values.yaml for v41.6.0.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
