@@ -2082,3 +2082,31 @@ To understand this, read the Jellyfin CronJob in `apps/zeef/sqlite-backup.yaml`.
 - **After the merge,** run it once
   (`kubectl -n zeef create job --from=cronjob/sqlite-backup-jellyfin sqlite-backup-jellyfin-fixed`),
   so its success counts and the stale-backup alert covers Jellyfin too.
+## 2026-11-12 — Dependabot's first run, and its ignore rules fixed
+
+To understand this, read the `ignore:` block of `.github/dependabot.yml`.
+
+- **The first run** started as soon as the config reached `main` and opened #174 to #181. CI was
+  green on all eight, but two were wrong:
+  - **#178** offered Sonarr `v4-4.0.0.124-ls2` for the running `4.0.20.3014-ls2`. That's
+    linuxserver's old tag scheme for an older Sonarr; merging it would have downgraded Sonarr over a
+    migrated database.
+  - **#179** offered Python `3.16.0a1`, an alpha, for the backup jobs.
+  - Both are closed, with a comment saying why; Dependabot then skips those versions.
+- **The ignore rules matched nothing.** Dependabot names images without their registry host
+  (`linuxserver/sonarr`, `tailscale/tailscale`), and the rules had `ghcr.io/...` and `lscr.io/...`.
+  They are now `gemberkoekje/*`, `eosfrontier/*` and `linuxserver/*`, which leave out the 17 own app
+  images and the 5 linuxserver ones.
+  - `linuxserver/*` replaces the qBittorrent-only rule. Dependabot misreads their tags, the Servarr
+    apps migrate their databases on start, and qBittorrent is pinned for MyAnonamouse. All five are
+    bumped by hand.
+- **Python gets patch updates only,** because a new minor version first appears as alpha tags.
+- **The other six PRs:**
+  - Fine: dockhand, busybox (all four files at once, so the cross-folder grouping works), curl and
+    Tailscale.
+  - #176 moves caddy from `2.10.2-alpine` to the floating `2.11-alpine`. That works, but the exact
+    pin is lost (lan-proxy pins `2.11.9-alpine`).
+  - #180 (system-upgrade-controller v0.21.0): its release notes need reading first, because our
+    manifest bundles the controller's own setup next to the image.
+- **Checked:** the file validates against SchemaStore's `dependabot-2.0` schema, and the rules
+  exclude exactly the 22 images meant.
