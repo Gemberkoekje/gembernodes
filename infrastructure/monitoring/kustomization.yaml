@@ -9,6 +9,7 @@ resources:
   - grafana-release.yaml
   - loki-release.yaml
   - promtail-release.yaml
+  - alloy-release.yaml
   - grafana-internal-route.yaml
 # Provisioned into Grafana by grafana-release.yaml (dashboardsConfigMaps). The name must stay
 # fixed because the HelmRelease references it, hence no hash suffix.

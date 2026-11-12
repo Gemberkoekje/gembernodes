@@ -2366,3 +2366,49 @@ To understand this, read `infrastructure/monitoring/grafana-release.yaml` and
   - The 14 alert rules are Normal.
   - The 8 dashboards load at `https://grafana.lan.gemberkoekje.nl/grafana/` and
     `http://192.168.1.231/grafana`, the SpaceTraders snapshots one (Infinity) included.
+
+## 2026-11-12 — Grafana Alloy next to Promtail (Promtail → Alloy, step 1 of 2)
+
+To understand this, read `infrastructure/monitoring/alloy-release.yaml`; its comments carry the
+reasoning.
+
+- **Why:** Promtail reached end of life on 2026-03-02 and gets no more fixes. Grafana Alloy is
+  its successor.
+- **Same labels, exactly.** The streams carry `app, component, container, filename, instance, job,
+  namespace, node_name, pod, stream`. Loki adds `service_name` and `detected_level` itself. The
+  alerts and dashboards use `namespace` and `app`. But every label has to match, because any
+  difference would create parallel streams and double the error-alert counts and the SpaceTraders
+  volume budget during the overlap.
+  - The config rebuilds the promtail chart's default `kubernetes-pods` job, rule for rule.
+  - `alloy convert --source-format=promtail` on Promtail's live config (Secret
+    `monitoring/promtail`) gives the same pipeline: the same node field selector, the 11 relabel
+    rules in the same order, `file_match`, `stage.cri` and the same push URL.
+  - `loki.source.file`, not `loki.source.kubernetes`: only the file source sets `filename` the
+    way Promtail does and can take over Promtail's positions.
+- **Overlap first, removal second.** A broken pipeline would fail silently: the Loki alerts have
+  `noDataState: OK` and would just go quiet. So Alloy runs next to Promtail first.
+  - Alloy starts each file where Promtail got to (`legacy_positions_file`, read once).
+  - It sends the overlap again, and so does Promtail. `stage.cri` takes the timestamp from the CRI
+    line, so both copies are identical, and Loki keeps one.
+  - Step 2 removes Promtail, the legacy positions file and its mount.
+- **Positions on disk** (`/var/lib/alloy` hostPath). Promtail kept them on tmpfs (`/run/promtail`),
+  so after every kured reboot it re-read every retained log file.
+- **Less access than the chart's default:** the ClusterRole lists pods, plus the chart's node
+  rules. The default also grants cluster-wide read on Secrets and ConfigMaps. The PodLogs CRD is
+  off, because only `loki.source.podlogs` uses it.
+- **Merge outside the kured window (02:00–05:00).** A reboot wipes Promtail's tmpfs positions, and
+  Alloy would then start every file from the beginning.
+- **Checked:**
+  - Chart 1.15.0 (Alloy v1.21.3) rendered with these values.
+  - `alloy fmt` and `alloy validate` pass on the rendered config, in a throwaway pod with the same
+    image. `validate` exits 1 on a broken file, so the pass means something.
+  - A server-side dry run accepted the HelmRelease.
+- **Baseline before the merge** (02:59Z):
+  - Loki labels: `app, component, container, filename, instance, job, namespace, node_name, pod,
+    service_name, stream`.
+  - Lines per 5 minutes: monitoring 391, curatool 720, flux-system 360, ebi-cs-api 90.
+- **After the merge:**
+  - `ds/alloy` 3/3, and each node's log says it converted the legacy positions file.
+  - `loki_write_dropped_entries_total` is 0.
+  - The label list is unchanged, and the series and line counts per namespace don't double.
+  - If the counts do double, the labels differ: remove Alloy before going on.
