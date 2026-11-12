@@ -29,5 +29,6 @@ resources:
 - print-manager-test-namespace.yaml
 - datumprikker-namespace.yaml
 - frontpage-namespace.yaml
+- home-automation-namespace.yaml
 - cnpg-system-namespace.yaml
 - postgresql-namespace.yaml

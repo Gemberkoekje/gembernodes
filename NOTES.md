@@ -2867,3 +2867,43 @@ and the "Upgrading" section of the community chart's README (grafana-community/h
   | gembernode-03 | 81% (44 GB) | 47% (25 GB) | 157 → 43 |
 
   About 52 GB freed in total. Every pod stayed up.
+
+## 2026-11-12 — Home Assistant, phase 1 (apps/home-assistant)
+
+- **Why:** local control of the Calex (Tuya) lamps and standby monitoring of the Itho boiler. The
+  plan is [docs/home-assistant-plan.md](docs/home-assistant-plan.md) (phases 0–6, decisions D1–D4).
+  To understand this change, read that plan's "Decided" and "Changed while building", then
+  `apps/home-assistant/deployment.yaml` and its README.
+- **Decided (the user):** LAN and Tailscale only, at `https://homeassistant.lan.gemberkoekje.nl`
+  through Caddy; gembernode-01, which kept the most free memory over the past week (never below
+  ~2.3 GiB, against ~2.1 and ~1.5 GiB) and had the least CPU load; the recorder on the shared
+  PostgreSQL. The lamps have DHCP reservations on 192.168.1.50–.59.
+- **What:** namespace `home-automation` (pod security `privileged`: hostNetwork, for discovery),
+  the Deployment with two init containers (`wait-for-postgres`; `prepare-config`, which creates
+  the files `configuration.yaml` includes and installs HACS, pinned by version and sha256), a
+  ClusterIP Service, `configuration.yaml` as a read-only ConfigMap mount, PVCs
+  `homeassistant-config` (local-path) and `homeassistant-backups` (NFS, at `/config/backups`), a
+  Caddy block and a link on the LAN start page.
+- **Gotchas:**
+  - Caddy reaches the pod through the Service, whose endpoint is the node's address. From a Caddy
+    pod on another node the request arrives from that node's address (flannel masquerades pod
+    traffic to non-pod addresses), so `trusted_proxies` lists the three nodes as well as
+    `10.42.0.0/16`. A missing one shows as 400 on every page and "untrusted proxy <ip>" in the log.
+  - HA Container writes its backups to `/config/backups`, whatever the plan said; that's where the
+    NFS volume is mounted.
+  - HA only creates `automations.yaml`, `scripts.yaml` and `scenes.yaml` when it writes
+    `configuration.yaml` itself. With ours from Git they would be missing, and the includes would
+    fail.
+  - HACS 2 appears in the sidebar only after it is added as an integration (GitHub login).
+  - `scripts/validate.py` read every `.yaml` file with a loader that rejects unknown tags, so
+    `configuration.yaml`'s `!include` failed CI. Files a `configMapGenerator` reads are now parsed
+    like YAML inside ConfigMaps: app tags allowed, syntax and duplicate keys still checked.
+- **Tested** locally in Docker, not yet on the cluster: HA 2026.11.1 with this
+  `configuration.yaml` read-only and a PostgreSQL 18 recorder (the database made by
+  `create-database.sql`) started in 6 s, with the 13 recorder tables created and nothing logged at
+  warning or above. `/manifest.json` answered 200 before onboarding, and `/` a 302 to onboarding.
+  `prepare-config.py` skipped a zip with the wrong checksum, installed HACS 2.0.5, then left it
+  alone. An `X-Forwarded-For` header from an untrusted address got 400.
+- **Not checked:** host ports 8123 and 5353 on gembernode-01 itself (only that no pod uses them).
+  A clash would show as HA failing to start.
+- **Before merging:** the database and the 1Password item `homeassistant-secrets` (README).

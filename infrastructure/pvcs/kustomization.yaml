@@ -8,3 +8,4 @@ resources:
 - adventureengine.yaml
 - print-manager-test.yaml
 - zeef.yaml
+- home-automation.yaml
