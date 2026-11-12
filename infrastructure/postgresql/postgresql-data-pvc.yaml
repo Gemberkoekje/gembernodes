@@ -1,3 +1,6 @@
+# The Bitnami server's data directory, kept for a rollback (docs/cloudnativepg-migration-plan.md).
+# Nothing mounts it since the move to CloudNativePG on 2026-11-12. Delete this file after a few
+# weeks: Flux then deletes the claim, and the qnap-nfs StorageClass (reclaimPolicy Delete) the data.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:

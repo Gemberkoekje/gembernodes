@@ -20,7 +20,7 @@ spec:
               type: RuntimeDefault
           containers:
             # pg_dumpall refuses a server with a newer major version, so this image's major must be
-            # at least the server's (18; postgresql-release.yaml). Until 2026-11-12 it was 17: every
+            # at least the server's (18; configuration/postgresql-cluster.yaml). Until 2026-11-12 it was 17: every
             # nightly dump aborted, the job still succeeded (no pipefail, so only gzip's exit status
             # counted), and the empty files rotated the real dumps away. A newer client is fine.
             - name: pg-dump
