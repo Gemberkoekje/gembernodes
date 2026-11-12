@@ -1,9 +1,8 @@
 # Traefik, the public entry point: the router forwards public 80/443 to its MetalLB IP,
-# 192.168.1.231. It serves the Ingress objects in ingress/ (class nginx-public, defined in
-# ingressclass.yaml) through its Ingress NGINX provider, which understands their
-# nginx.ingress.kubernetes.io annotations. It replaced the retired ingress-nginx, which phase 4 of
-# docs/ingress-nginx-migration-plan.md removed.
-# Value keys checked against the chart's values.yaml for v41.6.0 (publishService: v41.7.1).
+# 192.168.1.231. It serves the Gateway API routes: the Gateway in gateway.yaml and the HTTPRoutes in
+# ingress/ (CLAUDE.md, "Public routes"). It replaced the retired ingress-nginx
+# (docs/ingress-nginx-migration-plan.md).
+# Value keys checked against the chart's values.yaml for v41.6.0 (Gateway API: v41.7.1).
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -59,33 +58,22 @@ spec:
       annotations:
         metallb.io/loadBalancerIPs: 192.168.1.231
       spec:
-        # Keep client IPs, so the LAN-only allowlist on grafana-internal keeps working.
+        # Keep client IPs, so the lan-only allowlists (on /grafana and /spacetraders) see the real
+        # client address.
         externalTrafficPolicy: Local
     # The chart would otherwise create a "traefik" IngressClass and make it the cluster default.
     ingressClass:
       enabled: false
     providers:
-      # The Ingress NGINX provider serves the Ingresses; the standard provider would build a
-      # second, annotation-unaware set of routers for the same objects.
+      # No Ingress objects: every route is an HTTPRoute.
       kubernetesIngress:
         enabled: false
-      # Needed for the HSTS Middleware (configuration/traefik-hsts.yaml).
+      # Traefik's own CRDs: the HSTS Middleware (configuration/traefik-hsts.yaml) and the lan-only
+      # Middlewares that HTTPRoutes reference through an ExtensionRef filter.
       kubernetesCRD:
         enabled: true
-      kubernetesIngressNGINX:
-        enabled: true
-        ingressClass: nginx-public
-        controllerClass: k8s.io/ingress-nginx
-        # The settings ingress-nginx ran with, so the Ingresses behave as they did there.
-        strictValidatePathType: false
-        allowSnippetAnnotations: false
-        # Write Traefik's address (192.168.1.231, from the chart's own Service) into the status of
-        # the Ingresses it serves. It stayed off while ingress-nginx also ran; both would have kept
-        # overwriting the status.
-        publishService:
-          enabled: true
-      # Gateway API: the way new public routes are set up (HTTPRoutes on gateway.yaml's Gateway).
-      # The chart installs the Gateway API CRDs (standard channel) and the GatewayClass "traefik".
+      # Gateway API: every public route (HTTPRoutes on gateway.yaml's Gateway). The chart installs
+      # the Gateway API CRDs (standard channel) and the GatewayClass "traefik".
       kubernetesGateway:
         enabled: true
     # The public Gateway is gateway.yaml in this folder rather than the chart's default one, so

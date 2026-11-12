@@ -2138,3 +2138,40 @@ last progress-log entry of [docs/ingress-nginx-migration-plan.md](docs/ingress-n
   - Delete the old certificate Secrets in the app namespaces.
   - Then the clean-up: the `nginx-public` IngressClass, Traefik's Ingress NGINX provider, and
     `letsencrypt-prod`.
+- **After the merge (2026-11-12):**
+  - At most 5 hosts showed the default certificate, for 11–17 seconds.
+  - All 17 listeners and 43 routes are healthy.
+  - 66 of the 74 URLs behave as before, and the other 8 differ only in the expected ways.
+  - The 15 old certificate Secrets are deleted.
+  - Details are in the plan's log.
+
+## 2026-11-12 — The nginx leftovers removed; the healthcheck's caddy pinned
+
+To understand this, read the `providers:` block of `infrastructure/traefik/traefik-release.yaml`,
+then the last progress-log entry of
+[docs/ingress-nginx-migration-plan.md](docs/ingress-nginx-migration-plan.md).
+
+- **The end of the Traefik migration.** With no Ingress left:
+  - The `nginx-public` IngressClass (`infrastructure/traefik/ingressclass.yaml`), Traefik's Ingress
+    NGINX provider and the `letsencrypt-prod` issuer (`configuration/certissuer.yaml`) are gone.
+  - The chart render loses only the provider's arguments and its Ingress permissions; the Gateway
+    provider keeps its own.
+  - Traefik's two pods restart one at a time (PodDisruptionBudget `maxUnavailable: 1`).
+- **By hand, after the merge,** with the user's OK: the old issuer's ACME account key,
+  `cert-manager/letsencrypt-prod`.
+- **The healthcheck's caddy** goes from `2.10.2-alpine` to `2.11.9-alpine`, the version lan-proxy
+  runs. Dependabot's #176 had offered the floating `2.11-alpine` tag, and is closed in favour of
+  this. `caddy validate` of the healthcheck's Caddyfile with 2.11.9 passes.
+- **Advice on Dependabot's #180** (system-upgrade-controller v0.20.2 → v0.21.0): merge it.
+  - Upstream's install manifest differs between the two versions only by the image tag, and its
+    Plan CRD only by two descriptions. Ours is upstream v0.20.2 verbatim.
+  - The controller keeps the live Plan CRD up to date itself.
+  - v0.21.0 is dependency and security updates (cel-go, golang.org/x, OpenTelemetry, Go 1.26.10).
+  - Both k3s Plans are idle at v1.37.2+k3s1.
+  - Each later bump still needs upstream's manifest compared with ours, since Dependabot only
+    changes the image.
+- **Checked:**
+  - Chart renders, before and after.
+  - Server-side dry runs of the HelmRelease, the healthcheck and the remaining issuer.
+  - `flux build` of infrastructure, configuration and apps: no IngressClass or `letsencrypt-prod`
+    left.

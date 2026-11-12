@@ -1,7 +1,7 @@
 # Let's Encrypt for the listeners of the public Gateway (infrastructure/traefik/gateway.yaml),
-# whose cert-manager.io/cluster-issuer annotation names this issuer. HTTP-01 challenges are
-# answered with a temporary HTTPRoute on the Gateway's http listener. letsencrypt-prod
-# (certissuer.yaml) stays for the remaining Ingress objects and goes when the last one moves.
+# whose cert-manager.io/cluster-issuer annotation names this issuer: every public certificate. HTTP-01
+# challenges are answered with a temporary HTTPRoute on the Gateway's http listener. (It replaced
+# letsencrypt-prod, which answered them through Ingress objects; removed 2026-11-12.)
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
