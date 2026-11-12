@@ -267,8 +267,8 @@ data:
           # The warning before the kill: over 90% of its memory limit and more than 50 major page
           # faults per second. The kernel is then evicting the container's own code and reading it
           # back from disk. That stalls the container and loads the node's disk: the router read
-          # about 300 MB/s and pushed node-02's iowait to 50%. Either half alone is noisy (promtail
-          # and qBittorrent sit above 90% for hours without trouble), the faults are not. for: 1m
+          # about 300 MB/s and pushed node-02's iowait to 50%. Either half alone is noisy (Promtail
+          # did and qBittorrent does sit above 90% for hours without trouble), the faults are not. for: 1m
           # still catches the router's shortest episode (22:17-22:18). Backtested on 14 days: only
           # the router's three episodes on 2026-11-11.
           - uid: container-memory-thrashing

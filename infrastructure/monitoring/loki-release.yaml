@@ -31,7 +31,7 @@ spec:
       enabled: false
     test:
       enabled: false
-    # Grafana and Promtail talk to the single-binary Service on :3100 directly, so the
+    # Grafana and Alloy talk to the single-binary Service on :3100 directly, so the
     # nginx gateway the chart puts in front of it is unused.
     gateway:
       enabled: false
