@@ -151,8 +151,8 @@ Unused:
 ## Left to do
 
 1. **After a few weeks:** delete `infrastructure/postgresql/postgresql-data-pvc.yaml` (the old data;
-   Flux then deletes it). The last dump taken from the Bitnami server, `postgres-2026-11-12.sql.gz`
-   on the backup volume, rotates out by itself after a week.
+   Flux then deletes it), and `bitnami-final-2026-11-12.sql.gz` on the backup volume: the last dump
+   of the Bitnami server, copied out of the rotation's reach.
 2. **Metrics:** a Prometheus scrape job for pods with the `cnpg.io/cluster` label, port 9187.
 3. **Move the apps** to `postgres-rw.postgresql.svc.cluster.local` one at a time, then remove the
    ExternalName (`infrastructure/postgresql/postgresql-service.yaml`) and update the app READMEs.

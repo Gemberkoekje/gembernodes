@@ -2678,3 +2678,57 @@ and [docs/cloudnativepg-migration-plan.md](docs/cloudnativepg-migration-plan.md)
   or three times over. A scrape job on the `cnpg.io/cluster` label is the clean way; not done yet.
 - **Shutdown:** `smartShutdownTimeout: 15` (default 180 s): the apps' pooled connections keep a
   smart shutdown waiting, the same problem the Bitnami release solved with its `preStop` hook.
+
+## 2026-11-12 — CloudNativePG: the switch-over (PRs #204, C1, C2)
+
+To understand this, read [configuration/postgresql-cluster.yaml](configuration/postgresql-cluster.yaml),
+[infrastructure/postgresql/](infrastructure/postgresql/) and the plan's "Changed while building" and
+"Left to do" ([docs/cloudnativepg-migration-plan.md](docs/cloudnativepg-migration-plan.md)).
+
+PostgreSQL now runs on CloudNativePG. The 18 apps that use it were down from 09:45 to 10:23 UTC (38
+minutes; the plan said 15–30).
+
+- **The order:**
+  1. 09:45 Suspended the `apps` Kustomization and scaled the 18 apps to 0; no client connections were
+     left. A fresh `pg_dumpall` followed.
+  2. 09:50 PR B: the Cluster and its import. The rehearsal was still running alongside, with no
+     errors through 16 of its 22 databases.
+  3. 10:03 #204: `fsGroupChangePolicy: OnRootMismatch`, merged while the import ran.
+  4. 10:17 The Cluster was healthy. I set `spacetraders_ro`'s `default_transaction_read_only = on`
+     again and compared the two servers.
+  5. 10:19 C1: Bitnami removed.
+  6. 10:21 C2: the ExternalName and .232.
+  7. 10:22 Resumed `apps`.
+- **The comparison (old server vs new, fingerprint script):** per database, the owner, locale and
+  rights; per role, the attributes and SCRAM password hash; per table, owner, rights and an exact
+  `count(*)`; sequences' `last_value`; constraints, functions and triggers. Everything matched,
+  except:
+  - the eight left-out databases and the `chaptarr` role;
+  - CNPG's own `cnpg_metrics_exporter` role;
+  - `spacetraders.public.stored_credentials`, whose rights are written differently (an explicit
+    owner-only ACL vs the default) but are identical in effect (`has_table_privilege`:
+    `spacetraders_ro` can't read it on either).
+- **Gotcha: fsGroup on NFS, again.** The rehearsal's first pod start spent 10+ minutes in volume
+  setup: with CNPG's default `fsGroupChangePolicy` (`Always`) the kubelet re-applies group 26 to
+  every file over NFS, the same problem the Bitnami server had (2026-09-26). Fixed with
+  `spec.podSecurityContext` (CNPG's defaults plus `OnRootMismatch`); the real Cluster's first start
+  then took seconds. A pod stuck in volume setup also can't be deleted until the kubelet finishes it.
+- **Gotcha: Helm's uninstall and the stale finalizer.** The old `postgresql` Service kept
+  `service.kubernetes.io/load-balancer-cleanup` (left by the disabled ServiceLB), which also held up
+  the HelmRelease's deletion. Removed by hand, as planned; the Service and HelmRelease went within
+  seconds and MetalLB gave `postgres-lan` .232 straight away.
+- **Gotcha: the backup file name is the date.** A test run of the backup after the switch would have
+  overwritten the morning's final Bitnami dump (`postgres-2026-11-12.sql.gz`). It was copied first to
+  `bitnami-final-2026-11-12.sql.gz`, which the rotation doesn't match.
+- **Checked after the switch:**
+  - Logins as `postgres` with the old password, through `postgresql.flux-system` and through .232,
+    over TLS. .232:5432 also answers from the LAN.
+  - All 18 apps Ready within a minute, every client connection on TLS, and no database errors in
+    their logs. adventureengine's health check timed out once on its first connection (TLS
+    handshake on a cold start) and has been healthy since.
+  - Every Kustomization and HelmRelease Ready; the 74 public routes answer as before.
+  - A manual backup run against the new server: complete, 22.9 MB.
+  - No Grafana alert firing.
+- **Left behind on purpose:** the old data claim `postgresql-data-qnap` and the final Bitnami dump
+  (both for a rollback), and the `postgresql-admin-secret` OnePasswordItem in `flux-system` (the
+  backup reads it). The rehearsal namespace is deleted.
