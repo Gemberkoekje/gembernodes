@@ -1,0 +1,106 @@
+# The shared PostgreSQL server, run by the CloudNativePG operator (infrastructure/cloudnative-pg).
+# One instance on the NAS, like the Bitnami server it replaced; docs/cloudnativepg-migration-plan.md
+# has the decisions. In configuration/ because it needs the operator's CRDs and webhook.
+#
+# The apps reach it as postgresql.flux-system.svc.cluster.local, an ExternalName Service pointing at
+# postgres-rw.postgresql.svc.cluster.local (infrastructure/postgresql/postgresql-service.yaml).
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgres
+  namespace: postgresql
+spec:
+  instances: 1
+  # An exact build, bumped by hand. "standard" has every locale: the databases use en_US.UTF-8
+  # ("minimal" only has C.UTF-8). The "system" images are deprecated.
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.6-202611090812-standard-trixie
+  # Eight apps and the backup connect as postgres, with the password they already had: the
+  # postgresql-admin-secret 1Password item's `username` and `password` fields.
+  enableSuperuserAccess: true
+  superuserSecret:
+    name: postgresql-superuser
+  # The apps hold pooled connections, so a "smart" shutdown (wait for every client to leave) never
+  # finishes by itself; the default waits 180 s before switching to a fast one. 15 s is enough for
+  # an idle client to go, and keeps restarts and node drains short.
+  smartShutdownTimeout: 15
+  postgresql:
+    # The Bitnami server's settings, carried over. No pgaudit: nothing used it.
+    parameters:
+      max_connections: "100"
+      shared_buffers: 256MB
+      work_mem: 4MB
+      maintenance_work_mem: 64MB
+      effective_cache_size: 768MB
+      max_wal_size: 2GB
+      min_wal_size: 256MB
+      checkpoint_timeout: 10min
+      checkpoint_completion_target: "0.9"
+      wal_compression: "on"
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      memory: 1Gi
+  storage:
+    storageClass: qnap-nfs
+    size: 32Gi
+  bootstrap:
+    initdb:
+      # Only for databases created later (template1, postgres). The imported ones keep their own
+      # locale: the import restores each with pg_restore --create.
+      localeCollate: en_US.UTF-8
+      localeCType: en_US.UTF-8
+      # Only used when the Cluster is first created (2026-11-12): a copy of the Bitnami server's
+      # databases and roles. Left out: VortexPlotboekLocal, VortexLnv, VortexLnvLocal,
+      # LanderijenVolken, werkplaats, chaptarr-main/-log/-cache and the chaptarr role (unused).
+      # The import doesn't copy per-role settings; `spacetraders_ro`'s
+      # default_transaction_read_only=on was set again by hand (NOTES.md, 2026-11-12).
+      import:
+        type: monolith
+        databases:
+          - adventure
+          - ArmaBotCs
+          - BotOnTheClocktower
+          - charactercreator
+          - curatool
+          - datumprikker
+          - dungeontable
+          - ebi_cs_api
+          - KlusKat
+          - plotboek_generator
+          - spacetraders
+          - audiobookrequest
+          - bazarr
+          - cleanuparr
+          - prowlarr-main
+          - prowlarr-log
+          - radarr-main
+          - radarr-log
+          - seerr
+          - sonarr-main
+          - sonarr-log
+          - VortexPlotboek
+        roles:
+          - audiobookrequest
+          - bazarr
+          - charactercreator
+          - cleanuparr
+          - datumprikker
+          - prowlarr
+          - radarr
+          - seerr
+          - sonarr
+          - spacetraders
+          - spacetraders_ro
+        source:
+          externalCluster: bitnami
+  externalClusters:
+    - name: bitnami
+      connectionParameters:
+        host: postgresql.flux-system.svc.cluster.local
+        user: postgres
+        dbname: postgres
+      password:
+        name: postgresql-superuser
+        key: password
