@@ -41,9 +41,19 @@ updates:
       per-image:
         group-by: dependency-name
         patterns: ["*"]
+    # Dependabot names images without their registry host: "gemberkoekje/kluskat" for
+    # ghcr.io/gemberkoekje/kluskat, "linuxserver/sonarr" for lscr.io/linuxserver/sonarr. Patterns
+    # with the host match nothing.
     ignore:
       # Built and deployed by each app's own repository: their tags are commit SHAs or build numbers.
-      - dependency-name: "ghcr.io/gemberkoekje/*"
-      - dependency-name: "ghcr.io/eosfrontier/*"
-      # Held at 5.2.4 until MyAnonamouse allows qBittorrent 5.3 (NOTES.md, 2026-11-11). Move it by hand.
-      - dependency-name: "lscr.io/linuxserver/qbittorrent"
+      - dependency-name: "gemberkoekje/*"
+      - dependency-name: "eosfrontier/*"
+      # The linuxserver images: Sonarr, Radarr, Prowlarr, Bazarr, qBittorrent. Dependabot misreads
+      # their tags: it offered linuxserver's old "v4-4.0.0.124-ls2", an older Sonarr, as an update
+      # (#178). The Servarr apps also migrate their databases on start, and qBittorrent stays at
+      # 5.2.4 until MyAnonamouse allows 5.3. Bump these by hand after reading the release notes.
+      - dependency-name: "linuxserver/*"
+      # Patch releases only for the backup jobs' Python: a new minor version first appears as
+      # alpha tags (it offered 3.16.0a1, #179).
+      - dependency-name: "python"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]

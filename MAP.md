@@ -154,9 +154,13 @@ Designs and runbooks live in Gemberkoekje/projects.
   - for newer image tags in `apps/` and `infrastructure/`, one per image across all folders;
   - for GitHub Actions, all in one.
 
-  It leaves out the app images built by their own repositories (`ghcr.io/gemberkoekje/*`,
-  `ghcr.io/eosfrontier/*`), qBittorrent (pinned for MyAnonamouse) and the Helm charts. Dependabot
-  can't read HelmReleases; Flux follows their `x` ranges itself.
+  It leaves out:
+  - the app images built by their own repositories (`ghcr.io/gemberkoekje/*`,
+    `ghcr.io/eosfrontier/*`);
+  - the linuxserver images (the Servarr apps, Bazarr, qBittorrent), whose tags it misreads, and
+    which are bumped by hand;
+  - Python's minor versions;
+  - the Helm charts: Dependabot can't read HelmReleases, and Flux follows their `x` ranges itself.
 
 ## Other documents
 
