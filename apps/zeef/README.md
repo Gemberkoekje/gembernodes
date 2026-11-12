@@ -56,6 +56,27 @@ UDP, forwarded by the router). It speaks BitTorrent and has no web UI behind it.
   `md5()` fails, and one of Chaptarr's PostgreSQL migrations needs it (NOTES.md, 2026-11-09).
 - **Image tags stay pinned.** Bump them deliberately. The Servarr apps migrate their databases on
   start, so read the release notes before a major version (Sonarr 5 is in development).
+- **Every SQLite database on `local-path` is backed up nightly** to the QNAP
+  (`sqlite-backup.yaml`, 03:30 Amsterdam time). That covers Jellyfin, Chaptarr, Audiobookshelf and
+  Maintainerr, and the NAS's own backup and offsite sync take it from there. A new app with SQLite
+  on `local-path` gets a CronJob of its own there, a copy of one of the four.
+
+## Restoring a SQLite database
+
+The nightly copies are on the QNAP, on the `sqlite-backups` claim
+(`/gembernodes-pvcs/zeef/sqlite-backups/<app>/`), as `<database>-<UTC time>.db.gz`. The newest 14
+per database are kept. Each passed SQLite's `quick_check` when it was made. To put one back:
+
+1. Stop the app: `kubectl -n zeef scale deploy/<app> --replicas=0`. Wait until its pod is gone.
+2. Start a helper pod on the same volume (it lands on the volume's node by itself). Mount the app's
+   claim and `sqlite-backups`, and run it as the app's user: `1000:100`, or `1000:1000` for
+   Maintainerr. A `python:3.15.2-alpine3.24` pod sleeping for an hour will do.
+3. In the helper: move the current database and any `-wal` or `-shm` file next to it aside, then
+   unpack the copy in its place, for example
+   `gunzip -c /backups/jellyfin/jellyfin-<time>.db.gz > /config/data/jellyfin.db`.
+4. Delete the helper, then `kubectl -n zeef scale deploy/<app> --replicas=1`.
+
+Flux sets the replicas back to 1 at its next reconcile if step 4 is forgotten.
 
 ## Before the first deploy
 
