@@ -2732,3 +2732,26 @@ minutes; the plan said 15–30).
 - **Left behind on purpose:** the old data claim `postgresql-data-qnap` and the final Bitnami dump
   (both for a rollback), and the `postgresql-admin-secret` OnePasswordItem in `flux-system` (the
   backup reads it). The rehearsal namespace is deleted.
+
+## 2026-11-12 — Alloy: blank out passwords before Loki
+
+To understand this, read the `stage.replace` block in
+[infrastructure/monitoring/alloy-release.yaml](infrastructure/monitoring/alloy-release.yaml).
+
+- **What was wrong:** Sonarr prints its database connection string, password included, to the
+  console at every start (`MigrationController: *** Migrating Database=sonarr-main;...;Password=...`).
+  Alloy shipped it to Loki, which keeps logs 31 days: 13 lines over the last 30.
+- **Why only Sonarr:** all the Servarr apps have the same cleansing rules (`CleanseLogMessage`), but
+  Sonarr v4 doesn't apply them to the console: its console target uses the plain layout, while its
+  log file and log database are cleansed. Radarr and Prowlarr use `CleansingConsoleLogLayout`.
+  Sonarr fixed it in February 2025 (commit 609e964, "Cleanse console log messages"), but only on
+  `develop`, which is v5 (pre-release only); every v4 release up to 4.0.20 still has the old
+  console. Grafana also logs `GF_SECURITY_ADMIN_PASSWORD=`, but masked with asterisks.
+- **The change:** a `stage.replace` in Alloy's `loki.process` replaces the value of any
+  `password=`/`pwd=` (case-insensitive) with `(removed)`, for every pod. It's a safety net, not
+  only for Sonarr.
+- **Not changed:** the Sonarr password wasn't rotated (the user's call: it's only reachable inside
+  the cluster). The 13 old lines stay in Loki until retention drops them; the container's own log
+  files on the node rotate on their own.
+- **Checked:** `alloy fmt` on the rendered config (in the running Alloy pod). After the merge, a
+  Sonarr restart's migration line arrives in Loki as `Password=(removed)`.
