@@ -31,7 +31,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: frontpage
-          image: ghcr.io/gemberkoekje/frontpage:IMAGE_TAG
+          image: ghcr.io/gemberkoekje/frontpage:94b9dd0b25fabb89453e606a8e8747aabbeecfaa
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
