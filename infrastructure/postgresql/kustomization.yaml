@@ -2,3 +2,4 @@ resources:
   - postgresql-admin-secret.yaml
   - postgresql-superuser-secret.yaml
   - postgresql-data-pvc.yaml
+  - postgresql-service.yaml

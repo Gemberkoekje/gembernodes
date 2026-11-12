@@ -20,11 +20,11 @@ namespaces ─► repos ─► infrastructure ─┬─► configuration
 | Folder | What's in it | Flux Kustomization |
 |---|---|---|
 | [namespaces/](namespaces/) | One Namespace per app or component | `namespaces` |
-| [repos/](repos/) | The Helm repositories (and PostgreSQL's OCI repository) that the HelmReleases install from | `repos` |
+| [repos/](repos/) | The Helm repositories that the HelmReleases install from | `repos` |
 | [infrastructure/](infrastructure/) | Shared services, one folder each (see below) | `infrastructure` |
 | [infrastructure/tailscale/](infrastructure/tailscale/) | The Tailscale subnet router, applied on its own | `tailscale` |
 | [infrastructure/system-upgrade-plans/](infrastructure/system-upgrade-plans/) | k3s upgrade Plans | `system-upgrade-plans` |
-| [configuration/](configuration/) | Resources that need infrastructure's CRDs: the MetalLB address pool, cert-manager ClusterIssuers, Traefik's HSTS middleware | `configuration` |
+| [configuration/](configuration/) | Resources that need infrastructure's CRDs: the MetalLB address pool, cert-manager ClusterIssuers, Traefik's HSTS middleware, the PostgreSQL Cluster | `configuration` |
 | [apps/](apps/) | One folder per app | `apps` |
 | [ingress/](ingress/) | The public routes: Gateway API HTTPRoutes, one `<app>-route.yaml` per app, plus the bare domain's redirect (`gemberkoekje-nl-route.yaml`) | `ingress` |
 | [archive/](archive/) | Manifests taken out of the cluster, kept just in case | none: not applied |
@@ -43,7 +43,7 @@ embedded etcd. MetalLB hands out 192.168.1.230–.239 in L2 mode
 |---|---|
 | 192.168.1.211 | The QNAP NAS (NFS). It keeps a local backup and copies offsite nightly (Hybrid Backup Sync), which covers everything the cluster stores there |
 | 192.168.1.231 | Traefik: the router forwards public 80/443 here. Also serves Grafana at `/grafana` and the SpaceTraders dashboard (LAN only) |
-| 192.168.1.232 | PostgreSQL, for LAN clients (in the cluster: `postgresql.flux-system.svc.cluster.local`) |
+| 192.168.1.232 | PostgreSQL, for LAN clients: the Cluster's `postgres-lan` Service (in the cluster: `postgresql.flux-system.svc.cluster.local`) |
 | 192.168.1.233 | print-manager-test (80, 631, 8100, 8101) |
 | 192.168.1.234 | The Zeef web UIs, one port per app ([apps/zeef/README.md](apps/zeef/README.md)) |
 | 192.168.1.235 | qBittorrent's peer port (49160) |
@@ -82,7 +82,7 @@ every node.
 
 | Service | Where | Used by |
 |---|---|---|
-| **PostgreSQL**: one server, one database per app | [infrastructure/postgresql/](infrastructure/postgresql/), data on `qnap-nfs` | Every app with a `ConnectionStrings__*` value in its 1Password item: adventureengine, armabotcs, bot-on-the-clocktower, charactercreator, curatool, datumprikker, dungeontable, ebi-cs-api, kluskat, plotboek-generator and spacetraders. Also Zeef's Sonarr, Radarr, Prowlarr, Seerr, Bazarr, Cleanuparr and AudioBookRequest. Several wait for it in a `postgres:17-alpine` init container |
+| **PostgreSQL**: one server, one database per app | A CloudNativePG Cluster, [configuration/postgresql-cluster.yaml](configuration/postgresql-cluster.yaml) (namespace `postgresql`, one instance, data on `qnap-nfs`). Its secrets and the `postgresql.flux-system` name (an ExternalName for `postgres-rw.postgresql`) are in [infrastructure/postgresql/](infrastructure/postgresql/) | Every app with a `ConnectionStrings__*` value in its 1Password item: adventureengine, armabotcs, bot-on-the-clocktower, charactercreator, curatool, datumprikker, dungeontable, ebi-cs-api, kluskat, plotboek-generator and spacetraders. Also Zeef's Sonarr, Radarr, Prowlarr, Seerr, Bazarr, Cleanuparr and AudioBookRequest. Several wait for it in a `postgres:17-alpine` init container |
 | PostgreSQL backup | [infrastructure/postgresql-backup/](infrastructure/postgresql-backup/) | Nightly at 02:00 UTC, written to a `qnap-nfs` volume |
 | SQLite backups | [apps/zeef/sqlite-backup.yaml](apps/zeef/sqlite-backup.yaml) | Nightly at 03:30 Amsterdam time: consistent copies of every SQLite database on `local-path` (Jellyfin, Chaptarr, Audiobookshelf, Maintainerr) to the `zeef/sqlite-backups` volume on the NAS. Restore steps in [apps/zeef/README.md](apps/zeef/README.md) |
 | **Secrets**: 1Password Connect and operator | [infrastructure/externalsecrets/](infrastructure/externalsecrets/) | Each `OnePasswordItem` (`vaults/Gembercluster/items/<name>`) becomes a Secret of the same name in its namespace. The items sit next to the app that uses them |
@@ -137,8 +137,8 @@ Designs and runbooks live in Gemberkoekje/projects.
 | cert-manager | `infrastructure/certmanager` | Certificates |
 | 1Password Connect | `infrastructure/externalsecrets` | Secrets from the `Gembercluster` vault |
 | Reflector | `infrastructure/reflector` | Copies `ghcr-login` into namespaces |
-| PostgreSQL, backup | `infrastructure/postgresql`, `infrastructure/postgresql-backup` | Shared database |
-| CloudNativePG operator | `infrastructure/cloudnative-pg` → `cnpg-system` | Will run PostgreSQL in namespace `postgresql`, replacing the Bitnami chart ([plan](docs/cloudnativepg-migration-plan.md)) |
+| CloudNativePG operator | `infrastructure/cloudnative-pg` → `cnpg-system` | Runs the PostgreSQL Cluster (`configuration/postgresql-cluster.yaml`) |
+| PostgreSQL, backup | `infrastructure/postgresql`, `infrastructure/postgresql-backup` | The database's secrets, its in-cluster name, the old Bitnami data (kept for a rollback); the nightly dump |
 | NFS CSI driver | `infrastructure/nfs-provisioner` | The `qnap-nfs` StorageClass |
 | PVCs | `infrastructure/pvcs` | NFS volumes for the apps |
 | Monitoring | `infrastructure/monitoring` | Prometheus, Grafana and Loki. Grafana Alloy ships the container logs to Loki. Dashboards are `dashboards/*.json`, loaded through `configMapGenerator`; alert rules are in `grafana-alerting-provisioning.yaml` |
@@ -172,6 +172,6 @@ Designs and runbooks live in Gemberkoekje/projects.
 - [NOTES.md](NOTES.md): one dated entry per change (why, gotchas, what was tested), newest at the
   bottom.
 - [docs/ingress-nginx-migration-plan.md](docs/ingress-nginx-migration-plan.md): the move to Traefik.
-- [docs/cloudnativepg-migration-plan.md](docs/cloudnativepg-migration-plan.md): the planned move
-  from the Bitnami PostgreSQL chart to CloudNativePG.
+- [docs/cloudnativepg-migration-plan.md](docs/cloudnativepg-migration-plan.md): the move from the
+  Bitnami PostgreSQL chart to CloudNativePG, and what's left to clean up.
 - [apps/zeef/README.md](apps/zeef/README.md): Zeef's ports, apps and setup.

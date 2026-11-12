@@ -53,6 +53,19 @@ spec:
       memory: 512Mi
     limits:
       memory: 1Gi
+  # LAN clients (psql, DBeaver) keep 192.168.1.232, the Bitnami server's address: an extra
+  # read-write Service of type LoadBalancer, which MetalLB gives that IP.
+  managed:
+    services:
+      additional:
+        - selectorType: rw
+          serviceTemplate:
+            metadata:
+              name: postgres-lan
+              annotations:
+                metallb.io/loadBalancerIPs: 192.168.1.232
+            spec:
+              type: LoadBalancer
   storage:
     storageClass: qnap-nfs
     size: 32Gi
