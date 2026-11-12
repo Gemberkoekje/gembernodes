@@ -1,0 +1,9 @@
+# The front page of gemberkoekje.nl. "restricted", not "baseline": the pod runs as non-root with a
+# read-only root filesystem, no privilege escalation and no capabilities, so it meets the strictest
+# Pod Security level, and the front door should.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: frontpage
+  labels:
+    pod-security.kubernetes.io/enforce: restricted

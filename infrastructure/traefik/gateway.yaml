@@ -67,6 +67,7 @@ spec:
                   - dungeontable
                   - ebi-cs-api
                   - file-server
+                  - frontpage
                   - hackerminigames
                   - plotboek-generator
                   - vortexplotboek

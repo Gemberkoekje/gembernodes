@@ -28,3 +28,4 @@ resources:
 - tailscale-namespace.yaml
 - print-manager-test-namespace.yaml
 - datumprikker-namespace.yaml
+- frontpage-namespace.yaml

@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontpage
+  namespace: frontpage
+spec:
+  # Two replicas on different nodes: this is gemberkoekje.nl itself, so a kured reboot or a rollout
+  # shouldn't take it down. Each pod reads the cluster every 30 seconds on its own; that's cheap.
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontpage
+  template:
+    metadata:
+      labels:
+        app: frontpage
+    spec:
+      serviceAccountName: frontpage
+      imagePullSecrets:
+        - name: ghcr-login
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: frontpage
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: frontpage
+          image: ghcr.io/gemberkoekje/frontpage:94b9dd0b25fabb89453e606a8e8747aabbeecfaa
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Production
+            - name: ASPNETCORE_HTTP_PORTS
+              value: "8080"
+          # /healthz touches nothing, not even the cluster: the page works without the live view.
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 2
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 192Mi
+          # The root filesystem is read-only; .NET still wants a writable /tmp.
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 16Mi
