@@ -2907,3 +2907,27 @@ and the "Upgrading" section of the community chart's README (grafana-community/h
 - **Not checked:** host ports 8123 and 5353 on gembernode-01 itself (only that no pod uses them).
   A clash would show as HA failing to start.
 - **Before merging:** the database and the 1Password item `homeassistant-secrets` (README).
+- **Deployed** (#214, merged 14:15Z; the user made the database and the item first). The pod was
+  1/1 on gembernode-01 about 80 seconds after it was created, with both PVCs Bound. The 1Password
+  field arrived with the right key, `RECORDER_DB_URL`. `prepare-config` created the three files
+  and installed HACS 2.0.5. Checks:
+  - Six requests through Caddy, whose pods ran on gembernode-01 and -03, all got 302 to onboarding
+    (and 200 on `/manifest.json`), and HA logged no "untrusted proxy". So `trusted_proxies` covers
+    both paths.
+  - `http://192.168.1.201:8123` answers too, and the LAN start page has the link.
+  - The recorder's 13 tables are in the `homeassistant` database, with rows coming in.
+  - The only error logged is habluetooth's "Missing required permissions for Bluetooth management".
+    It's harmless: nothing in the plan uses Bluetooth. NET_ADMIN would silence it if a Bluetooth
+    device is ever added.
+  - Ports 8123 and 5353 caused no trouble after all.
+  - Onboarding (phase 2) is left to the user.
+- **HACS is built in now; the install was dropped.** After onboarding, the user couldn't find
+  "HACS" under Add integration. Since 2026.11.0 HACS ships with Home Assistant as the
+  **Marketplace** (Dutch UI: Marktplaats, under Settings), and its config entry set itself up on the
+  first start. The loader blocks the custom `hacs` integration (`BLOCKED_CUSTOM_INTEGRATIONS`,
+  `replaced_by="marketplace"`). That is logged only at info level, so the log showed nothing. The
+  Marketplace also deletes `custom_components/hacs` itself once it has its own repositories file.
+  So `prepare-config.py` now only creates the included files: left in, its HACS step would have
+  reinstalled the folder after every such delete. The 2.0.5 install from phase 1 is left for the
+  Marketplace to delete. Browsing and installing need no GitHub account; custom repositories (the
+  Itho integration, phase 4) need the GitHub connection (Marktplaats → Reconfigure).

@@ -1,8 +1,9 @@
 # Home Assistant on gembernodes
 
-**Status: phase 1 built (2026-11-12), not yet deployed.** The manifests are in
-[apps/home-assistant/](../apps/home-assistant/); its [README](../apps/home-assistant/README.md) has
-the steps before the first deploy. Phases 2–6 are still to do. This plan started as
+**Status: phase 1 deployed (2026-11-12).** HA runs on gembernode-01 and answers at
+https://homeassistant.lan.gemberkoekje.nl, waiting for onboarding. The manifests are in
+[apps/home-assistant/](../apps/home-assistant/), with a [README](../apps/home-assistant/README.md).
+Phases 2–6 are still to do; phase 2 is next. This plan started as
 `home-assistant-plan.md` in Gemberkoekje/projects; where building phase 1 changed it, "Changed
 while building" says so.
 
@@ -14,8 +15,8 @@ for the devices is fine; the vendor apps keep working alongside.
 
 | Device | Integration | Control path | Notes |
 |---|---|---|---|
-| Calex smart lamps (Tuya-based) | `tuya-local` (HACS) | **Local** (LAN, Tuya protocol) | Lamps stay cloud-connected; Calex app keeps working |
-| Itho Smartboiler Mono Plus | Climate Connect community integration (HACS) | **Cloud only** | No local API exists; reverse-engineered, unofficial |
+| Calex smart lamps (Tuya-based) | `tuya-local` (Marketplace) | **Local** (LAN, Tuya protocol) | Lamps stay cloud-connected; Calex app keeps working |
+| Itho Smartboiler Mono Plus | Climate Connect community integration (Marketplace, custom repository) | **Cloud only** | No local API exists; reverse-engineered, unofficial |
 
 ## Decided
 
@@ -49,13 +50,17 @@ All on 2026-11-12, by the user:
   `homeassistant-secrets`, read with `!env_var RECORDER_DB_URL`.
 - **Backups at `/config/backups`, not `/backups`.** HA Container always writes its local backups
   to `/config/backups`, so the NAS volume is mounted there.
-- **HACS is pinned by version and sha256.** The init container installs it only when it's absent,
-  and never unpacks a zip that doesn't match. A failed download doesn't stop HA from starting.
+- **No HACS install: it's built in.** Since 2026.11.0, HACS is part of Home Assistant as the
+  **Marketplace** (Dutch UI: Marktplaats), set up by itself on the first start. HA blocks the old
+  custom integration (`hacs` in `BLOCKED_CUSTOM_INTEGRATIONS`, logged only at info level) and deletes
+  its `custom_components/hacs` folder itself. So the init container's HACS install, which phase 1
+  first shipped with, was removed after the deploy (#215): HA would have deleted the folder, and
+  every start would have reinstalled it.
 - **A `wait-for-postgres` init container**, as the other PostgreSQL apps have. After a node reboot
   PostgreSQL can be back later than HA, and HA gives up on its recorder after a few tries.
 - **Tested locally** (Docker, 2026-11-12): HA 2026.11.1 with this `configuration.yaml` read-only
   started in 6 seconds, and the recorder created its tables in PostgreSQL 18. The init script
-  skipped a bad checksum, installed HACS 2.0.5, and left it alone on the next run. An
+  created the included files (it also installed HACS then, since removed). An
   `X-Forwarded-For` header from an untrusted address got the expected 400.
 
 ---
@@ -93,9 +98,8 @@ In [apps/home-assistant/](../apps/home-assistant/), namespace `home-automation`.
 - Caddy: `https://homeassistant.lan.gemberkoekje.nl`, plus a link on the LAN start page.
 
 **Done when:** the onboarding page loads at `https://homeassistant.lan.gemberkoekje.nl`, the pod
-survives a restart with config intact, and `custom_components/hacs` is on the volume. HACS 2 only
-appears in the sidebar after it is added as an integration (Settings → Devices & services → Add
-integration → HACS, which asks for a GitHub login), so that is checked in phase 2.
+survives a restart with config intact, and the recorder writes to PostgreSQL. All three were checked
+on 2026-11-12 (NOTES.md).
 
 ---
 
@@ -104,7 +108,9 @@ integration → HACS, which asks for a GitHub login), so that is checked in phas
 - [ ] Complete onboarding (user, location, units, timezone).
 - [ ] **Settings → System → Network:** set both Home Assistant URLs to
   `https://homeassistant.lan.gemberkoekje.nl`. It works at home and over Tailscale alike.
-- [ ] **Add HACS** as an integration (GitHub device login).
+- [ ] **Look at the Marketplace** (Settings → Marktplaats): HACS, built in. Browsing and installing
+  from its catalog needs no GitHub account. Connecting GitHub (Settings → Devices & services →
+  Marktplaats → Reconfigure) is only needed for custom repositories, which phases 3 and 4 both need.
 - [ ] Enable HA's **automatic backups** (daily, keep ~7). They land in `/config/backups`, on the NAS.
   HA encrypts them: **store the encryption key in 1Password**, or the backups can't be restored.
 - [ ] Install the **HA Companion app** on the phone. It's the notification target for Phase 5.
@@ -117,7 +123,7 @@ integration → HACS, which asks for a GitHub login), so that is checked in phas
 ## Phase 3 — Calex lamps (local)
 
 1. **Quick win (optional, ~5 min):** add the built-in **Tuya** integration. Enter the User Code from the Calex app (Account → Settings → Account and Security) and scan the QR code with the Calex app. This confirms the lamps are reachable and gives temporary cloud control.
-2. **Install `tuya-local`** via HACS (`make-all/tuya-local`), then restart HA.
+2. **Install `tuya-local`** (`make-all/tuya-local`, shown as "Tuya Local"), then restart HA. It is **not in the Marketplace's own catalog** (checked 2026-11-12; its README says to add it as a custom repository). So: connect the Marketplace to GitHub (phase 2), then in Settings → Marktplaats use ⋮ → Custom repositories to add `https://github.com/make-all/tuya-local` (category: Integration), and download it. Don't confuse it with **LocalTuya** ("Local Tuya", `rospogrigio/localtuya`), which *is* in the catalog: a different project that needs Tuya developer-platform credentials (Client ID, Secret, User ID) instead of the Calex app's User Code.
 3. Add each lamp through tuya-local's **cloud-assisted setup**. It logs in to Tuya once to fetch each device's ID and **local key**, then finds the lamp on the LAN (192.168.1.50–.59). Do lamps **one at a time** and label them physically.
 4. Once all lamps work through tuya-local, **remove the cloud Tuya integration** to avoid duplicate entities.
 5. Group lamps into Areas.
@@ -137,7 +143,7 @@ integration → HACS, which asks for a GitHub login), so that is checked in phas
 - **Fallback:** `vleerie/climateconnect-homeassistant`. Names the Smartboiler explicitly but is thinner (mode, temperature, boost, diagnostics; first device only).
 
 **Steps**
-1. Add the chosen repo to HACS as a custom repository (category: Integration), install, restart.
+1. Connect the Marketplace to GitHub first (Settings → Devices & services → Marktplaats → Reconfigure; a code to enter at github.com/login/device). Then add the chosen repo in the Marketplace as a custom repository (category: Integration), install, restart.
 2. Auth (Rien-R lineage): log in through the browser flow. The page shows an error after login, **which is expected**. Copy the `climateconnect://login?token=...` URL from the browser console (F12) into HA. The token lasts about a year.
 3. Confirm entities appear and the values match the Climate Connect app.
 
