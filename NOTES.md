@@ -2781,3 +2781,15 @@ To understand this, read the v42.0.0 release notes of traefik/traefik-helm-chart
   (for Traefik 3.8); the only removed lines are descriptions and documentation links.
 - **After the merge:** both Traefik pods roll one at a time (maxUnavailable 0, PDB 1), the
   HelmRelease is Ready on 42.3.2, and the 74 public routes answer as before.
+
+## 2026-11-12 — kured chart 5.x → 6.x (kured 1.22.1 → 1.23.0)
+
+- **The breaking change in 6.0.0** (chart README, "From 5.x to 6.x"): `serviceAccount.extraAnnotations`
+  now go into the ServiceAccount's annotations instead of its labels. We don't set it.
+- **kured 1.23.0:** dependency updates only (Kubernetes client 0.36, Alpine 3.24, goreleaser). It's
+  "untested" on Kubernetes 1.37, one minor above its client, as 1.22.1 was too.
+- **Rendered 5.12.1 against 6.1.0 with our values:** only the image and an empty `annotations:` on the
+  ServiceAccount differ. The arguments (02:00–05:00 UTC window, 5m period, 15m lock-release delay,
+  the PreferNoSchedule taint, 30m drain timeout) are unchanged.
+- **After the merge:** the DaemonSet rolls one pod per node; all three Ready on 1.23.0. kured only
+  reboots inside its window, so nothing reboots now.
