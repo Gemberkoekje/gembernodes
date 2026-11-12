@@ -12,12 +12,18 @@ spec:
         kind: HelmRepository
         name: grafana-community
         namespace: monitoring
-      # Chart 11.x is Grafana 12. Chart 13 and later (Grafana 13) move to a distroless image and
-      # move dashboards into unified storage on first start: a separate step.
-      version: "11.x"
+      # Chart 14.x is Grafana 13: a distroless image (no shell, so no `kubectl exec … sh`) with a
+      # read-only root filesystem.
+      version: "14.x"
   interval: 6m
   values:
     replicas: 1
+    # Stop the old pod before starting the new one. With the chart's RollingUpdate, both ran
+    # during a rollout and wrote the same SQLite grafana.db on NFS at once: Grafana 12's first
+    # start crashed on "database is locked". Grafana 13's first start also moves dashboards and
+    # folders into unified storage in one long transaction, which must not race the old pod.
+    deploymentStrategy:
+      type: Recreate
     # Merged into the chart's pod securityContext (fsGroup 472): only re-apply the group to the
     # NFS volume when its root doesn't match, instead of to every file on each start.
     securityContext:
@@ -62,6 +68,10 @@ spec:
       # it. The chart's `plugins` value would instead stop Grafana.
       plugins:
         preinstall: yesoreyeram-infinity-datasource@4.1.6
+        # Chart 14 turns this off. On, Grafana keeps its own preinstalled apps (the Logs, Metrics
+        # and Traces Drilldown apps, Pyroscope) matched to its version; the copies on the volume
+        # date from 2025. Pinned plugins like Infinity above are not auto-updated.
+        preinstall_auto_update: true
     datasources:
       datasources.yaml:
         apiVersion: 1
