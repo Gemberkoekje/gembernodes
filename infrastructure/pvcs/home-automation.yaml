@@ -1,0 +1,36 @@
+# Home Assistant's config: integrations, devices, users and dashboards (.storage), plus HACS and
+# what it installs (custom_components). On local-path, like the Zeef apps' SQLite, so it stays
+# off NFS; the recorder's history is in PostgreSQL, not here. The volume is made on gembernode-01
+# (the Deployment's nodeSelector) and the pod stays there. Flux never prunes it (local-path deletes
+# data with the claim). It reaches the NAS through Home Assistant's own backups (below).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: homeassistant-config
+  namespace: home-automation
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+# Home Assistant's backups (mounted at /config/backups), so the QNAP's local and offsite backups
+# cover them. Flux never prunes it: qnap-nfs deletes the directory with the claim.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: homeassistant-backups
+  namespace: home-automation
+  annotations:
+    kustomize.toolkit.fluxcd.io/prune: disabled
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: qnap-nfs
+  resources:
+    requests:
+      storage: 5Gi

@@ -41,6 +41,7 @@ embedded etcd. MetalLB hands out 192.168.1.230–.239 in L2 mode
 
 | Address | What answers |
 |---|---|
+| 192.168.1.201:8123 | Home Assistant, on gembernode-01's own network (hostNetwork) |
 | 192.168.1.211 | The QNAP NAS (NFS). It keeps a local backup and copies offsite nightly (Hybrid Backup Sync), which covers everything the cluster stores there |
 | 192.168.1.231 | Traefik: the router forwards public 80/443 here. Also serves Grafana at `/grafana` and the SpaceTraders dashboard (LAN only) |
 | 192.168.1.232 | PostgreSQL, for LAN clients: the Cluster's `postgres-lan` Service (in the cluster: `postgresql.flux-system.svc.cluster.local`) |
@@ -82,13 +83,13 @@ every node.
 
 | Service | Where | Used by |
 |---|---|---|
-| **PostgreSQL**: one server, one database per app | A CloudNativePG Cluster, [configuration/postgresql-cluster.yaml](configuration/postgresql-cluster.yaml) (namespace `postgresql`, one instance, data on `qnap-nfs`). Its secrets and the `postgresql.flux-system` name (an ExternalName for `postgres-rw.postgresql`) are in [infrastructure/postgresql/](infrastructure/postgresql/) | Every app with a `ConnectionStrings__*` value in its 1Password item: adventureengine, armabotcs, bot-on-the-clocktower, charactercreator, curatool, datumprikker, dungeontable, ebi-cs-api, kluskat, plotboek-generator and spacetraders. Also Zeef's Sonarr, Radarr, Prowlarr, Seerr, Bazarr, Cleanuparr and AudioBookRequest. Several wait for it in a `postgres:17-alpine` init container |
+| **PostgreSQL**: one server, one database per app | A CloudNativePG Cluster, [configuration/postgresql-cluster.yaml](configuration/postgresql-cluster.yaml) (namespace `postgresql`, one instance, data on `qnap-nfs`). Its secrets and the `postgresql.flux-system` name (an ExternalName for `postgres-rw.postgresql`) are in [infrastructure/postgresql/](infrastructure/postgresql/) | Every app with a `ConnectionStrings__*` value in its 1Password item: adventureengine, armabotcs, bot-on-the-clocktower, charactercreator, curatool, datumprikker, dungeontable, ebi-cs-api, kluskat, plotboek-generator and spacetraders. Also Home Assistant's recorder (`RECORDER_DB_URL`), and Zeef's Sonarr, Radarr, Prowlarr, Seerr, Bazarr, Cleanuparr and AudioBookRequest. Several wait for it in a `postgres:17-alpine` init container |
 | PostgreSQL backup | [infrastructure/postgresql-backup/](infrastructure/postgresql-backup/) | Nightly at 02:00 UTC, written to a `qnap-nfs` volume |
 | SQLite backups | [apps/zeef/sqlite-backup.yaml](apps/zeef/sqlite-backup.yaml) | Nightly at 03:30 Amsterdam time: consistent copies of every SQLite database on `local-path` (Jellyfin, Chaptarr, Audiobookshelf, Maintainerr) to the `zeef/sqlite-backups` volume on the NAS. Restore steps in [apps/zeef/README.md](apps/zeef/README.md) |
 | **Secrets**: 1Password Connect and operator | [infrastructure/externalsecrets/](infrastructure/externalsecrets/) | Each `OnePasswordItem` (`vaults/Gembercluster/items/<name>`) becomes a Secret of the same name in its namespace. The items sit next to the app that uses them |
 | Image pull secret `ghcr-login` | [infrastructure/reflector/](infrastructure/reflector/) | Reflector copies it into every namespace (a few apps also have their own copy as a `OnePasswordItem`) |
 | **NFS volumes**: StorageClass `qnap-nfs` | [infrastructure/nfs-provisioner/](infrastructure/nfs-provisioner/) | Most PVCs, kept in [infrastructure/pvcs/](infrastructure/pvcs/) (one file per namespace). On the NAS at `/gembernodes-pvcs/<namespace>/<pvc>` |
-| **Node disk**: StorageClass `local-path` | built into k3s | SQLite, which must stay off NFS: Jellyfin, Maintainerr, Audiobookshelf's config, Chaptarr. Each pins its pod to one node. These volumes aren't on the NAS; their databases reach it through the nightly SQLite backups (row above) |
+| **Node disk**: StorageClass `local-path` | built into k3s | SQLite, which must stay off NFS: Jellyfin, Maintainerr, Audiobookshelf's config, Chaptarr. Also Home Assistant's config. Each pins its pod to one node. These volumes aren't on the NAS; the SQLite databases reach it through the nightly SQLite backups (row above), Home Assistant's config through its own backups |
 | The Multimedia share | `infrastructure/pvcs/zeef.yaml` (static PV `multimedia-nfs`, PVC `zeef/multimedia`) | Zeef's media apps, mounted at `/data` (Jellyfin: `/media`, read-only) |
 | **Certificates**: cert-manager | [infrastructure/certmanager/](infrastructure/certmanager/), issuers in [configuration/](configuration/) | The public Gateway's listeners (`letsencrypt-gateway`, Secrets in `traefik`) and Caddy's wildcard certificate (`letsencrypt-lan`) |
 
@@ -110,6 +111,7 @@ every node.
 | fileserver (File Browser) | `apps/fileserver` → `file-server` | `fileserver.gemberkoekje.nl` | NFS volume |
 | frontpage | `apps/frontpage` | `gemberkoekje.nl/` | Its own read-only ClusterRole (`apps/frontpage/rbac.yaml`): nodes, pods, Deployments, StatefulSets, node metrics (metrics-server) and the `flux-system` GitRepository, for the page's live cluster view |
 | hackerminigames | `apps/hackerminigames` | `hackerminigames.gemberkoekje.nl` | |
+| home-assistant ([README](apps/home-assistant/README.md)) | `apps/home-assistant` → `home-automation` | `homeassistant.lan.gemberkoekje.nl` (LAN and Tailscale), 192.168.1.201:8123 | PostgreSQL (recorder), `local-path` on gembernode-01, NFS volume (backups). hostNetwork, so its namespace's pod security level is `privileged` |
 | healthcheck | `apps/healthcheck` → `cluster-healthcheck` | `healthcheck.gemberkoekje.nl` | A static page served by Caddy |
 | kluskat | `apps/kluskat` | `kluskat.gemberkoekje.nl` | PostgreSQL |
 | plotboek-generator | `apps/plotboek-generator` | `plotboek.gemberkoekje.nl` | PostgreSQL. A CronJob resets the demo at 04:00 (Amsterdam) |
@@ -174,4 +176,6 @@ Designs and runbooks live in Gemberkoekje/projects.
 - [docs/ingress-nginx-migration-plan.md](docs/ingress-nginx-migration-plan.md): the move to Traefik.
 - [docs/cloudnativepg-migration-plan.md](docs/cloudnativepg-migration-plan.md): the move from the
   Bitnami PostgreSQL chart to CloudNativePG, and what's left to clean up.
+- [docs/home-assistant-plan.md](docs/home-assistant-plan.md): Home Assistant's phases, from deploy
+  to the lamps, the boiler and its standby automation.
 - [apps/zeef/README.md](apps/zeef/README.md): Zeef's ports, apps and setup.

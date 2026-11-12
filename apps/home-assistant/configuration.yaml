@@ -1,0 +1,37 @@
+# Home Assistant's configuration.yaml. Git owns this file: it reaches the pod as a read-only mount
+# (kustomization.yaml generates the ConfigMap with a content hash, so a change here restarts Home
+# Assistant). Everything set up in the UI (integrations, devices, users, dashboards, location) lives
+# in /config/.storage on the pod's volume instead, and the UI's automation, script and scene editors
+# write the three files included at the bottom. So Git and the UI never edit the same file.
+
+# The standard set of integrations a fresh install gets (frontend, history, discovery, backup...).
+default_config:
+
+http:
+  # Requests arrive through Caddy (https://homeassistant.lan.gemberkoekje.nl, see
+  # infrastructure/lan-proxy/Caddyfile), which passes the client's address in X-Forwarded-For.
+  # Home Assistant only believes that header from these addresses, and answers 400 to a proxied
+  # request from anywhere else. Caddy reaches the pod through the Service, which points at
+  # gembernode-01's own address (hostNetwork), so the request arrives:
+  #   - from Caddy's pod address, when Caddy runs on gembernode-01 itself;
+  #   - from the node Caddy runs on, otherwise: flannel masquerades pod traffic to node addresses.
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 10.42.0.0/16 # the pod network (k3s's default cluster CIDR)
+    - 192.168.1.201
+    - 192.168.1.202
+    - 192.168.1.203
+  # Ban an address after 5 failed logins in a row (ip_bans.yaml on the volume; delete the line to
+  # lift a ban). With the header above, that is the client's address, never Caddy's.
+  ip_ban_enabled: true
+  login_attempts_threshold: 5
+
+# History, the logbook and long-term statistics go to the shared PostgreSQL, not to SQLite on the
+# volume. The URL comes from the 1Password item homeassistant-secrets (README.md).
+recorder:
+  db_url: !env_var RECORDER_DB_URL
+  purge_keep_days: 14
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml

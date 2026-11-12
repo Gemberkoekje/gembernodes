@@ -1,0 +1,9 @@
+# Home Assistant (apps/home-assistant). "privileged", not "baseline": the pod runs on the node's own
+# network (hostNetwork), which baseline forbids, because device discovery (mDNS, SSDP, Tuya's UDP
+# broadcasts) doesn't cross the pod network. Keep this namespace to Home Assistant alone.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: home-automation
+  labels:
+    pod-security.kubernetes.io/enforce: privileged

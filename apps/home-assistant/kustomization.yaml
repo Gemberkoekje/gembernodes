@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: home-automation
+
+resources:
+  - homeassistant-secrets.yaml
+  - deployment.yaml
+  - service.yaml
+
+# Content-hashed names, so a change to either file restarts Home Assistant.
+configMapGenerator:
+  - name: homeassistant-configuration
+    files:
+      - configuration.yaml
+  - name: homeassistant-scripts
+    files:
+      - prepare-config.py

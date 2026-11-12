@@ -96,6 +96,13 @@ https://chaptarr.lan.gemberkoekje.nl {
 	reverse_proxy chaptarr.zeef.svc.cluster.local:8789
 }
 
+# Home Assistant (apps/home-assistant). Caddy passes WebSockets through and sends X-Forwarded-For,
+# which Home Assistant trusts from the pod network and the nodes (its configuration.yaml).
+https://homeassistant.lan.gemberkoekje.nl {
+	import lan_tls
+	reverse_proxy homeassistant.home-automation.svc.cluster.local:8123
+}
+
 # Grafana serves from /grafana/ (serve_from_sub_path); the bare name lands there.
 https://grafana.lan.gemberkoekje.nl {
 	import lan_tls

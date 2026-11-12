@@ -1,0 +1,149 @@
+# Home Assistant: local control of the Calex (Tuya) lamps and monitoring of the Itho boiler. The
+# phases are in docs/home-assistant-plan.md; the first deploy needs the steps in README.md.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homeassistant
+  namespace: home-automation
+spec:
+  replicas: 1
+  # Never two at once: they would share the config volume, and the host port below allows only one.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: homeassistant
+  template:
+    metadata:
+      labels:
+        app: homeassistant
+    spec:
+      # On the node's own network: discovery (mDNS, SSDP, Tuya's UDP broadcasts) is multicast or
+      # broadcast, which doesn't cross the pod network. This is why the namespace's pod security
+      # level is privileged (namespaces/home-automation-namespace.yaml). Home Assistant answers on
+      # http://192.168.1.201:8123 as well as through Caddy.
+      hostNetwork: true
+      # Cluster names (PostgreSQL) still resolve with hostNetwork only under this policy.
+      dnsPolicy: ClusterFirstWithHostNet
+      # The config volume is local-path, created on the node the pod first runs on, and the pod
+      # stays with it from then on; this picks that node (the user's choice, 2026-11-12: the most
+      # spare memory of the three). Moving to another node means restoring a backup there.
+      nodeSelector:
+        kubernetes.io/hostname: gembernode-01
+      enableServiceLinks: false
+      initContainers:
+        # After a node reboot PostgreSQL can be back later than this pod, and Home Assistant gives
+        # up on its recorder after a few tries (no history until the next restart). Wait for it.
+        - name: wait-for-postgres
+          image: postgres:18-alpine
+          command:
+            - sh
+            - -c
+            - until pg_isready -h postgresql.flux-system.svc.cluster.local -p 5432 -t 2; do echo "waiting for postgres"; sleep 2; done
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+        # Creates the files configuration.yaml includes, and installs HACS on a fresh volume
+        # (prepare-config.py). Same image as the app, for its Python.
+        - name: prepare-config
+          image: ghcr.io/home-assistant/home-assistant:2026.11.1
+          command: ["python3", "/scripts/prepare-config.py", "/config"]
+          env:
+            # HACS's release zip has no published checksum: this is the sha256 of the zip as
+            # downloaded on 2026-11-12. Bump both together.
+            - name: HACS_VERSION
+              value: "2.0.5"
+            - name: HACS_SHA256
+              value: 97be6b824a4f38e683728cc6dd72367f6b8bad0a43428b1b3b987a3087adf413
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: scripts
+              mountPath: /scripts
+              readOnly: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+      containers:
+        - name: homeassistant
+          # A release tag, never stable or latest: bumps go through Git.
+          image: ghcr.io/home-assistant/home-assistant:2026.11.1
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: TZ
+              value: Europe/Amsterdam
+            # Read by configuration.yaml (recorder: db_url: !env_var RECORDER_DB_URL).
+            - name: RECORDER_DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: homeassistant-secrets
+                  key: RECORDER_DB_URL
+          ports:
+            - name: http
+              containerPort: 8123
+          # The first start creates the recorder's tables, and every start loads all integrations:
+          # allow up to 10 minutes before liveness takes over.
+          startupProbe:
+            httpGet:
+              path: /manifest.json
+              port: http
+            periodSeconds: 10
+            failureThreshold: 60
+          livenessProbe:
+            httpGet:
+              path: /manifest.json
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /manifest.json
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            # Git's configuration.yaml over the volume's (read-only, so the two never drift apart).
+            - name: configuration
+              mountPath: /config/configuration.yaml
+              subPath: configuration.yaml
+              readOnly: true
+            # Home Assistant writes its backups to /config/backups: on the NAS, so they follow the
+            # QNAP's local and offsite backups. Only the live config stays on the node.
+            - name: backups
+              mountPath: /config/backups
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 1536Mi
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: homeassistant-config
+        - name: backups
+          persistentVolumeClaim:
+            claimName: homeassistant-backups
+        # Both generated by kustomize with a content hash, so a change restarts the pod.
+        - name: configuration
+          configMap:
+            name: homeassistant-configuration
+        - name: scripts
+          configMap:
+            name: homeassistant-scripts
