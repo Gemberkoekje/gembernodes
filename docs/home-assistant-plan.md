@@ -1,8 +1,9 @@
 # Home Assistant on gembernodes
 
-**Status: phase 1 built (2026-11-12), not yet deployed.** The manifests are in
-[apps/home-assistant/](../apps/home-assistant/); its [README](../apps/home-assistant/README.md) has
-the steps before the first deploy. Phases 2–6 are still to do. This plan started as
+**Status: phase 1 deployed (2026-11-12).** HA runs on gembernode-01 and answers at
+https://homeassistant.lan.gemberkoekje.nl, waiting for onboarding. The manifests are in
+[apps/home-assistant/](../apps/home-assistant/), with a [README](../apps/home-assistant/README.md).
+Phases 2–6 are still to do; phase 2 is next. This plan started as
 `home-assistant-plan.md` in Gemberkoekje/projects; where building phase 1 changed it, "Changed
 while building" says so.
 
