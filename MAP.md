@@ -138,7 +138,7 @@ Designs and runbooks live in Gemberkoekje/projects.
 | PostgreSQL, backup | `infrastructure/postgresql`, `infrastructure/postgresql-backup` | Shared database |
 | NFS CSI driver | `infrastructure/nfs-provisioner` | The `qnap-nfs` StorageClass |
 | PVCs | `infrastructure/pvcs` | NFS volumes for the apps |
-| Monitoring | `infrastructure/monitoring` | Prometheus, Grafana, Loki and Promtail. Dashboards are `dashboards/*.json`, loaded through `configMapGenerator`; alert rules are in `grafana-alerting-provisioning.yaml` |
+| Monitoring | `infrastructure/monitoring` | Prometheus, Grafana and Loki. Grafana Alloy ships the container logs to Loki; Promtail runs next to it until the switch-over. Dashboards are `dashboards/*.json`, loaded through `configMapGenerator`; alert rules are in `grafana-alerting-provisioning.yaml` |
 | Caddy LAN proxy | `infrastructure/lan-proxy` | `*.lan.gemberkoekje.nl` on .236. Restarts weekly to load the renewed certificate |
 | Tailscale subnet router | `infrastructure/tailscale` | Tailnet access to the nodes and MetalLB IPs |
 | kured | `infrastructure/kured` | Reboots nodes after updates, between 02:00 and 05:00 UTC |
