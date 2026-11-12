@@ -16,8 +16,8 @@ jobs:
     timeout-minutes: 15
     env:
       KUBECONFORM_VERSION: v0.8.0
-      # What helm-controller renders with in Flux v2.7.5 (helm-controller v1.4.5). Bump with Flux.
-      HELM_VERSION: v3.19.2
+      # What helm-controller renders with in Flux v2.10.0 (helm-controller v1.7.1). Bump with Flux.
+      HELM_VERSION: v4.3.1
     steps:
       - uses: actions/checkout@v7
 
