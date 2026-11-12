@@ -1903,3 +1903,39 @@ To understand this, read `ingress/kluskat-route.yaml`, then the last progress-lo
   `port: 443`. Without `port`, Traefik leaves the port out (tested with a throwaway HTTPRoute,
   deleted again), so the filter now only sets `scheme: https` and `statusCode: 301`.
   `kluskat-route.yaml` is the model that CLAUDE.md tells new routes to copy.
+
+## 2026-11-12 — Alerts for containers running out of memory
+
+To understand this, read the two rules after "Container crash-looping or failing to start" in
+`infrastructure/monitoring/grafana-alerting-provisioning.yaml`, with their comments.
+
+- **Why.** On 2026-11-11 the Tailscale subnet router hit its 256Mi limit, thrashed node-02's disk
+  and was OOM-killed. Nobody was alerted; it surfaced as stuttering Jellyfin streams. The existing
+  "crash-looping" rule only fires after 15 minutes in CrashLoopBackOff, so a single kill passes
+  unnoticed.
+- **Container killed for running out of memory** (`container-oom-killed`): the last exit was
+  OOMKilled and the container restarted in the last 10 minutes. It sends one alert per kill and
+  fires at once (`for: 0s`).
+  - `max_over_time` over the reason is needed. In a crash loop the next exit overwrites OOMKilled
+    within a scrape or two: spacetraders-api's kill on 2026-11-11 at 08:21 was only visible that
+    way.
+- **Container thrashing at its memory limit** (`container-memory-thrashing`): over 90% of the
+  limit and more than 50 major page faults per second, for 1 minute. This is the warning before the
+  kill.
+  - Either condition alone is noisy. promtail (2026-11-03 to 05), qBittorrent (now) and briefly
+    sonarr and spacetraders-api sat above 90% without trouble. Major faults were the clean signal.
+  - A 2-minute `for` would have missed the router's shortest episode (22:17–22:18).
+- **Backtested on 14 days of Prometheus data** (query_range through the API-server proxy):
+  - The kill rule finds only the two real kills, spacetraders-api 08:21 and the router 23:43.
+  - The thrash rule finds only the router's three episodes on 2026-11-11 (22:17, 23:38–23:43,
+    23:47–23:49).
+- **Checked:** both queries run on the live Prometheus as written in the file (neither fires now).
+  `validate.py`'s Grafana provisioning check passed on a `flux build` of infrastructure, and a
+  server-side dry run accepted the ConfigMap.
+- **After the merge:** Grafana reads alert provisioning only at startup, so run
+  `kubectl -n monitoring rollout restart deployment grafana`. Its log should show no provisioning
+  errors, and the Alerts folder should list 14 rules.
+- **Also recorded in MAP.md** (the user's information): the NAS keeps a local backup and syncs
+  offsite nightly with Hybrid Backup Sync. The `local-path` SQLite volumes are outside that. Moving
+  them to NFS was considered and rejected: SQLite over NFS risks corruption and is slow. The way to
+  cover them is to point their backups at the NAS.
