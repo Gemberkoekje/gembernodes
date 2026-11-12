@@ -2,7 +2,7 @@
 # the dashboard hands the internal API key to every browser that opens it, so it must not be
 # reachable from the internet. Modelled on infrastructure/monitoring/grafana-internal-ingress.yaml:
 # no host, no certificate, and only LAN addresses. On the LAN:
-#   http://192.168.1.231/spacetraders/dashboard/   (Traefik; .230 too while ingress-nginx runs)
+#   http://192.168.1.231/spacetraders/dashboard/   (Traefik)
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
