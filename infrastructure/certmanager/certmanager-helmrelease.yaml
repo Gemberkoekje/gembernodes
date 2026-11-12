@@ -17,7 +17,12 @@ spec:
   install:
     createNamespace: true
   values:
-    installCRDs: true
+    # The chart installs cert-manager's CRDs and marks them helm.sh/resource-policy: keep, so an
+    # uninstall can't delete them (and with them every Certificate and Issuer). This replaced the
+    # deprecated installCRDs: true, which meant exactly the same.
+    crds:
+      enabled: true
+      keep: true
     global:
       leaderElection:
         namespace: cert-manager

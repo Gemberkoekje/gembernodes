@@ -2175,3 +2175,39 @@ then the last progress-log entry of
   - Server-side dry runs of the HelmRelease, the healthcheck and the remaining issuer.
   - `flux build` of infrastructure, configuration and apps: no IngressClass or `letsencrypt-prod`
     left.
+- **After the merge (2026-11-12, 02:27Z):** checked, then the key was deleted.
+  - Traefik rolled one pod at a time, with no errors, and the IngressClass and the old issuer were
+    pruned.
+  - The healthcheck runs caddy 2.11.9.
+  - All 74 URLs behave as after the migration.
+  - The ACME account key `cert-manager/letsencrypt-prod` is deleted (with the user's OK).
+  - Dependabot closed #176. #180 (system-upgrade-controller v0.21.0) was merged: the controller runs
+    cleanly, refreshed its Plan CRD, and both Plans are idle.
+
+## 2026-11-12 — Error-log alerts after the migration: scanners, not breakage
+
+- **What fired:** "Error logs detected" for cov-website (02:21Z) and ebi-cs-api (02:26Z).
+- **cov-website:** bots probing `wp-config.php`, `phpinfo.php`, `.htpasswd` and `server-status`,
+  which Apache logs as errors. This is routine: 1–15 such lines on most days of the past week.
+- **ebi-cs-api:** new since the migration. ebi-frontend's subdomain now passes every path to its
+  nginx; the old regex only let `/` through, so Traefik used to answer scanners with a 404 itself.
+  nginx logs each missing `env.dev.js` or `favicon.ico` as an error.
+  - The sources were scanners from cloud hosts and the URL checks that day.
+  - The app itself works on `gemberkoekje.nl/ebi-frontend/`, including its script.
+  - On the subdomain its `/ebi-frontend/assets/...` paths 404, as they did before the migration.
+- **Open options:** make the subdomain work (strip `/ebi-frontend` there too), and/or have the
+  error-log alert ignore "No such file or directory", "not found or unable to stat" and "client
+  denied" lines, which are 404s from bots.
+
+## 2026-11-12 — cert-manager: `crds.enabled` instead of `installCRDs`
+
+To understand this, read the `values:` of `infrastructure/certmanager/certmanager-helmrelease.yaml`.
+
+- **The change:** `installCRDs: true` is deprecated, and the chart documents it as equivalent to
+  `crds.enabled: true` plus `crds.keep: true`. The values now say that.
+- **Checked:** chart v1.21.3 (the running version) rendered with the old and the new values gives
+  byte-identical output (6 CRDs, all with `helm.sh/resource-policy: keep`), and a server-side dry
+  run accepted the HelmRelease. Nothing changes in the cluster.
+- **The first of the version updates planned on 2026-09-26** (Follow-ups, "Version updates").
+  system-upgrade-controller is done too (#180). Next: MetalLB, the Prometheus and Grafana charts,
+  Promtail → Alloy, Flux, then CloudNativePG.
