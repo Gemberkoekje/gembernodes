@@ -2755,3 +2755,13 @@ To understand this, read the `stage.replace` block in
   files on the node rotate on their own.
 - **Checked:** `alloy fmt` on the rendered config (in the running Alloy pod). After the merge, a
   Sonarr restart's migration line arrives in Loki as `Password=(removed)`.
+
+## 2026-11-12 — 1Password Connect chart 2.4.1 → 2.4.x (2.4.3)
+
+- **What:** Connect 1.8.2 → 1.8.4 and the 1Password operator 1.12.0 → 1.12.1. Both chart releases
+  are security-only (CVEs in the images); the chart diff is otherwise just image names gaining a
+  `docker.io/` prefix. No values changed.
+- **The range:** the chart was pinned to exactly `2.4.1`, with no reason recorded; every other
+  chart follows an `x` range. `2.4.x` lets Flux take the next security patch by itself.
+- **After the merge:** the `connect` HelmRelease Ready on 2.4.3, the Connect and operator pods
+  running the new images, and a OnePasswordItem still syncing (e.g. `postgresql-superuser`).
