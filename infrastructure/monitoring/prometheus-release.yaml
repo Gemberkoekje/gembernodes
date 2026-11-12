@@ -35,8 +35,7 @@ spec:
         existingClaim: prometheus-server-qnap
     # Export the Ready state of Flux objects as gotk_resource_info, used by the Flux dashboard
     # and the "Flux resource not ready" alert. Adapted from fluxcd/flux2-monitoring-example.
-    # The API versions must be ones the installed Flux serves: on Flux 2.5 OCIRepository is
-    # still v1beta2.
+    # The API versions must be ones the installed Flux serves; bump them with Flux.
     kube-state-metrics:
       rbac:
         extraRules:
@@ -156,7 +155,7 @@ spec:
                       chart_version: [spec, version]
               - groupVersionKind:
                   group: source.toolkit.fluxcd.io
-                  version: v1beta2
+                  version: v1
                   kind: OCIRepository
                 metricNamePrefix: gotk
                 metrics:
