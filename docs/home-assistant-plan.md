@@ -30,6 +30,9 @@ All on 2026-11-12, by the user:
   gembernode-03 ~13%). No pod on any node used port 8123 or 5353.
 - **D3. Recorder: the shared PostgreSQL** (the CloudNativePG Cluster), not SQLite on the volume.
 - **D4. DHCP reservations are done:** the lamps are on 192.168.1.50–192.168.1.59.
+- **D5. The boiler's normal mode is Klokprogramma** (the integration calls it Schedule), not
+  SmartControl: 65 °C from 10:00 to 10:30 (dishes) and from 21:00 to 21:30 (showers), 10 °C the rest
+  of the day. Phase 5 recovers to this mode.
 
 ## Changed while building
 
@@ -160,12 +163,28 @@ G125 RGB CCT lamps are RGBCW: colour plus warm to cool white.
 
 ## Phase 4 — Itho Smartboiler (cloud)
 
-**Progress (2026-11-12):** `mjhagen/Itho-Daalderop-GES-HA` is installed through the Marketplace
-(version 1.5.0, commit `8e4658b`). The integration isn't added yet: step 2 (the login) is next.
+**Progress (2026-11-12):** `mjhagen/Itho-Daalderop-GES-HA` 1.5.0 (commit `8e4658b`) is installed and
+logged in. The boiler shows up as `…_vpr260220080_…` in the area Keuken. Its values match the app and
+the boiler's own display: mode Schedule = Klokprogramma, boiler content 0% = the app's
+"Energieniveau" 0%, legionella timer 165 h. Not yet tested: that a change in the app reaches HA within
+a minute.
+
+**What the integration gets wrong or leaves out** (checked in its code and in the recorder):
+- **Boiler content % is always 0**, in the app as much as in HA (the user: it "has never worked"),
+  while the display showed 60.1 °C. It's Itho's own value, so it's useless as a signal.
+- **The schedule sensors all say "No schedule", but the schedule is there.** Their raw attribute
+  holds `{'36000': 65, '37800': 10, '75600': 65, '77400': 10}`: seconds after midnight, which is
+  10:00 and 21:00 at 65 °C, then 10:30 and 21:30 at 10 °C. `sensor.py` only parses HHMM keys
+  (`1000`) and drops the rest. The write path (`api.py`) passes keys above 2359 through unchanged,
+  so setting the mode to Schedule from HA sends this schedule back intact. Keys below 2359 seconds
+  (before 00:39) would be misread, but there are none here.
+- **No water temperature in HA.** `water_heater.py` reads the measured temperature
+  (`deviceTemperatureMeasured`), but `__init__.py` never loads the `water_heater` platform, so the
+  entity doesn't exist.
 
 **Integration choice** (both unofficial, reverse-engineered, zero-star repos, so expect breakage when Itho changes their API):
 - **Primary:** `Rien-R/Itho-Daalderop-GES-HA` lineage (also `mjhagen/Itho-Daalderop-GES-HA` fork). Richest feature set: device mode select (SmartControl / Schedule / Continuous / Holiday), device state, boiler content %, power (kW), legionella timer, energy, connection status sensor. Polls status every 30 s.
-  **Checked 2026-11-12: use [`mjhagen/Itho-Daalderop-GES-HA`](https://github.com/mjhagen/Itho-Daalderop-GES-HA).** It is 14 commits ahead of Rien-R's original and none behind, last pushed 2026-10-07 (Rien-R: 2026-02-27; the other fork, JobDoesburg: 2026-08-11). Two of those commits matter for phase 5: "Fix device mode API payload" (setting the mode back to SmartControl) and "Add boiler connection health and reauthentication" (a warning after repeated API errors, 5 minutes without polling, or 24 hours of unchanged telemetry). None of the candidates is in the Marketplace catalog.
+  **Checked 2026-11-12: use [`mjhagen/Itho-Daalderop-GES-HA`](https://github.com/mjhagen/Itho-Daalderop-GES-HA).** It is 14 commits ahead of Rien-R's original and none behind, last pushed 2026-10-07 (Rien-R: 2026-02-27; the other fork, JobDoesburg: 2026-08-11). Two of those commits matter for phase 5: "Fix device mode API payload" (setting the mode back) and "Add boiler connection health and reauthentication" (a warning after repeated API errors, 5 minutes without polling, or 24 hours of unchanged telemetry). None of the candidates is in the Marketplace catalog.
   **Gotcha:** its README's custom-repository URL is `marinuz/Itho-Daalderop-GES-HA`, which GitHub redirects to Rien-R's original, without these fixes. Add `https://github.com/mjhagen/Itho-Daalderop-GES-HA` instead.
 - **Fallback:** `vleerie/climateconnect-homeassistant`. Names the Smartboiler explicitly but is thinner (mode, temperature, boost, diagnostics; first device only).
 
@@ -174,7 +193,8 @@ G125 RGB CCT lamps are RGBCW: colour plus warm to cool white.
 2. Auth (Rien-R lineage, mjhagen included): log in through the browser flow. The page shows an error after login, **which is expected**. Copy the `climateconnect://login?token=...` URL from the browser console (F12) into HA. The token lasts about a year.
 3. Confirm entities appear and the values match the Climate Connect app.
 
-**Done when:** mode, boiler content %, power and connection status update in HA within a minute of changes in the app.
+**Done when:** mode, power and connection status update in HA within a minute of changes in the app
+(boiler content % is dropped: it is always 0).
 
 ---
 
@@ -188,9 +208,13 @@ G125 RGB CCT lamps are RGBCW: colour plus warm to cool white.
 - Write down the exact entity/value that flags it.
 
 **5b. Automate** (once the signal is known):
-- **Trigger:** the identified state/mode value, **plus** a fallback heuristic: boiler content % below a threshold AND power 0 kW for > N minutes during normal hours.
+- **Trigger:** the identified state/mode value. The fallback heuristic first planned here (boiler
+  content % low AND power 0 kW) can't work: content % is always 0, and 0 kW is normal outside the
+  two half-hour slots (D5) and inside them when the tank is already at 65 °C. A better fallback needs
+  the water temperature (missing, see phase 4): below ~40 °C after a slot has passed means it didn't
+  heat.
 - **Guard:** `input_boolean.boiler_holiday`. When on, don't auto-recover. Holiday mode set on purpose must not be overridden.
-- **Actions:** set device mode back to **SmartControl**, then send a Companion app notification ("Boiler was in standby, switched back").
+- **Actions:** set device mode back to **Schedule** (Klokprogramma, D5), then send a Companion app notification ("Boiler was in standby, switched back").
 - If 5a shows the mode can't be set back through the API (it may need the physical button), the automation becomes **notify-only**. Early warning is still the main win.
 
 **Done when:** a simulated standby (put it in standby via the app) gets detected and handled within a couple of minutes, and the holiday guard blocks it.
@@ -209,7 +233,7 @@ G125 RGB CCT lamps are RGBCW: colour plus warm to cool white.
 
 | Risk | Impact | Mitigation |
 |---|---|---|
-| Itho changes the Climate Connect API | Boiler entities die | Pin the integration version; standby notification still has the power/content heuristic if the sensors survive; watch the repo |
+| Itho changes the Climate Connect API | Boiler entities die | Pin the integration version; the connection-health warning flags it; watch the repo |
 | Lamp re-paired / firmware update changes local key | One lamp drops out | Re-run tuya-local setup for that lamp |
 | Lamp IP changes | Lamp drops out | DHCP reservations (D4) |
 | gembernode-01 goes down | HA down (local-path is node-bound) | Accept for a home setup; restore from the NAS backup on another node (README, "Restoring") |

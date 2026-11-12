@@ -2945,3 +2945,11 @@ and the "Upgrading" section of the community chart's README (grafana-community/h
   (mjhagen, 1.5.0) is installed but not added yet.
 - **#215 rolled out** at ~15:00Z. The new pod's `prepare-config` printed nothing (all three files
   existed), HA started cleanly, and Caddy answers.
+- **Phase 4 logged in** (the first try failed with "Invalid flow specified": #215's restart at 15:00Z
+  dropped the setup dialog, which lives in memory only). The values match the app and the display.
+  Three gaps in the integration, recorded in the plan's phase 4:
+  - boiler content % is always 0, in Itho's own app too;
+  - the schedule sensors drop the API's seconds-after-midnight keys and say "No schedule";
+  - the `water_heater` platform (the measured temperature) is never loaded.
+- **D5:** the boiler normally runs Klokprogramma, at 65 °C for 10:00–10:30 and 21:00–21:30. Phase 5
+  recovers to that mode, and its content-% heuristic is dropped.
