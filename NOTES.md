@@ -2536,3 +2536,21 @@ To understand this, read `infrastructure/monitoring/grafana-release.yaml`.
   - The log shows the unified storage migration completing, with no "locked" errors.
   - Infinity 4.1.6 and the Drilldown apps load.
   - Alerts provision, and both URLs answer.
+
+## 2026-11-12 — CloudNativePG: the decisions
+
+To understand this, read the "Decided" and "Before building" sections of
+`docs/cloudnativepg-migration-plan.md`.
+
+- **Decided:**
+  - One instance on the NAS.
+  - The 15–30 minute downtime is accepted, the moment to be agreed.
+  - You create the superuser 1Password item before the plan is carried out.
+  - Namespace `postgresql`.
+  - Of the six unused databases, only VortexPlotboek is kept.
+- **The import list is now explicit:** 11 app databases, 10 Zeef ones and VortexPlotboek.
+- **Found:** Chaptarr's three PostgreSQL databases (chaptarr-main, -log, -cache) are unused too.
+  Chaptarr runs on SQLite, and `apps/zeef/chaptarr.yaml` explains why: the Bitnami server runs in
+  FIPS mode, where `md5()` fails. Whether to import them is left open in the plan.
+- **Nothing built.** The plan stays a plan until the 1Password item exists and the moment is
+  agreed.
