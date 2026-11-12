@@ -1,7 +1,8 @@
 # Bitnami PostgreSQL → CloudNativePG
 
-**Status: plan, decided (2026-11-12), not built.** Nothing in this document has been applied. It
-waits on the items under "Before building".
+**Status: carried out on 2026-11-12** (NOTES.md has the log). PostgreSQL now runs on CloudNativePG;
+what remains is under "Left to do". The rest of this document is the plan as decided, kept for
+the reasoning. Where the build differs from it, "Changed while building" says so.
 
 ## Why
 
@@ -133,10 +134,25 @@ Unused:
 - **After PR C:** put the Bitnami HelmRelease and OCIRepository back. The data volume is still
   there. Anything written to CNPG since the switch would need a dump and restore back.
 
-## Before building
+## Changed while building
 
-1. **The 1Password item** for the superuser exists (see "Decided"). PR A's `OnePasswordItem`
-   points at it.
-2. **Chaptarr's three PostgreSQL databases:** import them or leave them out. They are unused
-   (Chaptarr runs on SQLite).
-3. **The moment** for the downtime window.
+- **Image flavour:** `standard-trixie`, not `system-trixie`. `system` is deprecated, and `standard`
+  has the `en_US.UTF-8` locale every database uses.
+- **The superuser secret:** no new 1Password item; the existing `postgresql-admin-secret` item got
+  `username` and `password` fields.
+- **Chaptarr's databases and role:** left out.
+- **`fsGroupChangePolicy: OnRootMismatch`** in `spec.podSecurityContext`: without it each pod start
+  spent minutes re-applying the group to every file over NFS.
+- **PR C became two:** C1 removed Bitnami, C2 added the ExternalName and .232. In one PR, Helm's
+  uninstall would have deleted the new Service of the same name.
+- **Metrics:** not done. Annotating the pods through `inheritedMetadata` would annotate the
+  Services too, and Prometheus would scrape the same metrics several times over.
+
+## Left to do
+
+1. **After a few weeks:** delete `infrastructure/postgresql/postgresql-data-pvc.yaml` (the old data;
+   Flux then deletes it). The last dump taken from the Bitnami server, `postgres-2026-11-12.sql.gz`
+   on the backup volume, rotates out by itself after a week.
+2. **Metrics:** a Prometheus scrape job for pods with the `cnpg.io/cluster` label, port 9187.
+3. **Move the apps** to `postgres-rw.postgresql.svc.cluster.local` one at a time, then remove the
+   ExternalName (`infrastructure/postgresql/postgresql-service.yaml`) and update the app READMEs.
