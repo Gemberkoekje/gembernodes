@@ -300,6 +300,39 @@ data:
             for: 1m
             annotations:
               summary: '{{ $labels.namespace }}/{{ $labels.pod }} container {{ $labels.container }} is at its memory limit and thrashing ({{ printf "%.0f" $values.A.Value }} major page faults/s). Raise its memory limit'
+          # A backup CronJob whose last successful run is too old: the nightly ones (the PostgreSQL
+          # dump and the SQLite copies in apps/zeef/sqlite-backup.yaml) after 26 hours, Jellyfin's
+          # weekly one after 170. A failed or stuck run shows up here; a job that never succeeded
+          # has no last-success time and stays silent, so check a new one by hand once.
+          - uid: backup-stale
+            title: Backup is stale
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 600
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  refId: A
+                  expr: 'max by (namespace, cronjob) ((time() - kube_cronjob_status_last_successful_time{cronjob=~"postgresql-backup|sqlite-backup-.+"}) / 3600 > 26) or max by (namespace, cronjob) ((time() - kube_cronjob_status_last_successful_time{cronjob="jellyfin-backup"}) / 3600 > 170)'
+                  instant: true
+              - refId: C
+                datasourceUid: "__expr__"
+                model:
+                  refId: C
+                  type: threshold
+                  expression: A
+                  conditions:
+                    - evaluator:
+                        type: gt
+                        params:
+                          - 0
+            noDataState: OK
+            execErrState: Error
+            for: 0s
+            annotations:
+              summary: 'Backup {{ $labels.namespace }}/{{ $labels.cronjob }} last succeeded {{ printf "%.0f" $values.A.Value }} hours ago'
           - uid: node-not-ready
             title: Node not ready
             condition: C

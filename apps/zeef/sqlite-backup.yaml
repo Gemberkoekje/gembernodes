@@ -1,0 +1,413 @@
+# Nightly backups of the SQLite databases that live on local-path, where the QNAP's own backups
+# can't reach them: Jellyfin, Chaptarr, Audiobookshelf and Maintainerr. Each copy lands on the NAS
+# (PVC sqlite-backups, infrastructure/pvcs/zeef.yaml), which the NAS backs up locally and syncs
+# offsite every night. Restoring: apps/zeef/README.md.
+#
+# One CronJob per app, because a local-path volume can only be mounted on its own node; the
+# scheduler puts each job there. Each runs as the user that owns the app's files, so it never
+# leaves root-owned SQLite side files (-wal, -shm) behind for the app to trip over. The app's
+# volume is mounted read-write: SQLite needs the -shm file even to read a database in WAL mode.
+#
+# SQLite's online backup API gives a consistent copy while the app keeps writing (a plain file
+# copy of a busy database can be torn). Every copy must pass PRAGMA quick_check before it is kept.
+# A failed copy fails the Job; the "Backup is stale" alert in
+# infrastructure/monitoring/grafana-alerting-provisioning.yaml reports a backup older than 26 hours.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sqlite-backup
+  namespace: zeef
+data:
+  backup.py: |
+    """backup.py <app> <source dir> <pattern>...: copy the matching SQLite databases to /backups/<app>.
+
+    Each database becomes /backups/<app>/<name>-<UTC time>.db.gz; the newest KEEP copies (default
+    14) per database stay. Exits non-zero if any database fails.
+    """
+    import glob
+    import gzip
+    import os
+    import re
+    import shutil
+    import sqlite3
+    import sys
+    import time
+
+    keep = int(os.environ.get("KEEP", "14"))
+    app, source, patterns = sys.argv[1], sys.argv[2], sys.argv[3:]
+    dest = os.path.join("/backups", app)
+    os.makedirs(dest, exist_ok=True)  # the init container normally made it already
+    stamp = time.strftime("%Y%m%d-%H%M%S", time.gmtime())
+    paths = sorted({p for pattern in patterns for p in glob.glob(os.path.join(source, pattern))})
+    if not paths:
+        sys.exit(f"no database matches {patterns} in {source}")
+
+    failed = 0
+    for path in paths:
+        name = os.path.splitext(os.path.basename(path))[0]
+        tmp = os.path.join("/tmp", f"{name}.db")
+        final = os.path.join(dest, f"{name}-{stamp}.db.gz")
+        try:
+            src = sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=60)
+            dst = sqlite3.connect(tmp)
+            src.backup(dst)
+            src.close()
+            check = dst.execute("PRAGMA quick_check").fetchone()[0]
+            dst.close()
+            if check != "ok":
+                raise RuntimeError(f"quick_check says {check!r}")
+            with open(tmp, "rb") as plain, gzip.open(final + ".part", "wb") as packed:
+                shutil.copyfileobj(plain, packed)
+            os.replace(final + ".part", final)
+            print(f"{path} -> {final} ({os.path.getsize(final)} bytes)")
+        except Exception as exc:  # noqa: BLE001 - report every database, then fail the Job
+            failed += 1
+            print(f"FAILED {path}: {exc}", file=sys.stderr)
+        finally:
+            for leftover in (tmp, final + ".part"):
+                if os.path.exists(leftover):
+                    os.remove(leftover)
+        # Only this database's own copies: "kodisyncqueue" must not count "kodisyncqueue-log".
+        own = re.compile(re.escape(name) + r"-\d{8}-\d{6}\.db\.gz")
+        copies = sorted(f for f in os.listdir(dest) if own.fullmatch(f))
+        for old in copies[:-keep]:
+            os.remove(os.path.join(dest, old))
+            print(f"removed {old}")
+
+    sys.exit(1 if failed else 0)
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: sqlite-backup-jellyfin
+  namespace: zeef
+spec:
+  schedule: "30 3 * * *"
+  timeZone: Europe/Amsterdam
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 900
+      template:
+        spec:
+          restartPolicy: Never
+          enableServiceLinks: false
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 100
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          initContainers:
+            # The PVC's root belongs to root; this hands the app's folder to the job's user.
+            - name: own-dir
+              image: busybox:1.36
+              command: ["sh", "-c", "mkdir -p /backups/jellyfin && chown 1000:100 /backups/jellyfin"]
+              securityContext:
+                runAsUser: 0
+                runAsNonRoot: false
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+                  add: ["CHOWN"]
+              volumeMounts:
+                - name: backups
+                  mountPath: /backups
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 16Mi
+                limits:
+                  memory: 64Mi
+          containers:
+            # jellyfin.db, plus the Kodi Sync Queue plugin's two databases.
+            - name: backup
+              image: python:3.15.2-alpine3.24
+              command: ["python", "/scripts/backup.py", "jellyfin", "/config/data", "*.db"]
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+              volumeMounts:
+                - name: config
+                  mountPath: /config
+                - name: backups
+                  mountPath: /backups
+                - name: scripts
+                  mountPath: /scripts
+                  readOnly: true
+                - name: tmp
+                  mountPath: /tmp
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  memory: 256Mi
+          volumes:
+            - name: config
+              persistentVolumeClaim:
+                claimName: jellyfin-config
+            - name: backups
+              persistentVolumeClaim:
+                claimName: sqlite-backups
+            - name: scripts
+              configMap:
+                name: sqlite-backup
+            - name: tmp
+              emptyDir:
+                sizeLimit: 1Gi
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: sqlite-backup-chaptarr
+  namespace: zeef
+spec:
+  schedule: "30 3 * * *"
+  timeZone: Europe/Amsterdam
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 900
+      template:
+        spec:
+          restartPolicy: Never
+          enableServiceLinks: false
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 100
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          initContainers:
+            - name: own-dir
+              image: busybox:1.36
+              command: ["sh", "-c", "mkdir -p /backups/chaptarr && chown 1000:100 /backups/chaptarr"]
+              securityContext:
+                runAsUser: 0
+                runAsNonRoot: false
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+                  add: ["CHOWN"]
+              volumeMounts:
+                - name: backups
+                  mountPath: /backups
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 16Mi
+                limits:
+                  memory: 64Mi
+          containers:
+            # chaptarr.db, plus staging.db, cache.db and logs.db (small; restoring one alone works).
+            - name: backup
+              image: python:3.15.2-alpine3.24
+              command: ["python", "/scripts/backup.py", "chaptarr", "/config", "*.db"]
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+              volumeMounts:
+                - name: config
+                  mountPath: /config
+                - name: backups
+                  mountPath: /backups
+                - name: scripts
+                  mountPath: /scripts
+                  readOnly: true
+                - name: tmp
+                  mountPath: /tmp
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  memory: 256Mi
+          volumes:
+            - name: config
+              persistentVolumeClaim:
+                claimName: chaptarr-config
+            - name: backups
+              persistentVolumeClaim:
+                claimName: sqlite-backups
+            - name: scripts
+              configMap:
+                name: sqlite-backup
+            - name: tmp
+              emptyDir:
+                sizeLimit: 1Gi
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: sqlite-backup-audiobookshelf
+  namespace: zeef
+spec:
+  schedule: "30 3 * * *"
+  timeZone: Europe/Amsterdam
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 900
+      template:
+        spec:
+          restartPolicy: Never
+          enableServiceLinks: false
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 100
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          initContainers:
+            - name: own-dir
+              image: busybox:1.36
+              command: ["sh", "-c", "mkdir -p /backups/audiobookshelf && chown 1000:100 /backups/audiobookshelf"]
+              securityContext:
+                runAsUser: 0
+                runAsNonRoot: false
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+                  add: ["CHOWN"]
+              volumeMounts:
+                - name: backups
+                  mountPath: /backups
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 16Mi
+                limits:
+                  memory: 64Mi
+          containers:
+            - name: backup
+              image: python:3.15.2-alpine3.24
+              command: ["python", "/scripts/backup.py", "audiobookshelf", "/config", "absdatabase.sqlite"]
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+              volumeMounts:
+                - name: config
+                  mountPath: /config
+                - name: backups
+                  mountPath: /backups
+                - name: scripts
+                  mountPath: /scripts
+                  readOnly: true
+                - name: tmp
+                  mountPath: /tmp
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  memory: 256Mi
+          volumes:
+            - name: config
+              persistentVolumeClaim:
+                claimName: audiobookshelf-config
+            - name: backups
+              persistentVolumeClaim:
+                claimName: sqlite-backups
+            - name: scripts
+              configMap:
+                name: sqlite-backup
+            - name: tmp
+              emptyDir:
+                sizeLimit: 1Gi
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: sqlite-backup-maintainerr
+  namespace: zeef
+spec:
+  schedule: "30 3 * * *"
+  timeZone: Europe/Amsterdam
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 900
+      template:
+        spec:
+          restartPolicy: Never
+          enableServiceLinks: false
+          # Maintainerr runs as 1000:1000, not 1000:100 like the other Zeef apps.
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          initContainers:
+            - name: own-dir
+              image: busybox:1.36
+              command: ["sh", "-c", "mkdir -p /backups/maintainerr && chown 1000:1000 /backups/maintainerr"]
+              securityContext:
+                runAsUser: 0
+                runAsNonRoot: false
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+                  add: ["CHOWN"]
+              volumeMounts:
+                - name: backups
+                  mountPath: /backups
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 16Mi
+                limits:
+                  memory: 64Mi
+          containers:
+            - name: backup
+              image: python:3.15.2-alpine3.24
+              command: ["python", "/scripts/backup.py", "maintainerr", "/opt/data", "maintainerr.sqlite"]
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+              volumeMounts:
+                - name: data
+                  mountPath: /opt/data
+                - name: backups
+                  mountPath: /backups
+                - name: scripts
+                  mountPath: /scripts
+                  readOnly: true
+                - name: tmp
+                  mountPath: /tmp
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  memory: 256Mi
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: maintainerr-data
+            - name: backups
+              persistentVolumeClaim:
+                claimName: sqlite-backups
+            - name: scripts
+              configMap:
+                name: sqlite-backup
+            - name: tmp
+              emptyDir:
+                sizeLimit: 1Gi

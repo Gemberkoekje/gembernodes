@@ -1939,6 +1939,95 @@ To understand this, read the two rules after "Container crash-looping or failing
   offsite nightly with Hybrid Backup Sync. The `local-path` SQLite volumes are outside that. Moving
   them to NFS was considered and rejected: SQLite over NFS risks corruption and is slow. The way to
   cover them is to point their backups at the NAS.
+- **After the merge (2026-11-12):** Grafana was restarted at 01:11Z and provisioned alerting without
+  errors. Its own metrics show 14 rules (8 in `cluster-health`), and all 38 alert instances are
+  Normal.
+  - Unrelated errors in its log: `grafana-piechart-panel` is an Angular plugin, which this Grafana
+    refuses to load.
+
+## 2026-11-12 — Nightly backups of the SQLite databases on local-path
+
+To understand this, read `apps/zeef/sqlite-backup.yaml` (header comment and script), then
+"Restoring a SQLite database" in `apps/zeef/README.md`.
+
+- **Why.** Four apps keep SQLite on `local-path`, outside the NAS and therefore outside its local
+  backup and offsite sync: Jellyfin (`jellyfin.db` 20 MiB, two Kodi Sync Queue databases), Chaptarr
+  (`chaptarr.db` 12 MiB, plus `staging`, `cache` and `logs`), Audiobookshelf (`absdatabase.sqlite`)
+  and Maintainerr (`maintainerr.sqlite`). Only Jellyfin had a backup (weekly, through its API).
+- **Not on local-path, so left alone:**
+  - `monitoring/grafana-qnap` holds `grafana.db` (10.7 MiB), which is on the NAS already. Its
+    dashboards and alerts come from Git anyway.
+  - `zeef/bazarr-config` holds an empty `bazarr.db`; Bazarr uses PostgreSQL.
+- **How:**
+  - **One CronJob per app**, since a `local-path` volume only mounts on its own node. All run at
+    03:30 Amsterdam time, after the PostgreSQL dump.
+  - **The official `python:3.15.2-alpine3.24`** runs one shared script from ConfigMap
+    `sqlite-backup`. It uses SQLite's online backup API (consistent while the app writes), checks
+    the copy with `PRAGMA quick_check`, gzips it to `sqlite-backups/<app>/<db>-<UTC time>.db.gz`,
+    and keeps the newest 14.
+  - **Each job runs as the files' owner** (1000:100; Maintainerr 1000:1000), so it can't leave
+    root-owned `-wal`/`-shm` files. A root init container hands it its folder on the NAS.
+  - **The app's volume is mounted read-write,** because SQLite needs `-shm` even to read a WAL
+    database.
+  - **The NAS volume** is `zeef/sqlite-backups` (`qnap-nfs`, `ReadWriteMany`, 2Gi; about 10 MB a
+    night).
+- **New alert, "Backup is stale"** (`backup-stale`): the PostgreSQL dump or a SQLite backup hasn't
+  succeeded for 26 hours, or Jellyfin's weekly one for 170. It reads
+  `kube_cronjob_status_last_successful_time`.
+  - A CronJob that never succeeded has no such time and stays silent, so a new one is checked by
+    hand once.
+  - Backtested on 14 days: never fired. The backup jobs had no alert at all before this.
+- **Tested before the merge:**
+  - **The script, from the ConfigMap, in the same image as user 1000:100,** against three WAL
+    databases while a writer kept inserting 50-row transactions:
+    - every copy passed `integrity_check` and held whole transactions only (rows a multiple of 50);
+    - with `KEEP=3` exactly three copies per database remained, and `kodisyncqueue`'s pruning left
+      `kodisyncqueue-log` alone;
+    - no temporary files were left, and a pattern matching nothing failed the job.
+  - The test also caught a missing `os.makedirs` for the app's folder, now fixed.
+  - Server-side dry runs, `flux build` of apps and infrastructure, and `validate.py`'s Grafana check
+    (15 rules) all passed.
+- **After the merge:**
+  1. Run each job once by hand rather than wait for 03:30:
+     `kubectl -n zeef create job --from=cronjob/sqlite-backup-<app> sqlite-backup-<app>-first`.
+  2. Check that the logs list every database and that the files are on the NAS.
+  3. Restart Grafana for the new rule.
+
+## 2026-11-12 — The PostgreSQL backups were empty; fixed
+
+To understand this, read the comments in `infrastructure/postgresql-backup/backup-cronjob.yaml`.
+
+- **What was wrong.** The nightly job ran `pg_dumpall` 17 (`postgres:17-alpine`) against a
+  PostgreSQL 18 server (18.4; it has been 18.x since at least 2026-09-26). `pg_dumpall` aborts on a
+  newer server ("aborting because of server version mismatch").
+  - The script piped it into `gzip` without `pipefail`, so `set -e` only saw gzip succeed. The job
+    reported "Backup complete" with a 20-byte empty file every night.
+  - Its rotation (keep 7) then deleted the oldest real dump each time. On 2026-11-12 all seven files
+    on `postgresql-backup-pvc-qnap` were empty, so no logical backup existed. Whatever survives is in
+    the NAS's own older backups or snapshots.
+  - The CronJob counted as successful throughout, so even the new "Backup is stale" alert wouldn't
+    have noticed.
+- **Fix:**
+  - The image is `postgres:18-alpine`. The client's major version must be at least the server's,
+    and a newer client can dump an older server.
+  - The script runs with `set -eu -o pipefail`. The dump goes to a `.part` file that becomes
+    `postgres-<day>.sql.gz` only once it ends with pg_dumpall's "PostgreSQL database cluster dump
+    complete" line. A failed run fails the job and leaves the earlier dumps alone, so rotation only
+    ever counts complete dumps.
+  - Files under 1 KiB (the old empty ones) are deleted.
+  - Also new: `backoffLimit: 2`, `activeDeadlineSeconds: 1800`, and the `RuntimeDefault` seccomp
+    profile.
+- **Tested against the live server** (the script from this file, in throwaway pods on scratch
+  space):
+  - With `postgres:18-alpine`: a complete 22.5 MB dump, the seeded empty files deleted, exit 0.
+  - With `postgres:17-alpine`: exit 1, no file written, and the existing files untouched.
+- **A real backup was taken at once,** without waiting for the merge. The new script ran in a
+  one-off pod against `postgresql-backup-pvc-qnap` at 01:24Z on 2026-11-12. The result,
+  `postgres-2026-11-12.sql.gz` (22.5 MB), holds 30 databases and 13 roles and ends with the footer;
+  the seven empty files are gone.
+- **Unused databases in the dump,** worth dropping some day: `VortexPlotboek`,
+  `VortexPlotboekLocal`, `VortexLnv`, `VortexLnvLocal`, `LanderijenVolken` and `werkplaats`. The
+  `chaptarr-*` databases are left over from Chaptarr's PostgreSQL attempt (2026-11-09).
 
 ## 2026-11-12 — Dependabot
 
