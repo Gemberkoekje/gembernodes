@@ -2502,3 +2502,37 @@ To understand this, read `docs/cloudnativepg-migration-plan.md`.
   - No extensions in use. Bitnami's preloaded `pgaudit` is unused.
 - **Not applied.** The plan lists the decisions it waits on: the downtime window, a 1Password item
   for the superuser, the six unused databases, and the namespace.
+
+## 2026-11-12 — Grafana 12.4.3 → 13.3.1 (chart 11.6.1 → 14.x), and Recreate
+
+To understand this, read `infrastructure/monitoring/grafana-release.yaml`.
+
+- **Why 12's first start crashed:** the chart's `RollingUpdate` started the new pod while the old
+  one still ran, so for a while two Grafanas wrote the same SQLite `grafana.db` on NFS. The new
+  pod hit "database is locked" while provisioning alerting and exited; its restart was fine. Now
+  `deploymentStrategy: Recreate`: the old pod stops first. The strategy in the same update governs
+  the rollout, so this upgrade already uses it.
+- **Grafana 13's first start** moves dashboards and folders into unified storage. On SQLite that
+  is one transaction, together with its success row, so a crash leaves nothing behind and the
+  next start runs it again. It retries busy/locked errors up to 10 times and falls back to a
+  Parquet buffer by itself, so `migration_parquet_buffer` isn't set. Our dashboards are
+  re-provisioned from Git on every start anyway.
+- **Chart 14:**
+  - The distroless `13.3.1-distroless` image, with a read-only root filesystem, a `/tmp`
+    emptyDir, and no shell (`kubectl exec … sh` no longer works).
+  - The empty Role/RoleBinding are dropped, and the helm test pod is back (Flux doesn't run it).
+  - The chart sets `preinstall_auto_update = false`. Set back to `true`, so Grafana's own
+    preinstalled apps (Drilldown, Pyroscope; the copies on the volume date from 2025) stay
+    matched to Grafana 13's frontend. The pinned Infinity 4.1.6, which supports Grafana 13, isn't
+    auto-updated.
+- **Backups on the volume:** `grafana.db.pre-grafana12` and `grafana.db.pre-grafana13` (integrity
+  checked; 10 dashboards, 15 alert rules, 1 user). Delete them once 13 has run for a while.
+- **Not in this change:** `[database] wal` stays off (SQLite's WAL doesn't work over NFS). For
+  good, `grafana.db` could move to PostgreSQL once CloudNativePG runs.
+- **Checked:** chart 14.4.1 rendered with these values (Recreate, the distroless image, the
+  plugin settings), and a server-side dry run accepted the HelmRelease.
+- **After the merge:**
+  - One pod, with no restarts.
+  - The log shows the unified storage migration completing, with no "locked" errors.
+  - Infinity 4.1.6 and the Drilldown apps load.
+  - Alerts provision, and both URLs answer.
