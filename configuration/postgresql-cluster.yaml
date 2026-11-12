@@ -23,6 +23,17 @@ spec:
   # finishes by itself; the default waits 180 s before switching to a fast one. 15 s is enough for
   # an idle client to go, and keeps restarts and node drains short.
   smartShutdownTimeout: 15
+  # CNPG's defaults, plus OnRootMismatch. With the default (Always) the kubelet re-applies fsGroup 26
+  # to every file of the data directory over NFS on each pod start: the rehearsal's first start
+  # spent 4+ minutes on it (the same as the Bitnami server did; NOTES.md, 2026-09-26).
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 26
+    runAsGroup: 26
+    fsGroup: 26
+    fsGroupChangePolicy: OnRootMismatch
+    seccompProfile:
+      type: RuntimeDefault
   postgresql:
     # The Bitnami server's settings, carried over. No pgaudit: nothing used it.
     parameters:
