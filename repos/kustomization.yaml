@@ -5,7 +5,6 @@ resources:
   - grafana-repo.yaml
   - grafana-community-repo.yaml
   - metallb-repo.yaml
-  - postgresql-repo.yaml
   - cloudnative-pg-repo.yaml
   - prometheus-repo.yaml
   - certmanager-repo.yaml
