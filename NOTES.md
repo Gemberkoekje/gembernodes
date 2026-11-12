@@ -2324,3 +2324,45 @@ To understand this, read `infrastructure/monitoring/prometheus-release.yaml`.
   - Every target is up on `/api/v1/targets`, `kubernetes-api-servers` included.
   - `gotk_resource_info` still has its labels, and `node_*` metrics still carry `node`.
   - The alerts evaluate without "no data", and the dashboards render.
+
+## 2026-11-12 — Grafana: the community chart, 8.15.0 → 11.6.1 (Grafana 11.6.1 → 12.4.3)
+
+To understand this, read `infrastructure/monitoring/grafana-release.yaml` and
+`repos/grafana-community-repo.yaml`.
+
+- **The chart moved.** grafana/helm-charts stopped maintaining the Grafana chart (support ended
+  2026-01-30). Its last release, 10.5.15, is marked deprecated. It continues as `grafana` in
+  grafana-community/helm-charts, with the version history kept: community 8.15.0 renders exactly like
+  the old 8.15.0. The new HelmRepository is `grafana-community` in `repos/`. The old `grafana` one
+  stays, because Loki and Promtail install from it. The community repo has no Promtail, and Loki
+  can move later.
+- **Grafana 12 first, 13 later.** Grafana's upgrade guide says to go to 13 from the latest patch of
+  your current version, with plugins checked first. Chart 13 and later (Grafana 13) also switches
+  to a distroless image with a read-only root filesystem (no `kubectl exec … sh` any more). And
+  Grafana 13 moves dashboards and folders into unified storage on its first start, which
+  `grafana.db` on NFS has to go through once. That's the next PR, once 12 runs cleanly.
+- **Infinity 3.11.1 → 4.1.6.** 4.x needs Grafana 12.2.5 or later on 12 (grafana.com's
+  `grafanaDependency`), and supports Grafana 13's React 19.
+- **What changes in the render** (chart 8.15.0 vs 11.6.1, with our values):
+  - The image.
+  - A `search` emptyDir for the unified-storage search index, which keeps it off NFS.
+  - The probes use the named port, and `privileged: false` is now explicit.
+  - The helm test pod is gone.
+- **Grafana 12 checks:**
+  - Angular support is gone. All 8 dashboards use core panels only.
+  - The data source UIDs (`prometheus`, `grafana-loki`, `spacetraders-api`) fit 12's stricter
+    format.
+  - The alert provisioning format is unchanged.
+- **Leftovers on the volume:** `grafana-piechart-panel` (Angular; 12 only logs that it won't load),
+  plus `grafana-lokiexplore-app` and `grafana-pyroscope-app` from 2025. Grafana's own preinstall
+  should refresh the last two. Delete the first one once 12 runs.
+- **Also:** the comment about the LAN path now names `grafana-internal-route.yaml` (the Ingress is
+  gone).
+- **Checked:** both charts rendered with our values (the diff above), and a server-side dry run
+  accepted the HelmRepository and HelmRelease.
+- **After the merge:**
+  - The log has no migration or "database is locked" errors.
+  - Infinity reports 4.1.6 under Administration → Plugins.
+  - The 14 alert rules are Normal.
+  - The 8 dashboards load at `https://grafana.lan.gemberkoekje.nl/grafana/` and
+    `http://192.168.1.231/grafana`, the SpaceTraders snapshots one (Infinity) included.

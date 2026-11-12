@@ -1,0 +1,11 @@
+# Grafana's own chart moved here when grafana/helm-charts stopped maintaining it (support ended
+# 2026-01-30). Loki stays on the old repository (repos/grafana-repo.yaml) for now; Promtail was never
+# moved.
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: grafana-community
+  namespace: monitoring
+spec:
+  interval: 1h
+  url: https://grafana-community.github.io/helm-charts

@@ -10,9 +10,11 @@ spec:
       chart: grafana
       sourceRef:
         kind: HelmRepository
-        name: grafana
+        name: grafana-community
         namespace: monitoring
-      version: "8.x"
+      # Chart 11.x is Grafana 12. Chart 13 and later (Grafana 13) move to a distroless image and
+      # move dashboards into unified storage on first start: a separate step.
+      version: "11.x"
   interval: 6m
   values:
     replicas: 1
@@ -40,7 +42,7 @@ spec:
         # Grafana is reached at https://grafana.lan.gemberkoekje.nl (LAN and Tailscale only), through
         # the LAN name switchboard in infrastructure/lan-proxy. root_url is built from this, and so
         # are the links in alert emails. On the LAN, http://192.168.1.231/grafana (Traefik, through
-        # grafana-internal-ingress.yaml) works too.
+        # grafana-internal-route.yaml) works too.
         domain: grafana.lan.gemberkoekje.nl
         # https: the name is served with a Let's Encrypt certificate by infrastructure/lan-proxy.
         root_url: "https://%(domain)s/grafana/"
@@ -53,13 +55,13 @@ spec:
         from_address: gemberkoekje@gmail.com
         from_name: Gembercluster
         startTLS_policy: MandatoryStartTLS
-      # The Infinity data source, for the SpaceTraders snapshots dashboard (SpaceTraders PLAN.md slice 2.15). Pinned: 4.x
-      # needs Grafana 11.6.11 or later, and the chart's newest 8.x ships 11.6.1. Grafana installs it from grafana.com in the
-      # background at start, next to its own preinstalled plugins, and keeps it on its volume, so later starts don't
-      # fetch it again. A start that can't reach grafana.com only logs it; the chart's `plugins` value would instead
-      # stop Grafana (its start script runs with `bash -e`).
+      # The Infinity data source, for the SpaceTraders snapshots dashboard (SpaceTraders PLAN.md slice 2.15). Pinned,
+      # so a Grafana bump decides when it moves: 4.x needs Grafana 12.2.5 or later (on 12) and supports Grafana 13.
+      # Grafana installs it from grafana.com in the background at start, next to its own preinstalled plugins, and
+      # keeps it on its volume, so later starts don't fetch it again. A start that can't reach grafana.com only logs
+      # it. The chart's `plugins` value would instead stop Grafana.
       plugins:
-        preinstall: yesoreyeram-infinity-datasource@3.11.1
+        preinstall: yesoreyeram-infinity-datasource@4.1.6
     datasources:
       datasources.yaml:
         apiVersion: 1
