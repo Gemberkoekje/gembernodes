@@ -169,4 +169,6 @@ Designs and runbooks live in Gemberkoekje/projects.
 - [NOTES.md](NOTES.md): one dated entry per change (why, gotchas, what was tested), newest at the
   bottom.
 - [docs/ingress-nginx-migration-plan.md](docs/ingress-nginx-migration-plan.md): the move to Traefik.
+- [docs/cloudnativepg-migration-plan.md](docs/cloudnativepg-migration-plan.md): the planned move
+  from the Bitnami PostgreSQL chart to CloudNativePG.
 - [apps/zeef/README.md](apps/zeef/README.md): Zeef's ports, apps and setup.
