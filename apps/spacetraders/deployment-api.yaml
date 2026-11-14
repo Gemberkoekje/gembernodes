@@ -108,12 +108,13 @@ spec:
               port: http
             periodSeconds: 10
           # The CPU limit sits far above the mean use (about 0.26 cores) because the bot works in short
-          # bursts: a 500m limit throttled it in about half of the 100 ms scheduling periods. Memory is
-          # about 0.8 GiB and flat, so the memory limit is room, not a need (NOTES.md, 2026-10-06).
+          # bursts: a 500m limit throttled it in about half of the 100 ms scheduling periods
+          # (NOTES.md, 2026-10-06). Memory: at 460 ships the pod runs at 0.85-1.7 GiB and its starts
+          # peak higher; two starts were OOM-killed at 2Gi on 2026-11-14 (NOTES.md, that date).
           resources:
             requests:
               cpu: "100m"
               memory: "512Mi"
             limits:
               cpu: "2"
-              memory: "2Gi"
+              memory: "3Gi"
