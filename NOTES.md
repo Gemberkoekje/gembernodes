@@ -2953,3 +2953,26 @@ and the "Upgrading" section of the community chart's README (grafana-community/h
   - the `water_heater` platform (the measured temperature) is never loaded.
 - **D5:** the boiler normally runs Klokprogramma, at 65 °C for 10:00–10:30 and 21:00–21:30. Phase 5
   recovers to that mode, and its content-% heuristic is dropped.
+
+## 2026-11-14 — SpaceTraders API: memory limit 2Gi → 3Gi
+
+To understand this, read the `resources` block of the `spacetraders-api` container in
+[apps/spacetraders/deployment-api.yaml](apps/spacetraders/deployment-api.yaml).
+
+- **What went wrong:** the deploy of `36157c42` (#221) started at 13:22:36Z, and the container was
+  OOM-killed at its 2Gi limit twice while it started: at about 13:24:57Z and at 13:29:27Z (exit 137,
+  `OOMKilled` in the container's `lastState`). The third start, at 13:29:40Z, held. The bot did no
+  useful work until about 13:38Z.
+- **Why now:** the fleet grew from about 200 to 460 ships overnight. In normal running the pod uses
+  0.85–1.7 GiB (1,681 MiB at 12:42Z, before the deploy), and the .NET heap swings from about 130 MB
+  to 1.27 GB within a minute: allocation bursts, not a leak (gen2 stayed at 70–150 MiB overnight).
+  The 2026-11-13 restart, at about 200 ships, peaked near 1.5 GiB. The 2026-10-06 note's "about
+  0.8 GiB and flat" no longer holds.
+- **The change:** the memory limit goes to 3Gi, so a start has room. The request stays 512Mi.
+  .NET's default heap limit in a container is 75% of the limit, so the heap may now reach about
+  2.25 GiB.
+- **Not changed:** the bursts themselves; finding them is the SpaceTraders repo's job (to be logged there as B91).
+  gembernode-02, where the pod runs, was at 81% memory (6.4 of 7.7 GiB): a 3 GiB start there
+  leaves the node tight.
+- **To check after the merge:** the pod restarts once (Recreate) and starts without an OOM kill
+  (restarts 0); the limit reads 3Gi.
