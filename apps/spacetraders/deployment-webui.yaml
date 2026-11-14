@@ -17,7 +17,7 @@ spec:
         - name: ghcr-login
       containers:
         - name: spacetraders-webui
-          image: ghcr.io/gemberkoekje/spacetraders-webui:f05469b06a59dea99ad5f73f2aefefe3164c6c98
+          image: ghcr.io/gemberkoekje/spacetraders-webui:1cb8f9885bc06a79b78a9eb0d06ff5a601cfe983
           imagePullPolicy: Always
           # nginx starts as root and hands its workers to the nginx user, which needs the default
           # capabilities, so they aren't dropped here.
