@@ -19,6 +19,7 @@ decisions and open steps are in [docs/home-assistant-plan.md](../../docs/home-as
 | History, logbook, statistics (the recorder) | Database `homeassistant` on the shared PostgreSQL |
 | Backups | `/config/backups`: PVC `homeassistant-backups` on the NAS |
 | Secrets | 1Password item `homeassistant-secrets` |
+| Our own Tuya Local device definitions | [tuya-local/](tuya-local/) in Git, copied into Tuya Local on every start (below) |
 
 ## Before the first deploy
 
@@ -85,6 +86,27 @@ Add that address to `trusted_proxies` in [configuration.yaml](configuration.yaml
   Connecting it to GitHub (Settings → Devices & services → Marktplaats → Reconfigure) is only
   needed for custom repositories.
 - **`configuration.yaml`:** edit it here; the content-hashed ConfigMap restarts Home Assistant.
+
+## Our own Tuya Local device definitions
+
+Tuya Local recognises a device by a definition file in `custom_components/tuya_local/devices`.
+For a device it doesn't know, we keep our own in [tuya-local/](tuya-local/):
+
+| File | Device |
+|---|---|
+| [joula_diamond_dishwasher.yaml](tuya-local/joula_diamond_dishwasher.yaml) | Joula "Diamond" mini dishwasher, 192.168.1.60 (mapped 2026-11-15; NOTES.md) |
+
+A Tuya Local update from the Marketplace replaces that folder wholesale, so the `prepare-config`
+init container copies these files back in on every start. Updates need a restart anyway, so the
+files are back before Tuya Local loads. Its log says `installed Tuya Local definition <file>` or
+`... is up to date`.
+
+**To add one:** put the file in `tuya-local/`, with a name Tuya Local's own folder doesn't use,
+and list it under `homeassistant-tuya-local-devices` in [kustomization.yaml](kustomization.yaml).
+Tuya Local can't switch an existing device to another type: after the deploy, remove the device and
+add it again, choosing the new type (the top suggestion). A change to an existing file needs
+nothing more: the content-hashed ConfigMap restarts Home Assistant, which copies it in first. If
+Tuya Local ever ships its own definition for one of these devices, delete ours.
 
 ## Restoring onto a fresh volume
 
