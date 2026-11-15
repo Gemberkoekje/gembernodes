@@ -2976,3 +2976,62 @@ To understand this, read the `resources` block of the `spacetraders-api` contain
   leaves the node tight.
 - **To check after the merge:** the pod restarts once (Recreate) and starts without an OOM kill
   (restarts 0); the limit reads 3Gi.
+
+## 2026-11-15 — Home Assistant: our own Tuya Local definition for the Joula dishwasher
+
+To understand this, read [apps/home-assistant/tuya-local/joula_diamond_dishwasher.yaml](apps/home-assistant/tuya-local/joula_diamond_dishwasher.yaml)
+and the `install_tuya_local_definitions` step in
+[apps/home-assistant/prepare-config.py](apps/home-assistant/prepare-config.py).
+
+- **Why:** the user's Joula "Diamond" mini dishwasher (Tuya, Smart Life app; product id
+  `ge7uqcphecrspln7`, 192.168.1.60, protocol 3.5) has no Tuya Local definition. The nearest one,
+  BlitzHome BH-CDW1, matched 23%: power and start/pause worked, the program select couldn't read
+  Joula's names, and status and remaining time were missing.
+- **How it was mapped** (2026-11-15, debug logging on Tuya Local, the user at the machine):
+  - every program button in turn;
+  - a Fruit run with a pause halfway;
+  - Self-clean followed by a forced stop;
+  - Lock held for 30 s, and Delay.
+
+  | Value | Meaning | What showed it |
+  |---|---|---|
+  | 1 | power | |
+  | 2 | running (on) / paused (off) | your pause; the machine's own pause at the water check, with 18 = 1 |
+  | 6 | program | `biaozhunxi69` Normal, `jienengxi68` ECO, `kuaishuxi29` Quick, `qianglixi89` Strong, `bolixi50` Glass, `guoshuxi19` Fruit, `zhiqingjie79` Self-clean |
+  | 7 | status | `standby`, `cleaning`, `paishui` (draining, after a forced stop), `done` |
+  | 9 | minutes | the program's length when idle, the remaining time when running; matches the manual |
+  | 10 | stage | `yuxi` pre-wash → `zhuxi` main wash → `piaoxi` rinse |
+  | 11 | water temperature, °C | |
+  | 18 | problem bitfield | 1 = no water at the start check |
+  | 19 | child lock | the Casdon definition uses the same value |
+
+  Not reported, or not understood, and left out:
+  - Delay (no value changed);
+  - Dry (no value changed);
+  - 13, 14, 16 and 17, which appeared at the end of a run (3, 1, 3, 1): counters or usage, unclear;
+  - 15 (always `D4`) and 20 (always off).
+- **Gotchas:**
+  - `done` lasts about 10 seconds: then the machine switches itself off and the status returns
+    to `standby`. It's pushed at once, so a state trigger on `done` still catches it.
+  - Tuya Local offers a sensor's mapped strings to HA as enum options. A sensor with a string
+    mapping but no `class: enum` fails to load ("providing enum options, but is missing the enum
+    device class"). An enum sensor would also fail on a value outside its list. So status and stage
+    are enums with a catch-all mapping entry (`value: other`, no `dps_val`), plus a second dps entry
+    `raw_value` that keeps the device's own word as an attribute. A drying phase in a full program
+    may show up there.
+  - Tuya Local can't change an existing device's type: the device was removed and added again.
+  - It only reads definitions from its own `devices` folder, which a Marketplace update replaces.
+    So the file lives in Git (`tuya-local/`, ConfigMap `homeassistant-tuya-local-devices`), and
+    `prepare-config` copies it in on every start. An update needs a restart, so it's back before
+    Tuya Local loads.
+- **Tested:**
+  - Tuya Local's own loader in the pod accepted the file: 11 entities, match 101 with the product
+    id, 60 without (BlitzHome: 20).
+  - After the re-add, every entity read right (status standby, stage pre-wash, program eco,
+    68 min, 27 °C, unlocked, no problem).
+  - `prepare-config.py` ran locally against a pretend volume: it skipped while Tuya Local was
+    missing, installed the file, then left it alone. It replaced a stale copy, and ignored a
+    ConfigMap's hidden folder and Tuya Local's own files.
+  - Client-side `--validate=strict` and validate.py's syntax step passed.
+- **Already live by hand:** the same definition (without the header comment) was copied into the
+  pod on 2026-11-15. The first start after this merge replaces it with the Git copy.

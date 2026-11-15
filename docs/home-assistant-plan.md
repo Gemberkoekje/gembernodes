@@ -17,6 +17,7 @@ for the devices is fine; the vendor apps keep working alongside.
 |---|---|---|---|
 | Calex smart lamps (Tuya-based) | `tuya-local` (Marketplace) | **Local** (LAN, Tuya protocol) | Lamps stay cloud-connected; Calex app keeps working |
 | Itho Smartboiler Mono Plus | Climate Connect community integration (Marketplace, custom repository) | **Cloud only** | No local API exists; reverse-engineered, unofficial |
+| Joula "Diamond" mini dishwasher (Tuya), added 2026-11-15 | `tuya-local`, with our own definition ([apps/home-assistant/tuya-local/](../apps/home-assistant/tuya-local/)) | **Local** | On 192.168.1.60. Tuya Local had no definition, so it was mapped from a test run; a "vaat is klaar" notification uses its status `done` |
 
 ## Decided
 
