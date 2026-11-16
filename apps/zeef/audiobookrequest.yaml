@@ -54,7 +54,7 @@ spec:
               memory: 64Mi
       containers:
         - name: audiobookrequest
-          image: markbeep/audiobookrequest:1.11.0
+          image: markbeep/audiobookrequest:2.0.1
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
