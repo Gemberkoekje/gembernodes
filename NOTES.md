@@ -3035,3 +3035,33 @@ and the `install_tuya_local_definitions` step in
   - Client-side `--validate=strict` and validate.py's syntax step passed.
 - **Already live by hand:** the same definition (without the header comment) was copied into the
   pod on 2026-11-15. The first start after this merge replaces it with the Git copy.
+
+## 2026-11-17 — PostgreSQL: no PodDisruptionBudget, so kured can drain its node
+
+To understand this, read the `enablePDB` line in
+[configuration/postgresql-cluster.yaml](configuration/postgresql-cluster.yaml).
+
+- **What went wrong:** the night of 2026-11-17 sent eight "Pod stuck Pending" emails and rebooted no
+  node. All three nodes have `/var/run/reboot-required`. kured took the lock for gembernode-01 at
+  02:01Z and drained it, but `postgresql/postgres-1` couldn't be evicted: CNPG's PDB
+  `postgres-primary` (minAvailable 1) allows no disruption with one instance. The drain hit its 30m
+  timeout, kured waited out the 15m lock release delay, uncordoned, and started again: at 02:01,
+  02:46, 03:31 and 04:16Z, until the window closed. gembernode-01 was uncordoned at 05:01Z.
+- **The Pending pods:** every drain evicted Home Assistant (`nodeSelector` gembernode-01) and
+  Maintainerr (its `local-path` volume is on gembernode-01). Their new pods could only go back to the
+  cordoned node, so each sat Pending for 44 minutes: four pods of each, and both apps were down
+  02:02–05:01Z. The 02:30Z `sqlite-backup-maintainerr` job was Pending 14 minutes, just under the
+  alert.
+- **Why now:** the first kured run since the switch to CloudNativePG (2026-11-12). The Bitnami
+  StatefulSet had no PDB, so its pod was simply evicted.
+- **The change:** `enablePDB: false`, as CNPG advises for a cluster that isn't highly available.
+  The operator deletes `postgres-primary`. With the data on `qnap-nfs` the volume has no node
+  affinity, so an evicted instance starts again on another node with the same volume. PostgreSQL is
+  down for that move, as it was with Bitnami (the 2026-09-26 table: about 7 minutes then).
+- **Not changed:** Home Assistant and Maintainerr still stop while gembernode-01 reboots; a plain
+  reboot keeps them Pending a few minutes, well under the alert's 15.
+- **Checked:** a server-side dry run accepted the Cluster with `enablePDB: false` (the live CRD has
+  the field).
+- **To check after the merge:** `kubectl get pdb -n postgresql` lists nothing. The next night all
+  three nodes reboot one by one (`node_boot_time_seconds` changes), `postgres-1` comes back on
+  another node, and no "Pod stuck Pending" email arrives.
