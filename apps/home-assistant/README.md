@@ -15,6 +15,7 @@ decisions and open steps are in [docs/home-assistant-plan.md](../../docs/home-as
 |---|---|
 | `configuration.yaml` | [configuration.yaml](configuration.yaml) in Git, mounted read-only. Change it here, never in the pod |
 | Everything set up in the UI (`.storage`), and what the Marketplace installs (`custom_components`) | PVC `homeassistant-config` (local-path on gembernode-01) |
+| HTTP server settings: trusted proxies for Caddy, IP bans | The UI (Settings → System → Network), so `.storage` on that PVC. Values [below](#http-server-settings) |
 | Automations, scripts and scenes made in the UI | `automations.yaml`, `scripts.yaml`, `scenes.yaml` on the same PVC |
 | History, logbook, statistics (the recorder) | Database `homeassistant` on the shared PostgreSQL |
 | Backups | `/config/backups`: PVC `homeassistant-backups` on the NAS |
@@ -68,13 +69,38 @@ curl -sI https://homeassistant.lan.gemberkoekje.nl     # 302 to /onboarding.html
 Then open https://homeassistant.lan.gemberkoekje.nl and onboard (plan, phase 2).
 
 If every page through Caddy answers **400: Bad Request**, Home Assistant doesn't trust the address
-Caddy's requests arrive from. Its log names it:
+Caddy's requests arrive from, or isn't set up for a proxy at all (a fresh install isn't). Its log
+says which:
 
 ```bash
-kubectl -n home-automation logs deploy/homeassistant | grep "untrusted proxy"
+kubectl -n home-automation logs deploy/homeassistant | grep -i "proxy"
 ```
 
-Add that address to `trusted_proxies` in [configuration.yaml](configuration.yaml).
+Fix it in the [HTTP server settings](#http-server-settings), from http://192.168.1.201:8123 (no
+proxy in the way).
+
+## HTTP server settings
+
+Since 2026.11 these are set in the UI, under **Settings → System → Network** (Dutch UI:
+Instellingen → Systeem → Netwerk), and kept in `.storage` on the config volume, so they are in Home
+Assistant's backups. They used to be the `http:` block in `configuration.yaml`; the first start
+imported that block, after which Home Assistant ignores it (and 2027.2 refuses it), so it is gone
+from Git (NOTES.md, 2026-11-17). They should read:
+
+| Setting | Value | Why |
+|---|---|---|
+| Use X-Forwarded-For | on | Caddy passes the client's address in that header |
+| Trusted proxies | `10.42.0.0/16`, `192.168.1.201`, `192.168.1.202`, `192.168.1.203` | Caddy reaches the pod through the Service, which points at gembernode-01's own address (hostNetwork). So a request arrives from Caddy's pod address (the pod network, k3s's default cluster CIDR) when Caddy runs on gembernode-01, and otherwise from the node Caddy runs on: flannel masquerades pod traffic to node addresses. Home Assistant answers 400 to a proxied request from any other address |
+| IP ban | on | Bans an address after the failed logins below (`ip_bans.yaml` on the volume; delete its line to lift a ban). With the header above that is the client's address, never Caddy's |
+| Login attempts threshold | 5 | Off by default |
+
+**Saving restarts Home Assistant on the new settings as a trial.** An admin then has to confirm
+them within 5 minutes; otherwise Home Assistant restarts on the previous settings. Make changes from
+http://192.168.1.201:8123, which works whatever the proxy settings say, so you can still reach the
+confirmation if Caddy breaks.
+
+**A fresh install** (not restored from a backup) starts with the defaults, which trust no proxy:
+every page through Caddy answers 400. Onboard at http://192.168.1.201:8123 and enter these first.
 
 ## Updating
 
@@ -112,7 +138,9 @@ Tuya Local ever ships its own definition for one of these devices, delete ours.
 
 The PVC lives on gembernode-01's disk. If that disk is lost, or Home Assistant has to move, restore
 from the NAS: on a fresh install, onboarding offers **Restore from backup**; upload the newest
-`.tar` from the QNAP share `gembernodes-pvcs/home-automation/homeassistant-backups/`. History is in
+`.tar` from the QNAP share `gembernodes-pvcs/home-automation/homeassistant-backups/`. Onboard at
+http://192.168.1.201:8123: until the backup brings back the [HTTP server settings](#http-server-settings),
+Caddy's address answers 400. History is in
 PostgreSQL and isn't in these backups; the nightly database dump covers it. To move to another node,
 change the `nodeSelector` and delete the PVC `homeassistant-config` (Flux doesn't prune it) so it is
 made again there.

@@ -261,4 +261,4 @@ a minute.
 | gembernode-01 goes down | HA down (local-path is node-bound) | Accept for a home setup; restore from the NAS backup on another node (README, "Restoring") |
 | PostgreSQL down | No history while it's down; HA itself keeps running | The `wait-for-postgres` init container covers reboots; the nightly dump covers the data |
 | Recorder data grows | Database size | `recorder: purge_keep_days: 14` |
-| Caddy's address not in `trusted_proxies` | Every page through Caddy answers 400 | The log names the address (README, "Deploying"); add it to `configuration.yaml` |
+| Caddy's address not in the trusted proxies | Every page through Caddy answers 400 | The log names the address (README, "Deploying"); add it under Settings → System → Network (README, "HTTP server settings") |

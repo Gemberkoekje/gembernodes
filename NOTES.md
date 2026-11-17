@@ -3085,3 +3085,26 @@ and the Caddyfile), then [ingress/ltr-hud-route.yaml](ingress/ltr-hud-route.yaml
   page's relative links work on both addresses.
 - **New listener:** `https-ltr-hud` on the public Gateway, and `ltr-hud` in
   `https-gemberkoekje-nl`'s allowedRoutes. cert-manager issues `ltr-hud-tls` by itself.
+
+## 2026-11-17 — Home Assistant: the `http:` block leaves configuration.yaml
+
+To understand this, read "HTTP server settings" in
+[apps/home-assistant/README.md](apps/home-assistant/README.md).
+
+- **Why:** a repair warning in Home Assistant, "HTTP YAML configuration is ignored after migration",
+  breaking in 2027.2.0. Since 2026.11 the `http` integration keeps its settings in `.storage/http`,
+  set under Settings → System → Network.
+- **How it works** (read in the 2026.11.1 source, `components/http/config.py`): the first start with
+  an `http:` block imports it once and marks the import done. From then on the block is only read
+  to raise this warning; removing it changes nothing at runtime, and the next start clears the
+  warning. The import stores the YAML as a *pending* trial config, which an admin has to confirm
+  within 5 minutes or Home Assistant restarts on the previous one (here: the defaults, which trust
+  no proxy). Our import ran on the first start, 2026-11-12, before onboarding.
+- **The change:** the block is gone from `configuration.yaml`; its values and the reasons for them
+  (the three nodes plus the pod network as trusted proxies; IP bans after 5 failed logins) moved to
+  the README, with how to set them on a fresh install (onboard at http://192.168.1.201:8123 first:
+  through Caddy every page answers 400 until they are set).
+- **Not checked:** what the live `.storage/http` holds; this session has no cluster access. Whether
+  the trial was confirmed shows in one request: if https://homeassistant.lan.gemberkoekje.nl loads,
+  the proxy settings are live; a 400 means the trial was reverted and the values need entering in
+  the UI. The IP ban and login threshold show only on the Network page.
