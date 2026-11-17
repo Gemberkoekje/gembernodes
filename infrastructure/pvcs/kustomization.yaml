@@ -9,3 +9,4 @@ resources:
 - print-manager-test.yaml
 - zeef.yaml
 - home-automation.yaml
+- ltr-hud.yaml

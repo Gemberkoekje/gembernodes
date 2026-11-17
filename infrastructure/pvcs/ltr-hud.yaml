@@ -1,0 +1,15 @@
+# The HUD mock pages that apps/ltr-hud serves. Not in Git: they're copied in with kubectl cp from
+# the Limit Theory working folder (apps/ltr-hud/deployment.yaml says how), so a new mock needs no
+# pull request here.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ltr-hud-site
+  namespace: ltr-hud
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: qnap-nfs
+  resources:
+    requests:
+      storage: 1Gi

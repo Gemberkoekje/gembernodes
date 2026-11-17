@@ -32,3 +32,4 @@ resources:
 - home-automation-namespace.yaml
 - cnpg-system-namespace.yaml
 - postgresql-namespace.yaml
+- ltr-hud-namespace.yaml

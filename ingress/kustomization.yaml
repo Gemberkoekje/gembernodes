@@ -16,6 +16,7 @@ resources:
   - hackerminigames-route.yaml
   - healthcheck-route.yaml
   - kluskat-route.yaml
+  - ltr-hud-route.yaml
   - plotboek-generator-route.yaml
   - spacetraders-route.yaml
   - vortexplotboek-route.yaml

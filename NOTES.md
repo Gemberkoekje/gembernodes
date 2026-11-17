@@ -3065,3 +3065,23 @@ To understand this, read the `enablePDB` line in
 - **To check after the merge:** `kubectl get pdb -n postgresql` lists nothing. The next night all
   three nodes reboot one by one (`node_boot_time_seconds` changes), `postgres-1` comes back on
   another node, and no "Pod stuck Pending" email arrives.
+
+## 2026-11-17 — ltr-hud: the Limit Theory Redux HUD mocks on ltr-hud.gemberkoekje.nl
+
+To understand this, read [apps/ltr-hud/deployment.yaml](apps/ltr-hud/deployment.yaml) (its header
+and the Caddyfile), then [ingress/ltr-hud-route.yaml](ingress/ltr-hud-route.yaml).
+
+- **Why:** two interactive HUD mocks for Limit Theory Redux (a ship hologram panel and the whole
+  in-flight HUD), to show the other developers without a claude.ai share. Public, like the other
+  apps: `ltr-hud.gemberkoekje.nl` and `gemberkoekje.nl/ltr-hud`.
+- **How:** Caddy (the healthcheck's image) serves `/srv` from an NFS volume
+  (`infrastructure/pvcs/ltr-hud.yaml`). The pages aren't in Git: they are 0.4 and 1.2 MB of
+  self-contained HTML with inlined images and meshes (the larger one is over a ConfigMap's 1 MiB),
+  and they change often. They're copied in with `kubectl cp` from the Limit Theory working folder,
+  so a new mock needs no pull request here.
+- **Decisions:** one replica with `Recreate` (ReadWriteOnce volume). `Cache-Control: no-cache` so
+  an update shows on the next load (Caddy sends ETags). The bare-domain route passes `/ltr-hud` as
+  is; the Caddyfile strips it (`handle_path`) and adds the slash to a bare `/ltr-hud`, so the index
+  page's relative links work on both addresses.
+- **New listener:** `https-ltr-hud` on the public Gateway, and `ltr-hud` in
+  `https-gemberkoekje-nl`'s allowedRoutes. cert-manager issues `ltr-hud-tls` by itself.

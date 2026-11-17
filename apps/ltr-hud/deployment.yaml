@@ -1,0 +1,102 @@
+# Static HUD mock pages for Limit Theory Redux, served by Caddy from an NFS volume
+# (infrastructure/pvcs/ltr-hud.yaml). The pages are self-contained HTML files; they load three.js
+# from cdnjs and their fonts from Google Fonts.
+#
+# The volume's content isn't in Git. To update it, copy the files into the running pod:
+#   kubectl -n ltr-hud cp <file> <pod>:/srv/<file> -c caddy
+# (C:\git\LimitTheory\screenshots\mocks\deploy-ltr-hud.sh builds the site and does this.)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ltr-hud
+  namespace: ltr-hud
+  labels:
+    app: ltr-hud
+spec:
+  replicas: 1
+  # One pod on a ReadWriteOnce volume: stop the old pod before the new one starts
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: ltr-hud
+  template:
+    metadata:
+      labels:
+        app: ltr-hud
+    spec:
+      containers:
+        - name: caddy
+          image: caddy:2.11.9-alpine
+          command:
+            - caddy
+          args:
+            - run
+            - --config
+            - /etc/caddy/Caddyfile
+          securityContext:
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "24Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          volumeMounts:
+            - name: site
+              mountPath: /srv
+            - name: caddy-config
+              mountPath: /etc/caddy
+              readOnly: true
+      volumes:
+        - name: site
+          persistentVolumeClaim:
+            claimName: ltr-hud-site
+        - name: caddy-config
+          configMap:
+            name: ltr-hud-caddy
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ltr-hud-caddy
+  namespace: ltr-hud
+data:
+  # gemberkoekje.nl/ltr-hud reaches the pod with its path as is (ingress/ltr-hud-route.yaml):
+  # handle_path strips the prefix, and a bare /ltr-hud gets its slash so relative links work.
+  # no-cache: browsers revalidate (ETag), so a copied-in update shows on the next load.
+  Caddyfile: |
+    :8080 {
+      header Cache-Control "no-cache"
+
+      handle /ready {
+        respond "ok" 200
+      }
+
+      redir /ltr-hud /ltr-hud/ 308
+
+      handle_path /ltr-hud/* {
+        root * /srv
+        file_server
+      }
+
+      handle {
+        root * /srv
+        file_server
+      }
+    }
