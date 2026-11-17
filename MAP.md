@@ -114,6 +114,7 @@ every node.
 | home-assistant ([README](apps/home-assistant/README.md)) | `apps/home-assistant` → `home-automation` | `homeassistant.lan.gemberkoekje.nl` (LAN and Tailscale), 192.168.1.201:8123 | PostgreSQL (recorder), `local-path` on gembernode-01, NFS volume (backups). hostNetwork, so its namespace's pod security level is `privileged` |
 | healthcheck | `apps/healthcheck` → `cluster-healthcheck` | `healthcheck.gemberkoekje.nl` | A static page served by Caddy |
 | kluskat | `apps/kluskat` | `kluskat.gemberkoekje.nl` | PostgreSQL |
+| ltr-hud | `apps/ltr-hud` | `ltr-hud.gemberkoekje.nl`, `gemberkoekje.nl/ltr-hud` | NFS volume: static HUD mock pages for Limit Theory Redux, served by Caddy and copied in with `kubectl cp` (not in Git) |
 | plotboek-generator | `apps/plotboek-generator` | `plotboek.gemberkoekje.nl` | PostgreSQL. A CronJob resets the demo at 04:00 (Amsterdam) |
 | print-manager-test | `apps/print-manager-test` | 192.168.1.233 | NFS volume |
 | spacetraders (API and web UI) | `apps/spacetraders` | LAN only (above) | PostgreSQL. Grafana reads its API (`infrastructure/monitoring`) |

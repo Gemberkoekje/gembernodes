@@ -69,6 +69,7 @@ spec:
                   - file-server
                   - frontpage
                   - hackerminigames
+                  - ltr-hud
                   - plotboek-generator
                   - vortexplotboek
     - name: https-adventureengine
@@ -239,6 +240,20 @@ spec:
           selector:
             matchLabels:
               kubernetes.io/metadata.name: cluster-healthcheck
+    - name: https-ltr-hud
+      protocol: HTTPS
+      port: 8443
+      hostname: ltr-hud.gemberkoekje.nl
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: ltr-hud-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: ltr-hud
     - name: https-plotboek
       protocol: HTTPS
       port: 8443
