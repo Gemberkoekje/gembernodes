@@ -21,7 +21,7 @@ spec:
         - name: ghcr-login
       containers:
         - name: kluskat
-          image: ghcr.io/gemberkoekje/kluskat:440705834b7fdf544d83fd238aa69e63d64a5112
+          image: ghcr.io/gemberkoekje/kluskat:9db989cb77249559c29a108e31fac6d27b4a5f06
           imagePullPolicy: IfNotPresent
           securityContext:
             runAsNonRoot: true
