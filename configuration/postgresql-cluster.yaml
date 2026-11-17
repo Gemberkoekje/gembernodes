@@ -23,6 +23,11 @@ spec:
   # finishes by itself; the default waits 180 s before switching to a fast one. 15 s is enough for
   # an idle client to go, and keeps restarts and node drains short.
   smartShutdownTimeout: 15
+  # No PodDisruptionBudget. CNPG's default one keeps the primary up (minAvailable 1), and with one
+  # instance that allows no eviction at all, so kured could never drain the node it runs on: on
+  # 2026-11-17 it tried gembernode-01 four times and rebooted nothing (NOTES.md). The data is on
+  # qnap-nfs, so an evicted instance starts again on another node with the same volume.
+  enablePDB: false
   # CNPG's defaults, plus OnRootMismatch. With the default (Always) the kubelet re-applies fsGroup 26
   # to every file of the data directory over NFS on each pod start: the rehearsal's first start
   # spent 4+ minutes on it (the same as the Bitnami server did; NOTES.md, 2026-09-26).
