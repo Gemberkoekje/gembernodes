@@ -3,7 +3,8 @@
 **Status: phases 1–3 done (2026-11-12).** HA runs on gembernode-01 at
 https://homeassistant.lan.gemberkoekje.nl, with all ten lamps under local control. The manifests are
 in [apps/home-assistant/](../apps/home-assistant/), with a [README](../apps/home-assistant/README.md).
-Phase 4 (the boiler) is next; phases 5 and 6 follow. This plan started as
+Phase 4 (the boiler) is next; phases 5 and 6 follow. Part of phase 6 is done (2026-11-18): Prometheus reads
+every entity and Grafana's alerts arrive in HA and on the phone (README, "Monitoring"). This plan started as
 `home-assistant-plan.md` in Gemberkoekje/projects; where building phase 1 changed it, "Changed
 while building" says so.
 
@@ -247,6 +248,8 @@ a minute.
 
 - Internal address: `http://homeassistant.home-automation.svc.cluster.local:8123` (REST + WebSocket API).
 - Create a **long-lived access token** for a dedicated HA user. Store it in 1Password and inject it via the operator into the consuming apps.
+  Done for Prometheus (2026-11-18): user `prometheus`, token in the 1Password item `homeassistant-monitoring`; the
+  same item holds the webhook ID Grafana posts its alerts to (README, "Monitoring").
 - Optional later: **Mosquitto** as its own Flux workload, with HA's MQTT integration, for event-driven consumers.
 
 ---

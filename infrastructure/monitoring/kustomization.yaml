@@ -5,6 +5,7 @@ resources:
   - grafana-secret.yaml
   - grafana-smtp-secret.yaml
   - spacetraders-secrets.yaml
+  - homeassistant-monitoring-secrets.yaml
   - grafana-alerting-provisioning.yaml
   - grafana-release.yaml
   - loki-release.yaml
@@ -20,6 +21,7 @@ configMapGenerator:
       - dashboards/cluster-health-dashboard.json
       - dashboards/error-logs-dashboard.json
       - dashboards/flux-dashboard.json
+      - dashboards/home-assistant-dashboard.json
       - dashboards/spacetraders-dashboard.json
       - dashboards/spacetraders-markets-dashboard.json
       - dashboards/spacetraders-snapshots-dashboard.json

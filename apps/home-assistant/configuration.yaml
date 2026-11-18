@@ -17,6 +17,79 @@ recorder:
   db_url: !env_var RECORDER_DB_URL
   purge_keep_days: 14
 
+# Every entity's current state for Prometheus, at /api/prometheus. Only with a token: Prometheus
+# scrapes it with one of a Home Assistant user of its own (README.md, "Monitoring"). A wrong token
+# counts as a failed login, so five in a row ban Prometheus's address (ip_bans.yaml).
+prometheus:
+
+# Grafana's alerts (infrastructure/monitoring) as a notification here and on the phone, cleared or
+# replaced when they resolve. Grafana posts each alert notification to this webhook. Its ID is a
+# secret from the 1Password item homeassistant-monitoring; without the item the placeholder below
+# is used, and Grafana posts to an empty ID, which reaches nothing. Automations made in the UI go to
+# automations.yaml (the include below); this one is Git's, and the UI shows it read-only.
+automation git:
+  - id: grafana_alerts
+    alias: Grafana alerts
+    description: >-
+      Shows Grafana's alerts as a notification here and on the phone, and clears them when they
+      resolve. Kept in Git: apps/home-assistant/configuration.yaml in gembernodes.
+    mode: queued
+    max: 50
+    triggers:
+      - trigger: webhook
+        webhook_id: !env_var GRAFANA_WEBHOOK_ID not-configured
+        allowed_methods: [POST]
+        local_only: true
+    actions:
+      # Grafana's payload is Alertmanager's: one notification can carry several alerts, each with
+      # its own status, labels, annotations, links and a fingerprint that stays the same until it
+      # resolves. The fingerprint keys the notification here and the tag on the phone.
+      - repeat:
+          for_each: "{{ trigger.json.alerts | default([]) }}"
+          sequence:
+            - variables:
+                key: "grafana_{{ repeat.item.fingerprint }}"
+                title: >-
+                  {{ repeat.item.labels.alertname | default('Grafana alert') }}{{
+                  ' (' ~ repeat.item.labels.namespace ~ ')' if repeat.item.labels.namespace is defined else '' }}
+                summary: "{{ repeat.item.annotations.summary | default('') }}"
+                description: "{{ repeat.item.annotations.description | default('') }}"
+                link: "{{ repeat.item.panelURL or repeat.item.dashboardURL or repeat.item.generatorURL }}"
+            - if: "{{ repeat.item.status == 'firing' }}"
+              then:
+                - action: persistent_notification.create
+                  data:
+                    notification_id: "{{ key }}"
+                    title: "{{ title }}"
+                    message: |-
+                      {{ summary or title }}
+                      {%- if description %}
+
+                      {{ description }}
+                      {%- endif %}
+                      {%- if link %}
+
+                      [Open in Grafana]({{ link }})
+                      {%- endif %}
+              else:
+                - action: persistent_notification.dismiss
+                  data:
+                    notification_id: "{{ key }}"
+            # Every phone with the Companion app: the mobile app integration's notify.notify sends
+            # to all of them when given no target (notify.mobile_app_<phone> would pick one, but
+            # fails the whole loop if that phone's name is wrong). The same tag replaces the alert
+            # with its "Resolved" message; tapping opens Grafana (LAN and Tailscale only). After
+            # the notification above, and allowed to fail, so a push problem never costs that one.
+            - action: notify.notify
+              continue_on_error: true
+              data:
+                title: "{{ ('Resolved: ' if repeat.item.status == 'resolved' else '') ~ title }}"
+                message: "{{ summary or title }}"
+                data:
+                  tag: "{{ key }}"
+                  clickAction: "{{ link }}"
+                  url: "{{ link }}"
+
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml

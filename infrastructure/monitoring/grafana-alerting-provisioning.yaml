@@ -15,6 +15,17 @@ data:
             settings:
               addresses: Arie_Hofland@hotmail.com
               singleEmail: true
+          # Every alert also goes to Home Assistant, which shows it as a notification there and on
+          # the phone, and clears it when it resolves (apps/home-assistant/configuration.yaml,
+          # "automation git"). The webhook ID is a secret: GRAFANA_WEBHOOK_ID (grafana-release.yaml).
+          # Grafana fills environment variables into contact point settings (not into rules), so
+          # a literal $ here would need to be $$. Without the ID it posts to an empty one, which
+          # fails in Grafana's log; the email goes regardless.
+          - uid: home-assistant-receiver
+            type: webhook
+            settings:
+              url: http://homeassistant.home-automation.svc.cluster.local:8123/api/webhook/$__env{GRAFANA_WEBHOOK_ID}
+              httpMethod: POST
   policies.yaml: |
     apiVersion: 1
     policies:
@@ -579,3 +590,45 @@ data:
             for: 0s
             annotations:
               summary: 'SpaceTraders logged {{ $values.A }} lines in the last 24 hours with {{ $values.B }} ships on average: {{ $values.C }} a ship, over its budget of 5,000'
+      - orgId: 1
+        name: home-assistant
+        folder: Alerts
+        interval: 1m
+        rules:
+          # Prometheus reads Home Assistant's entities (prometheus-release.yaml, job homeassistant).
+          # This fires when it can't: Home Assistant is down, or its token is missing or wrong (the
+          # target's error on Prometheus's Targets page says which). 15 minutes, because
+          # gembernode-01's nightly reboot keeps Home Assistant away for a few. While Home
+          # Assistant is down this alert can't reach the phone through it; the email still goes.
+          - uid: homeassistant-scrape-down
+            title: Prometheus can't read Home Assistant
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 900
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  refId: A
+                  expr: 'max(max_over_time(up{job="homeassistant"}[15m]))'
+                  instant: true
+              - refId: C
+                datasourceUid: "__expr__"
+                model:
+                  refId: C
+                  type: threshold
+                  expression: A
+                  conditions:
+                    - evaluator:
+                        type: lt
+                        params:
+                          - 1
+            # No series at all means the job is gone from Prometheus's config: that is down too.
+            noDataState: Alerting
+            execErrState: Error
+            for: 1m
+            annotations:
+              summary: 'Prometheus has not read Home Assistant for 15 minutes: Home Assistant is down, or its token is missing or wrong'
+              __dashboardUid__: home-assistant
+              __panelId__: "1"
