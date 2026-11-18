@@ -3165,3 +3165,21 @@ then `prometheus:` and `automation git:` in
   authentication).
 - **Before or after merging:** the user, the token, the webhook ID and the 1Password item (README,
   "Setting it up"), then restart Home Assistant and Grafana.
+
+## 2026-11-18 — Home Assistant: why the boiler's energy level is 0%, and the slot check confirmed (docs only)
+
+To understand this, read phase 4 ("What the integration gets wrong or leaves out") and phase 5
+("Observed so far") in [docs/home-assistant-plan.md](docs/home-assistant-plan.md).
+
+- **The 0% explained.** The dealer (Boilergigant) told the user the boiler is a 50-litre Itho
+  Smartboiler **Mono Plus**, which isn't a Climate Connect model: the app is meant for the Smart-upp
+  and the Green Energy Smartboiler only, and the Mono Plus has its smart functions built in. It
+  connects anyway and reports mode, online state, the legionella timer and power, but not the
+  energy level (`boilerContent`). No fault, nothing for the installer. The plan's earlier "a question
+  for the installer" is replaced, and a risk added: Itho could stop an unofficial model connecting
+  without notice.
+- **The slot check confirmed** (recorder, `device_power`, 2026-11-12 21:00 to 2026-11-17 21:00): the
+  boiler heated in all 11 half-hour slots (10:00 and 21:00), at 2.4–2.6 kW for 9–31 minutes, and
+  never outside them. So "no power during a slot" becomes phase 5's main standby signal. A standby
+  set at the boiler changed nothing else (2026-11-12). The plan's ~1.9 kW (from the fork's test
+  boiler) is ~2.5 kW on this one.

@@ -175,11 +175,13 @@ a minute.
 - **Boiler content % is always 0**, in the app as much as in HA. The user: it has never worked, in
   any mode (Smart control, a clock program at 65 °C nearly all day, the current one), while the
   display showed 60.1 °C. HA reads the same `boilerContent` the app shows, so the 0 comes from the
-  boiler or Itho's cloud. The fork's own test notes (`docs/TEST_RESULTS.md`) show another boiler on
-  the same software version, 14.89.132, reporting `boilerContent` 0.81. So the field works
-  elsewhere, which points at something specific to this boiler: a question for the installer. The
-  fault history is empty, and Itho itself offers no support (only info@ithodaalderop.nl, a ticket
-  system). Useless as a signal here.
+  boiler or Itho's cloud. **Why (2026-11-18):** the dealer (Boilergigant) explained that this boiler,
+  a 50-litre **Smartboiler Mono Plus**, isn't a Climate Connect model at all. The app is meant only
+  for the Smart-upp and the Green Energy Smartboiler (https://www.ithodaalderop.nl/climateconnect);
+  the Mono Plus has its smart functions (self-learning) built in. It does connect, and it reports
+  mode, online state, the legionella timer and power. The energy level is one of the things it
+  doesn't send. The fork's test boiler showing 0.81 was presumably a supported model. So it's no
+  fault, and there's nothing for the installer to fix. Useless as a signal here.
 - **The schedule sensors all say "No schedule", but the schedule is there.** Their raw attribute
   holds `{'36000': 65, '37800': 10, '75600': 65, '77400': 10}`: seconds after midnight, which is
   10:00 and 21:00 at 65 °C, then 10:30 and 21:30 at 10 °C. `sensor.py` only parses HHMM keys
@@ -189,8 +191,8 @@ a minute.
 - **No water temperature, and none to be had.** `water_heater.py` reads `deviceTemperatureMeasured`,
   but `__init__.py` never loads it. That is deliberate: the fork's test notes found that Itho's API
   (`GetDeviceStatus`) has no measured temperature at all, only the setpoint. The live signals the API
-  does give: device mode, online state, power (`devicePowerMeasured`, ~1.9 kW while heating) and
-  daily energy totals (`GetEnergyConsumption`).
+  does give: device mode, online state, power (`devicePowerMeasured`, ~2.5 kW while heating on this
+  boiler) and daily energy totals (`GetEnergyConsumption`).
 
 **Integration choice** (both unofficial, reverse-engineered, zero-star repos, so expect breakage when Itho changes their API):
 - **Primary:** `Rien-R/Itho-Daalderop-GES-HA` lineage (also `mjhagen/Itho-Daalderop-GES-HA` fork). Richest feature set: device mode select (SmartControl / Schedule / Continuous / Holiday), device state, boiler content %, power (kW), legionella timer, energy, connection status sensor. Polls status every 30 s.
@@ -222,9 +224,11 @@ a minute.
   the API reports changed. Every 30-second poll until 16:48 still showed mode Schedule, Online,
   connected and 0 kW; only the legionella timer ticked over. So a standby set at the boiler is
   invisible to the mode and connection checks. **Power is the only signal**: the boiler should draw
-  ~1.9 kW at some point in each half-hour slot (the tank cools a few degrees between slots). To
-  confirm on a normal day before relying on it: power above 0 in the slots of 2026-11-12 21:00 and
-  2026-11-13 10:00.
+  power at some point in each half-hour slot (the tank cools a few degrees between slots).
+- **Confirmed, 2026-11-12 21:00 to 2026-11-17 21:00:** the boiler heated in **all 11 slots**, at
+  2.4–2.6 kW, for 9 to 31 minutes. That's longer after a shower and short when little hot water
+  was used. It never drew power outside the slots. So "no power during a whole slot" is a reliable
+  standby signal.
 
 **5b. Automate** (once the signal is known):
 - **Triggers,** with what the API offers (no content %, no water temperature; phase 4):
@@ -232,10 +236,10 @@ a minute.
     Continu aan and Standby; the API's names are SmartControl, Schedule, Continuous and Holiday.
     Holiday is probably the app's Standby (an assumption to confirm in 5a).
   - **Connection:** online state or the connection sensor off for more than ~15 minutes: notify only.
-  - **Fallback for a standby the mode doesn't show:** no heating on a whole day. Standing losses
-    alone make a 65 °C boiler reheat every day, so 0 kWh in a day (daily energy history) means it
-    never switched on: notify. Power 0 kW all through a slot is weaker, because a tank still near
-    65 °C needn't heat: at most a hint.
+  - **A standby the mode doesn't show** (BOIL off at the boiler, a power cut it survived): power
+    0 kW all through a slot. It heated in every slot observed (above), so check at 10:35 and 21:35
+    whether power rose above 0 since the slot began, and notify if not. Backstop: 0 kWh in a whole
+    day (daily energy history).
 - **Guard:** `input_boolean.boiler_holiday`. When on, don't auto-recover. Holiday mode set on purpose must not be overridden.
 - **Actions:** set device mode back to **Schedule** (Klokprogramma, D5), then send a Companion app notification ("Boiler was in standby, switched back").
 - If 5a shows the mode can't be set back through the API (it may need the physical button), the automation becomes **notify-only**. Early warning is still the main win.
@@ -259,6 +263,7 @@ a minute.
 | Risk | Impact | Mitigation |
 |---|---|---|
 | Itho changes the Climate Connect API | Boiler entities die | Pin the integration version; the connection-health warning flags it; watch the repo |
+| The Mono Plus isn't an official Climate Connect model (the dealer, 2026-11-18) | Itho could stop it connecting, or change what it reports, without notice | The connection-health warning flags it; the standby check then becomes impossible, and only the boiler's own display remains |
 | Lamp re-paired / firmware update changes local key | One lamp drops out | Re-run tuya-local setup for that lamp |
 | Lamp IP changes | Lamp drops out | DHCP reservations (D4) |
 | gembernode-01 goes down | HA down (local-path is node-bound) | Accept for a home setup; restore from the NAS backup on another node (README, "Restoring") |
