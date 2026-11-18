@@ -17,6 +17,7 @@ resources:
 - hackerminigames-namespace.yaml
 - dungeontable-namespace.yaml
 - spacetraders-namespace.yaml
+- kasboek-namespace.yaml
 - kluskat-namespace.yaml
 - charactercreator-namespace.yaml
 - bygalacticaccord-namespace.yaml

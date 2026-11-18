@@ -3165,3 +3165,23 @@ then `prometheus:` and `automation git:` in
   authentication).
 - **Before or after merging:** the user, the token, the webhook ID and the 1Password item (README,
   "Setting it up"), then restart Home Assistant and Grafana.
+
+## 2026-11-18 — kasboek: a LAN-only budgeting app
+
+To understand this, read [apps/kasboek/README.md](apps/kasboek/README.md), then the kasboek block in
+[infrastructure/lan-proxy/Caddyfile](infrastructure/lan-proxy/Caddyfile).
+
+- **Why:** Kasboek is the user's personal budgeting app (ASN bank account, ASN VISA card, PayPal).
+  It holds bank data, so it is LAN and Tailscale only: `https://kasboek.lan.gemberkoekje.nl`
+  through Caddy, like Zeef's UIs, and deliberately no Gateway listener or HTTPRoute.
+- **How:** namespace `kasboek` (pod security baseline), one pod (`Recreate`) on the shared
+  PostgreSQL with its own database and role, a ClusterIP Service that only Caddy uses, and the
+  1Password item `kasboek-secrets` (connection string + sign-in password). The image comes from the
+  private repo Gemberkoekje/Kasboek; `ghcr-login` (mirrored by Reflector) can pull it. The app has
+  its own password sign-in on top of the LAN-only name, because every tailnet guest can reach
+  `*.lan` names.
+- **Backups:** nothing new: the nightly `pg_dumpall` covers the new database.
+- **Images check:** the package is private to another repository, so `check_images.py` can only
+  warn that it can't see it; the workflow's token has no access to it.
+- **Before merging:** the user creates the role and database and the 1Password item (README,
+  "Before the first deploy"). Without the item the pod waits in `CreateContainerConfigError`.

@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kasboek
+  namespace: kasboek
+spec:
+  replicas: 1
+  # One pod on purpose: imports and matching assume a single writer, and two replicas would buy
+  # nothing for one user.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: kasboek
+  template:
+    metadata:
+      labels:
+        app: kasboek
+    spec:
+      imagePullSecrets:
+        - name: ghcr-login
+      containers:
+        - name: kasboek
+          # Built by the private repo Gemberkoekje/Kasboek ("Build and Push"), tagged by commit sha.
+          image: ghcr.io/gemberkoekje/kasboek:d513867fa4b16b929e5052107ee449e643751b83
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Production
+            - name: ASPNETCORE_HTTP_PORTS
+              value: "8080"
+            - name: TZ
+              value: Europe/Amsterdam
+            - name: ConnectionStrings__Postgres
+              valueFrom:
+                secretKeyRef:
+                  name: kasboek-secrets
+                  key: ConnectionStrings__Postgres
+            - name: Auth__Password
+              valueFrom:
+                secretKeyRef:
+                  name: kasboek-secrets
+                  key: Auth__Password
+          # /healthz is anonymous and touches nothing. The first start also creates the Marten
+          # schema, hence the generous startup window.
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 3
+            failureThreshold: 40
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 25m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
