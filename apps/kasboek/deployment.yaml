@@ -22,7 +22,7 @@ spec:
       containers:
         - name: kasboek
           # Built by the private repo Gemberkoekje/Kasboek ("Build and Push"), tagged by commit sha.
-          image: ghcr.io/gemberkoekje/kasboek:4d916d60a7502c88379f4ca4c58750b278580052
+          image: ghcr.io/gemberkoekje/kasboek:7624b22411d91771e25003fab84ee2e859651c1f
           imagePullPolicy: IfNotPresent
           securityContext:
             runAsNonRoot: true
