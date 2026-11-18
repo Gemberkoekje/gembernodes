@@ -1,0 +1,16 @@
+# ClusterIP only: the one way in is Caddy, the LAN proxy (infrastructure/lan-proxy/Caddyfile).
+# Kasboek holds bank data and has no public route on purpose; never give it a LoadBalancer or an
+# HTTPRoute.
+apiVersion: v1
+kind: Service
+metadata:
+  name: kasboek
+  namespace: kasboek
+spec:
+  type: ClusterIP
+  selector:
+    app: kasboek
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
