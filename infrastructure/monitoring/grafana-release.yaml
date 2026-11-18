@@ -138,5 +138,12 @@ spec:
           name: spacetraders-secrets
           key: SPACETRADERS_INTERNAL_API_KEY
           optional: true
+      # The Home Assistant webhook for alerts (grafana-alerting-provisioning.yaml, contact point Email;
+      # homeassistant-monitoring-secrets.yaml). Optional: without it, alerts still go out by email.
+      GRAFANA_WEBHOOK_ID:
+        secretKeyRef:
+          name: homeassistant-monitoring
+          key: GRAFANA_WEBHOOK_ID
+          optional: true
     env:
       GF_SECRETS_ENCRYPTION_PROVIDER: ""

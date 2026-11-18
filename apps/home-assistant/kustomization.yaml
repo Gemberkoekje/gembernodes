@@ -5,6 +5,7 @@ namespace: home-automation
 
 resources:
   - homeassistant-secrets.yaml
+  - homeassistant-monitoring-secrets.yaml
   - deployment.yaml
   - service.yaml
 

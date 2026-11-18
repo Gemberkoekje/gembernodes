@@ -33,6 +33,25 @@ spec:
         enabled: true
         storageClass: qnap-nfs
         existingClaim: prometheus-server-qnap
+      # Home Assistant's token, for the homeassistant job below (homeassistant-monitoring-secrets.yaml).
+      # Optional: without the 1Password item Prometheus still starts, and only that job fails.
+      extraSecretMounts:
+        - name: homeassistant-monitoring
+          mountPath: /etc/secrets/homeassistant
+          subPath: ""
+          secretName: homeassistant-monitoring
+          readOnly: true
+          optional: true
+    # Home Assistant's entities (its Prometheus integration, apps/home-assistant/configuration.yaml),
+    # through its Service. The token is read from the file at every scrape, so a new one needs no
+    # restart. A wrong one counts as a failed login there: five in a row ban this address (README).
+    extraScrapeConfigs: |
+      - job_name: homeassistant
+        metrics_path: /api/prometheus
+        authorization:
+          credentials_file: /etc/secrets/homeassistant/HOMEASSISTANT_TOKEN
+        static_configs:
+          - targets: ["homeassistant.home-automation.svc.cluster.local:8123"]
     # Export the Ready state of Flux objects as gotk_resource_info, used by the Flux dashboard
     # and the "Flux resource not ready" alert. Adapted from fluxcd/flux2-monitoring-example.
     # The API versions must be ones the installed Flux serves; bump them with Flux.

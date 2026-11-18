@@ -111,7 +111,7 @@ every node.
 | fileserver (File Browser) | `apps/fileserver` → `file-server` | `fileserver.gemberkoekje.nl` | NFS volume |
 | frontpage | `apps/frontpage` | `gemberkoekje.nl/` | Its own read-only ClusterRole (`apps/frontpage/rbac.yaml`): nodes, pods, Deployments, StatefulSets, node metrics (metrics-server) and the `flux-system` GitRepository, for the page's live cluster view |
 | hackerminigames | `apps/hackerminigames` | `hackerminigames.gemberkoekje.nl` | |
-| home-assistant ([README](apps/home-assistant/README.md)) | `apps/home-assistant` → `home-automation` | `homeassistant.lan.gemberkoekje.nl` (LAN and Tailscale), 192.168.1.201:8123 | PostgreSQL (recorder), `local-path` on gembernode-01, NFS volume (backups). hostNetwork, so its namespace's pod security level is `privileged` |
+| home-assistant ([README](apps/home-assistant/README.md)) | `apps/home-assistant` → `home-automation` | `homeassistant.lan.gemberkoekje.nl` (LAN and Tailscale), 192.168.1.201:8123 | PostgreSQL (recorder), `local-path` on gembernode-01, NFS volume (backups). hostNetwork, so its namespace's pod security level is `privileged`. Prometheus reads its entities and Grafana posts its alerts to it (1Password item `homeassistant-monitoring`, also in `monitoring`) |
 | healthcheck | `apps/healthcheck` → `cluster-healthcheck` | `healthcheck.gemberkoekje.nl` | A static page served by Caddy |
 | kluskat | `apps/kluskat` | `kluskat.gemberkoekje.nl` | PostgreSQL |
 | ltr-hud | `apps/ltr-hud` | `ltr-hud.gemberkoekje.nl`, `gemberkoekje.nl/ltr-hud` | NFS volume: static HUD mock pages for Limit Theory Redux, served by Caddy and copied in with `kubectl cp` (not in Git) |
@@ -144,7 +144,7 @@ Designs and runbooks live in Gemberkoekje/projects.
 | PostgreSQL, backup | `infrastructure/postgresql`, `infrastructure/postgresql-backup` | The database's secrets, its in-cluster name, the old Bitnami data (kept for a rollback); the nightly dump |
 | NFS CSI driver | `infrastructure/nfs-provisioner` | The `qnap-nfs` StorageClass |
 | PVCs | `infrastructure/pvcs` | NFS volumes for the apps |
-| Monitoring | `infrastructure/monitoring` | Prometheus, Grafana and Loki. Grafana Alloy ships the container logs to Loki. Dashboards are `dashboards/*.json`, loaded through `configMapGenerator`; alert rules are in `grafana-alerting-provisioning.yaml` |
+| Monitoring | `infrastructure/monitoring` | Prometheus, Grafana and Loki. Grafana Alloy ships the container logs to Loki. Prometheus also reads Home Assistant's entities, with a token. Dashboards are `dashboards/*.json`, loaded through `configMapGenerator`; alert rules are in `grafana-alerting-provisioning.yaml`. Every alert goes by email and to Home Assistant, which shows it and pushes it to the phone |
 | Caddy LAN proxy | `infrastructure/lan-proxy` | `*.lan.gemberkoekje.nl` on .236. Restarts weekly to load the renewed certificate |
 | Tailscale subnet router | `infrastructure/tailscale` | Tailnet access to the nodes and MetalLB IPs |
 | kured | `infrastructure/kured` | Reboots nodes after updates, between 02:00 and 05:00 UTC |

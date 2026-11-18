@@ -87,6 +87,15 @@ spec:
                 secretKeyRef:
                   name: homeassistant-secrets
                   key: RECORDER_DB_URL
+            # The webhook Grafana posts its alerts to (configuration.yaml, "automation git").
+            # Optional, so a missing 1Password item can't keep Home Assistant from starting. Read at
+            # start only: after creating or changing the item, restart Home Assistant.
+            - name: GRAFANA_WEBHOOK_ID
+              valueFrom:
+                secretKeyRef:
+                  name: homeassistant-monitoring
+                  key: GRAFANA_WEBHOOK_ID
+                  optional: true
           ports:
             - name: http
               containerPort: 8123

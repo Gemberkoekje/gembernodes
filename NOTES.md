@@ -3108,3 +3108,60 @@ To understand this, read "HTTP server settings" in
   the trial was confirmed shows in one request: if https://homeassistant.lan.gemberkoekje.nl loads,
   the proxy settings are live; a 400 means the trial was reverted and the values need entering in
   the UI. The IP ban and login threshold show only on the Network page.
+
+## 2026-11-18 — Home Assistant and monitoring: Prometheus reads it, Grafana's alerts reach it
+
+To understand this, read "Monitoring" in [apps/home-assistant/README.md](apps/home-assistant/README.md),
+then `prometheus:` and `automation git:` in
+[apps/home-assistant/configuration.yaml](apps/home-assistant/configuration.yaml).
+
+- **Why:** the user wants Home Assistant's devices (the router, through UPnP, so far) next to the
+  cluster in Grafana, without knowing yet what to graph, and Grafana's alerts on the phone through
+  Home Assistant.
+- **What:**
+  - Home Assistant's Prometheus integration, scraped by a new Prometheus job `homeassistant` through
+    the Service, with the long-lived token of a non-admin Home Assistant user `prometheus`, mounted
+    from the new 1Password item `homeassistant-monitoring`. A generic dashboard "Home Assistant":
+    one graph per metric (a repeated panel over a metric picker), so new devices show up by
+    themselves, plus scrape status and unavailable entities. An alert when Prometheus hasn't read
+    Home Assistant for 15 minutes.
+  - A webhook integration on the existing contact point Email, so every alert also goes to Home
+    Assistant. The automation "Grafana alerts", in `configuration.yaml` under a labelled
+    `automation git:` key (read-only in the UI, next to the UI's `automations.yaml`), makes a
+    notification per alert, pushes it to every phone and clears or replaces both when it resolves.
+    The webhook ID is the item's second field, `GRAFANA_WEBHOOK_ID`, read by both Grafana and Home
+    Assistant (the item is in both namespaces).
+  - Everything reads the item optionally (`optional: true` on the secret mount and the env vars,
+    and a placeholder default in `!env_var`), so the change can merge before the item exists.
+- **Gotchas:**
+  - **Grafana 13 refuses to start when a rule has `__dashboardUid__` without `__panelId__`**
+    ("both annotations ... must be specified", provisioning fails, and with it Grafana). Found in
+    the local test; the new rule names panel 1.
+  - **Grafana fills environment variables into contact point settings** (`$__env{...}`, `$VAR`;
+    escape a literal `$` as `$$`), **not into rule annotations or queries**, which it provisions raw.
+    So the existing rules' `$labels`/`${1}` are fine, and the webhook URL can carry the secret ID.
+  - **`continue_on_error` doesn't cover a missing action:** `notify.mobile_app_<phone>` with a
+    wrong phone name stopped the whole loop. `notify.notify` is the mobile app integration's own
+    action (its notify platform is loaded without a name) and sends to every registered phone when
+    given no target; it exists whenever the mobile app integration loads (`default_config`).
+  - **Unavailable entities stay in the export with `homeassistant_entity_available` 0**; only
+    their state metrics go. Some domains are "unknown" until first used (button, event, scene,
+    conversation, notify, tts, stt), so the dashboard leaves them out of "Unavailable or unknown".
+  - A wrong token is a failed login in Home Assistant (`ban.py` counts every 401), so five in a row
+    ban Prometheus's address with the user's threshold of 5.
+- **Tested** locally in Docker, not on the cluster: Home Assistant 2026.11.1 with this
+  `configuration.yaml`, Prometheus v3.16.0 with the job exactly as `extraScrapeConfigs` renders it,
+  and Grafana 13.3.1 (what chart 14.x resolves to now) provisioned with this repo's alerting
+  ConfigMap, the new dashboard and a test-only rule on an `input_boolean`. The full loop ran: the
+  toggle on → Prometheus → Grafana alert → webhook → a notification in Home Assistant with summary,
+  description and a Grafana link; the toggle off → resolved → dismissed. Also: the non-admin user's
+  long-lived token reads `/api/prometheus` (92 series); Grafana interpolated the webhook URL; real
+  alerts from the existing rules (a Loki DatasourceError) arrived the same way; Grafana's contact
+  point Test button (on the provisioned contact point) produced "TestAlert"; a failing email
+  integration didn't stop the webhook; without `GRAFANA_WEBHOOK_ID` Home Assistant still starts and
+  Grafana's post to the empty ID gets 404; the dashboard rendered with the picker, the repeated
+  graphs and the unavailable table (screenshot). Not testable here: the push to a real phone, and the
+  ban itself (the test Home Assistant had no login threshold; the 401s were logged as invalid
+  authentication).
+- **Before or after merging:** the user, the token, the webhook ID and the 1Password item (README,
+  "Setting it up"), then restart Home Assistant and Grafana.
