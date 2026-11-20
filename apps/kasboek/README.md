@@ -55,6 +55,11 @@ which the browser follows on the LAN, so there is still no public route.
 
 Without the two fields the pod runs as before (`optional: true`).
 
+Once linked, the pod pulls the account itself every day at 06:00 Amsterdam time (or as soon as it is
+back, if it was down at six): the lines (page by page) and the balance per account, outbound
+only. The app's dashboard warns from 14 days before ASN's consent ends; Koppelen on the Bank page
+renews it.
+
 ## Deploying
 
 Bump the image tag in `deployment.yaml` to a sha that the workflow has already pushed, and merge.

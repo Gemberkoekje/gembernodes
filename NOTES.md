@@ -3202,3 +3202,14 @@ To understand this, read the "The bank link" section of [apps/kasboek/README.md]
   workflow has pushed the image, bump the tag in `deployment.yaml` as usual.
 - **Tested:** in the Kasboek repo (unit tests, and the app against a stand-in Enable Banking server).
   Here only the manifests changed; `scripts/validate.py` run locally.
+
+## 2026-11-20 — kasboek: daily bank pull and the salary-month burndown (image bump)
+
+- **Why:** Kasboek phase 5b (private Kasboek repo, NOTES.md there): the pod now pulls the ASN payment
+  account through Enable Banking every day at 06:00 Amsterdam time, and the dashboard has a
+  burndown from one salary to the next.
+- **Cluster:** only the image tag; the outbound calls to `api.enablebanking.com` and the optional
+  1Password fields were already in place (#252). No new route, volume or secret. The "bank link"
+  section of the README says when the pod pulls.
+- **After the rollout:** the first automatic pull runs about a minute after the new pod starts
+  (`kubectl -n kasboek logs deploy/kasboek | grep "Bank opgehaald"`).
