@@ -3185,3 +3185,20 @@ To understand this, read [apps/kasboek/README.md](apps/kasboek/README.md), then 
   warn that it can't see it; the workflow's token has no access to it.
 - **Before merging:** the user creates the role and database and the 1Password item (README,
   "Before the first deploy"). Without the item the pod waits in `CreateContainerConfigError`.
+
+## 2026-11-20 — kasboek: the bank link through Enable Banking (optional fields)
+
+To understand this, read the "The bank link" section of [apps/kasboek/README.md](apps/kasboek/README.md).
+
+- **Why:** Kasboek's phase 5 (in the private Kasboek repo, PLAN.md and NOTES.md there) reads the
+  ASN payment account through Enable Banking instead of only from downloaded CAMT.053 files. This
+  first step is the consent and a trial pull that compares the bank's lines with the imported ones.
+- **How:** two more `secretKeyRef`s from `kasboek-secrets`, `EnableBanking__ApplicationId` and
+  `EnableBanking__PrivateKey`, both `optional: true`, so the pod starts without them.
+- **Network:** outbound only, to `api.enablebanking.com` (no NetworkPolicy here limits egress). The
+  redirect after the bank's consent goes to `https://kasboek.lan.gemberkoekje.nl/Bank/Terug`; the
+  browser follows it on the LAN or Tailscale, so the app still has no Gateway listener or HTTPRoute.
+- **Image:** not bumped here. The Kasboek change is on a branch; once it is on `main` and the
+  workflow has pushed the image, bump the tag in `deployment.yaml` as usual.
+- **Tested:** in the Kasboek repo (unit tests, and the app against a stand-in Enable Banking server).
+  Here only the manifests changed; `scripts/validate.py` run locally.

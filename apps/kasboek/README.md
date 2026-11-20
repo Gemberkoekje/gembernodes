@@ -36,7 +36,24 @@ Item `kasboek-secrets` in the Gembercluster vault, with exactly these field labe
 - `Auth__Password`: the sign-in password (typed once per device; the sign-in lasts 90 days of
   not using it).
 
-Other fields are ignored. A missing one keeps the pod in `CreateContainerConfigError`.
+Other fields are ignored. A missing one keeps the pod in `CreateContainerConfigError`, except the
+two optional ones of the bank link below.
+
+### 3. The bank link (optional)
+
+Kasboek can read the ASN payment account itself through Enable Banking (PSD2). It only calls out,
+to `api.enablebanking.com`; ASN sends the browser back to `https://kasboek.lan.gemberkoekje.nl/Bank/Terug`,
+which the browser follows on the LAN, so there is still no public route.
+
+1. In the Enable Banking dashboard: one **production** application in restricted mode, with that
+   address as its redirect URL, and the payment account linked ("Activate by linking accounts").
+2. Two more fields on `kasboek-secrets`:
+   - `EnableBanking__ApplicationId`: the application id (a UUID).
+   - `EnableBanking__PrivateKey`: the downloaded `<application-id>.pem`, pasted whole.
+3. Restart the pod (`kubectl -n kasboek rollout restart deploy/kasboek`), then use the app's Bank
+   page to give ASN's consent.
+
+Without the two fields the pod runs as before (`optional: true`).
 
 ## Deploying
 

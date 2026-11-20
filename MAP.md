@@ -113,7 +113,7 @@ every node.
 | hackerminigames | `apps/hackerminigames` | `hackerminigames.gemberkoekje.nl` | |
 | home-assistant ([README](apps/home-assistant/README.md)) | `apps/home-assistant` → `home-automation` | `homeassistant.lan.gemberkoekje.nl` (LAN and Tailscale), 192.168.1.201:8123 | PostgreSQL (recorder), `local-path` on gembernode-01, NFS volume (backups). hostNetwork, so its namespace's pod security level is `privileged`. Prometheus reads its entities and Grafana posts its alerts to it (1Password item `homeassistant-monitoring`, also in `monitoring`) |
 | healthcheck | `apps/healthcheck` → `cluster-healthcheck` | `healthcheck.gemberkoekje.nl` | A static page served by Caddy |
-| kasboek ([README](apps/kasboek/README.md)) | `apps/kasboek` | `kasboek.lan.gemberkoekje.nl` (LAN and Tailscale only, through Caddy; no public route on purpose: bank data) | PostgreSQL. Image from the private repo Gemberkoekje/Kasboek |
+| kasboek ([README](apps/kasboek/README.md)) | `apps/kasboek` | `kasboek.lan.gemberkoekje.nl` (LAN and Tailscale only, through Caddy; no public route on purpose: bank data) | PostgreSQL. Enable Banking (outbound only, reads the ASN account; the bank sends the browser back to the LAN name). Image from the private repo Gemberkoekje/Kasboek |
 | kluskat | `apps/kluskat` | `kluskat.gemberkoekje.nl` | PostgreSQL |
 | ltr-hud | `apps/ltr-hud` | `ltr-hud.gemberkoekje.nl`, `gemberkoekje.nl/ltr-hud` | NFS volume: static HUD mock pages for Limit Theory Redux, served by Caddy and copied in with `kubectl cp` (not in Git) |
 | plotboek-generator | `apps/plotboek-generator` | `plotboek.gemberkoekje.nl` | PostgreSQL. A CronJob resets the demo at 04:00 (Amsterdam) |
