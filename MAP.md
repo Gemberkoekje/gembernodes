@@ -110,6 +110,7 @@ every node.
 | ebi-cs-api, ebi-cs-frontend | `apps/ebi-cs-api`, `apps/ebi-cs-frontend` → both in `ebi-cs-api` | `ebi-cs-api.`, `ebi-frontend.gemberkoekje.nl` | PostgreSQL |
 | fileserver (File Browser) | `apps/fileserver` → `file-server` | `fileserver.gemberkoekje.nl` | NFS volume |
 | frontpage | `apps/frontpage` | `gemberkoekje.nl/` | Its own read-only ClusterRole (`apps/frontpage/rbac.yaml`): nodes, pods, Deployments, StatefulSets, node metrics (metrics-server) and the `flux-system` GitRepository, for the page's live cluster view |
+| geneaducatie | `apps/geneaducatie` | `geneaducatie.gemberkoekje.nl`, `gemberkoekje.nl/geneaducatie` | Nothing: a design mock for a new geneaducatie.nl, one static page kept in Git (`apps/geneaducatie/index.html`) and served by Caddy from a generated ConfigMap |
 | hackerminigames | `apps/hackerminigames` | `hackerminigames.gemberkoekje.nl` | |
 | home-assistant ([README](apps/home-assistant/README.md)) | `apps/home-assistant` → `home-automation` | `homeassistant.lan.gemberkoekje.nl` (LAN and Tailscale), 192.168.1.201:8123 | PostgreSQL (recorder), `local-path` on gembernode-01, NFS volume (backups). hostNetwork, so its namespace's pod security level is `privileged`. Prometheus reads its entities and Grafana posts its alerts to it (1Password item `homeassistant-monitoring`, also in `monitoring`) |
 | healthcheck | `apps/healthcheck` → `cluster-healthcheck` | `healthcheck.gemberkoekje.nl` | A static page served by Caddy |

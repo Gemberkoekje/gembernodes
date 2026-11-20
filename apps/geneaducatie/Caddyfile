@@ -1,0 +1,24 @@
+# gemberkoekje.nl/geneaducatie reaches the pod with its path as is (ingress/geneaducatie-route.yaml):
+# handle_path strips the prefix, and a bare /geneaducatie gets its slash, as for ltr-hud.
+# no-cache: browsers revalidate (ETag), so a new version of the page shows on the next load.
+# noindex: a design mock, which must not turn up in search results next to the real geneaducatie.nl.
+:8080 {
+	header Cache-Control "no-cache"
+	header X-Robots-Tag "noindex, nofollow"
+
+	handle /ready {
+		respond "ok" 200
+	}
+
+	redir /geneaducatie /geneaducatie/ 308
+
+	handle_path /geneaducatie/* {
+		root * /srv
+		file_server
+	}
+
+	handle {
+		root * /srv
+		file_server
+	}
+}

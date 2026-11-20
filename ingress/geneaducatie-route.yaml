@@ -1,0 +1,65 @@
+# geneaducatie.gemberkoekje.nl through the public Gateway (infrastructure/traefik/gateway.yaml),
+# set up like every public route (CLAUDE.md, "Public routes"): the geneaducatie.nl redesign mock.
+# Also on gemberkoekje.nl/geneaducatie.
+#
+# Port 80: redirect to HTTPS (308, so a POST stays a POST). cert-manager's ACME challenge routes on
+# the same listener match an exact path, so they take precedence over this catch-all.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: geneaducatie-redirect
+  namespace: geneaducatie
+spec:
+  parentRefs:
+    - name: public
+      namespace: traefik
+      sectionName: http
+  hostnames:
+    - geneaducatie.gemberkoekje.nl
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: 308
+---
+# Port 443: the page. TLS ends at the Gateway; HSTS comes from Traefik's websecure entrypoint.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: geneaducatie
+  namespace: geneaducatie
+spec:
+  parentRefs:
+    - name: public
+      namespace: traefik
+      sectionName: https-geneaducatie
+  hostnames:
+    - geneaducatie.gemberkoekje.nl
+  rules:
+    - backendRefs:
+        - name: geneaducatie
+          port: 80
+---
+# gemberkoekje.nl/geneaducatie, on the shared https-gemberkoekje-nl listener.
+# The pod gets the path as is; its Caddyfile strips the prefix.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: geneaducatie-apex
+  namespace: geneaducatie
+spec:
+  parentRefs:
+    - name: public
+      namespace: traefik
+      sectionName: https-gemberkoekje-nl
+  hostnames:
+    - gemberkoekje.nl
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /geneaducatie
+      backendRefs:
+        - name: geneaducatie
+          port: 80

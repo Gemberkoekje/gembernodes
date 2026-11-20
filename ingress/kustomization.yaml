@@ -13,6 +13,7 @@ resources:
   - fileserver-route.yaml
   - frontpage-route.yaml
   - gemberkoekje-nl-route.yaml
+  - geneaducatie-route.yaml
   - hackerminigames-route.yaml
   - healthcheck-route.yaml
   - kluskat-route.yaml

@@ -1,0 +1,77 @@
+# A design mock of a new geneaducatie.nl (Genealogie en computereducatie), easier to read for older
+# visitors, in the look of the NGV Academie pages. One self-contained HTML page, served by Caddy.
+#
+# Unlike ltr-hud, the page is in Git: index.html in this folder, 42 KB, well under a ConfigMap's 1 MiB.
+# kustomization.yaml turns it and the Caddyfile into the ConfigMap geneaducatie-site, whose name gets
+# a hash of its content, so a changed page rolls the pod by itself. Its source is
+# Geneaducatie/mock/ in Gemberkoekje/projects.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: geneaducatie
+  namespace: geneaducatie
+  labels:
+    app: geneaducatie
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: geneaducatie
+  template:
+    metadata:
+      labels:
+        app: geneaducatie
+    spec:
+      containers:
+        - name: caddy
+          image: caddy:2.11.9-alpine
+          command:
+            - caddy
+          args:
+            - run
+            - --config
+            - /etc/caddy/Caddyfile
+          securityContext:
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "24Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          volumeMounts:
+            - name: site
+              mountPath: /srv
+              readOnly: true
+            - name: caddy-config
+              mountPath: /etc/caddy
+              readOnly: true
+      # Both from the one ConfigMap, each mounted on its own, so the Caddyfile isn't served as a page.
+      volumes:
+        - name: site
+          configMap:
+            name: geneaducatie-site
+            items:
+              - key: index.html
+                path: index.html
+        - name: caddy-config
+          configMap:
+            name: geneaducatie-site
+            items:
+              - key: Caddyfile
+                path: Caddyfile
