@@ -68,6 +68,7 @@ spec:
                   - ebi-cs-api
                   - file-server
                   - frontpage
+                  - geneaducatie
                   - hackerminigames
                   - ltr-hud
                   - plotboek-generator
@@ -212,6 +213,20 @@ spec:
           selector:
             matchLabels:
               kubernetes.io/metadata.name: file-server
+    - name: https-geneaducatie
+      protocol: HTTPS
+      port: 8443
+      hostname: geneaducatie.gemberkoekje.nl
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: geneaducatie-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: geneaducatie
     - name: https-hackerminigames
       protocol: HTTPS
       port: 8443

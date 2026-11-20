@@ -34,3 +34,4 @@ resources:
 - cnpg-system-namespace.yaml
 - postgresql-namespace.yaml
 - ltr-hud-namespace.yaml
+- geneaducatie-namespace.yaml

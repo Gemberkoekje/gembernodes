@@ -3213,3 +3213,30 @@ To understand this, read the "The bank link" section of [apps/kasboek/README.md]
   section of the README says when the pod pulls.
 - **After the rollout:** the first automatic pull runs about a minute after the new pod starts
   (`kubectl -n kasboek logs deploy/kasboek | grep "Bank opgehaald"`).
+
+## 2026-11-20 — geneaducatie: a redesign mock on geneaducatie.gemberkoekje.nl
+
+To understand this, read [apps/geneaducatie/deployment.yaml](apps/geneaducatie/deployment.yaml) (its
+header), [apps/geneaducatie/kustomization.yaml](apps/geneaducatie/kustomization.yaml) and the
+[Caddyfile](apps/geneaducatie/Caddyfile), then [ingress/geneaducatie-route.yaml](ingress/geneaducatie-route.yaml).
+
+- **Why:** a clickable mock of a new geneaducatie.nl (larger text, text-size and read-aloud buttons, in
+  the look of the NGV Academie pages), to show and discuss online. Public, like the other apps:
+  `geneaducatie.gemberkoekje.nl` and `gemberkoekje.nl/geneaducatie`.
+- **How:** set up like ltr-hud (Caddy, the same image and probes, the prefix stripped in the
+  Caddyfile), but the page is in Git: one 42 KB HTML file, so a `configMapGenerator` makes it a
+  ConfigMap together with the Caddyfile, as `infrastructure/lan-proxy` does. No NFS volume and no
+  `kubectl cp`. The generated name carries a content hash, so a new version of the page rolls the
+  pod by itself. Its source is `Geneaducatie/mock/` in Gemberkoekje/projects.
+- **Decisions:** one replica (no volume, so the default rolling update keeps it up). The page and
+  the Caddyfile are mounted separately from the one ConfigMap, so `/Caddyfile` isn't served.
+  `noindex` both in the page and as an `X-Robots-Tag` header: a mock must not show up in search
+  results next to the real geneaducatie.nl. `Cache-Control: no-cache`, as for ltr-hud.
+- **New listener:** `https-geneaducatie` on the public Gateway, and `geneaducatie` in
+  `https-gemberkoekje-nl`'s allowedRoutes. cert-manager issues `geneaducatie-tls` by itself. The
+  name already resolves (the `*.gemberkoekje.nl` wildcard).
+- **Checked:** `flux build kustomization --dry-run` of namespaces, infrastructure, apps and ingress,
+  and the Deployment's two volumes point at the hashed ConfigMap name.
+- **After the merge:** `https://geneaducatie.gemberkoekje.nl` and
+  `https://gemberkoekje.nl/geneaducatie` show the mock (the certificate can take a minute or two),
+  and `curl -I` shows `X-Robots-Tag: noindex, nofollow`.
