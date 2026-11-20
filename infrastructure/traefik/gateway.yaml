@@ -70,6 +70,7 @@ spec:
                   - frontpage
                   - geneaducatie
                   - hackerminigames
+                  - klaverjas
                   - ltr-hud
                   - plotboek-generator
                   - vortexplotboek
@@ -255,6 +256,20 @@ spec:
           selector:
             matchLabels:
               kubernetes.io/metadata.name: cluster-healthcheck
+    - name: https-klaverjas
+      protocol: HTTPS
+      port: 8443
+      hostname: klaverjas.gemberkoekje.nl
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: klaverjas-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: klaverjas
     - name: https-ltr-hud
       protocol: HTTPS
       port: 8443
