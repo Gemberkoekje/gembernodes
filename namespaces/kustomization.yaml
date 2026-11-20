@@ -35,3 +35,4 @@ resources:
 - postgresql-namespace.yaml
 - ltr-hud-namespace.yaml
 - geneaducatie-namespace.yaml
+- klaverjas-namespace.yaml

@@ -3249,3 +3249,22 @@ header), [apps/geneaducatie/kustomization.yaml](apps/geneaducatie/kustomization.
   ConfigMap's name changes with its content, so the pod rolls by itself.
 - **After the merge:** the page shows in Verdana on Windows and Macs. Phones without Verdana use the
   fallback.
+
+## 2026-11-20 — klaverjas: a design mock on klaverjas.gemberkoekje.nl
+
+To understand this, read [apps/klaverjas/deployment.yaml](apps/klaverjas/deployment.yaml) (its header)
+and the geneaducatie entry above: this is the same setup with another name.
+
+- **Why:** a clickable mock of the Klaverjas app (entering a Monday evening's klaverjas scores,
+  the standings, and the mail to the players), to show and discuss online. The plan is
+  `Klaverjas/PLAN.md` in Gemberkoekje/projects. Public, at `klaverjas.gemberkoekje.nl` and
+  `gemberkoekje.nl/klaverjas`.
+- **How:** copied from geneaducatie. Caddy serves the page from a `configMapGenerator` ConfigMap
+  (page plus Caddyfile, hashed name, so a new page rolls the pod). There's a `https-klaverjas`
+  listener on the public Gateway, `klaverjas` is in `https-gemberkoekje-nl`'s allowedRoutes, and
+  there's a `noindex` header plus meta tag.
+- **Privacy:** the member names in the page are invented (the repositories are public). The numbers
+  come from a real week's standings sheet, but nothing in them identifies anyone.
+- **Later:** the real app will take over `klaverjas.gemberkoekje.nl`, and this Caddy app goes when it does.
+- **After the merge:** both addresses show the mock (the certificate can take a minute or two), and
+  `curl -I` shows `X-Robots-Tag: noindex, nofollow`.
