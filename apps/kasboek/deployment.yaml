@@ -49,6 +49,21 @@ spec:
                 secretKeyRef:
                   name: kasboek-secrets
                   key: Auth__Password
+            # The bank link through Enable Banking (outbound to api.enablebanking.com only). Optional:
+            # without these two fields the pod starts as before and the app's Bank page says what is
+            # missing. See README.md, "The bank link".
+            - name: EnableBanking__ApplicationId
+              valueFrom:
+                secretKeyRef:
+                  name: kasboek-secrets
+                  key: EnableBanking__ApplicationId
+                  optional: true
+            - name: EnableBanking__PrivateKey
+              valueFrom:
+                secretKeyRef:
+                  name: kasboek-secrets
+                  key: EnableBanking__PrivateKey
+                  optional: true
           # /healthz is anonymous and touches nothing. The first start also creates the Marten
           # schema, hence the generous startup window.
           startupProbe:
