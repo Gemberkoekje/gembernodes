@@ -3240,3 +3240,12 @@ header), [apps/geneaducatie/kustomization.yaml](apps/geneaducatie/kustomization.
 - **After the merge:** `https://geneaducatie.gemberkoekje.nl` and
   `https://gemberkoekje.nl/geneaducatie` show the mock (the certificate can take a minute or two),
   and `curl -I` shows `X-Robots-Tag: noindex, nofollow`.
+
+## 2026-11-20 — geneaducatie: the mock in Verdana
+
+- **Why:** the user asked for Verdana instead of Open Sans (NGV's font).
+- **Change:** only `apps/geneaducatie/index.html`: Verdana (then Geneva, DejaVu Sans) and no more
+  Google Fonts request; the header name is plain bold capitals, as Verdana has no narrow width. The
+  ConfigMap's name changes with its content, so the pod rolls by itself.
+- **After the merge:** the page shows in Verdana on Windows and Macs. Phones without Verdana use the
+  fallback.
