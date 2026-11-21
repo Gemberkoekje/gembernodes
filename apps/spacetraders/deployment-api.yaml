@@ -50,7 +50,7 @@ spec:
               memory: "64Mi"
       containers:
         - name: spacetraders-api
-          image: ghcr.io/gemberkoekje/spacetraders-api:f5c02c0a2c1868b61de3b28b05e2454f8db226d5
+          image: ghcr.io/gemberkoekje/spacetraders-api:fc49fb2f32874e7d58d55c3493625c9a3c40cfff
           imagePullPolicy: Always
           securityContext:
             allowPrivilegeEscalation: false
@@ -109,12 +109,14 @@ spec:
             periodSeconds: 10
           # The CPU limit sits far above the mean use (about 0.26 cores) because the bot works in short
           # bursts: a 500m limit throttled it in about half of the 100 ms scheduling periods
-          # (NOTES.md, 2026-10-06). Memory: at 460 ships the pod runs at 0.85-1.7 GiB and its starts
-          # peak higher; two starts were OOM-killed at 2Gi on 2026-11-14 (NOTES.md, that date).
+          # (NOTES.md, 2026-10-06). By 2026-11-21 it used 1.8 of 2 cores, throttled in half the periods,
+          # and its plan tick took ~14 minutes: 3 cores until SpaceTraders B94 cuts the work (NOTES.md,
+          # that date). Memory: at 460 ships the pod runs at 0.85-1.7 GiB and its starts peak higher;
+          # two starts were OOM-killed at 2Gi on 2026-11-14 (NOTES.md, that date).
           resources:
             requests:
               cpu: "100m"
               memory: "512Mi"
             limits:
-              cpu: "2"
+              cpu: "3"
               memory: "3Gi"
