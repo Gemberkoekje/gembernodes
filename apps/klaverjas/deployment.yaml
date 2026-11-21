@@ -1,8 +1,9 @@
 # A design mock of the Klaverjas app: the weekly scoring and standings mail for a klaverjas
 # competition, run by a 70-year-old. One self-contained, clickable HTML page with invented member
-# names, served by Caddy. Set up like geneaducatie.
+# names, served by Caddy. Set up like geneaducatie. Version 2 follows the workbooks the club uses
+# today: the evening preparation (draw, table plan, score cards) and slapers.
 #
-# The page is in Git: index.html in this folder, about 60 KB, well under a ConfigMap's 1 MiB.
+# The page is in Git: index.html in this folder, about 80 KB, well under a ConfigMap's 1 MiB.
 # kustomization.yaml turns it and the Caddyfile into the ConfigMap klaverjas-site, whose name gets
 # a hash of its content, so a changed page rolls the pod by itself. Its source is
 # Klaverjas/mock/ in Gemberkoekje/projects. The real app will take over this hostname later.

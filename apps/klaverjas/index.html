@@ -6,8 +6,10 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Klaverjassen – ontwerp</title>
 <!--
-  Clickable mock for the Klaverjas app (see ../PLAN.md). Nothing is saved or sent.
-  Member names are invented; the numbers are the week-47 sheet's, so the rules can be checked.
+  Clickable mock for the Klaverjas app (see ../PLAN.md). Nothing is saved, printed or sent.
+  Member names are invented; the numbers are the week-47 standings', so the rules can be checked.
+  Version 2 follows Dad's workbooks: Speler / Slaper / Afwezig, 1600 per round sat out, the draw and
+  the table plan, substitutes kept in the member list, evenings without play.
   Screens are switched in script (the Claude browser pane opens local files as data: URLs,
   where hash routing does nothing).
 -->
@@ -29,6 +31,10 @@
     --ok-ink: #17602d;
     --ok-bg: #e0f3e5;
     --focus: #f0b323;
+    /* Dad's Invulblad colours: green plays, yellow sits out a round, light red is absent */
+    --st-speelt: #a9d08e;
+    --st-slaper: #ffff66;
+    --st-afwezig: #f4b6b6;
     /* The sheet's own colours (changeable in Instellingen) */
     --c-first: #ffff00;
     --c-second: #e9a3e4;
@@ -41,12 +47,8 @@
   * { box-sizing: border-box; }
   html { font-size: 100%; }
   body {
-    margin: 0;
-    background: var(--page);
-    color: var(--ink);
-    font-family: Verdana, Geneva, "DejaVu Sans", sans-serif;
-    font-size: 1.25rem;
-    line-height: 1.5;
+    margin: 0; background: var(--page); color: var(--ink);
+    font-family: Verdana, Geneva, "DejaVu Sans", sans-serif; font-size: 1.25rem; line-height: 1.5;
   }
   .wrap { max-width: 78rem; margin: 0 auto; padding: 0 1.25rem; }
   h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 .4rem; }
@@ -62,10 +64,7 @@
   .mockbar { background: #111; color: #fff; font-size: .95rem; }
   .mockbar .wrap { display: flex; flex-wrap: wrap; gap: .4rem 1rem; align-items: center; padding-top: .45rem; padding-bottom: .45rem; }
   .mockbar .views { display: flex; flex-wrap: wrap; gap: .4rem; }
-  .mockbar button {
-    font: inherit; font-size: .9rem; background: #333; color: #fff;
-    border: 1px solid #777; border-radius: 5px; padding: .2rem .65rem; cursor: pointer;
-  }
+  .mockbar button { font: inherit; font-size: .9rem; background: #333; color: #fff; border: 1px solid #777; border-radius: 5px; padding: .2rem .65rem; cursor: pointer; }
   .mockbar button[aria-pressed="true"] { background: #fff; color: #111; }
 
   /* ---------- Dad's header + tabs ---------- */
@@ -74,16 +73,10 @@
   .brand { font-size: 1.6rem; font-weight: 700; display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap; }
   .brand small { font-size: 1rem; font-weight: 400; opacity: .9; }
   .suit { font-size: 1.9rem; line-height: 1; }
-  .logout {
-    font: inherit; font-size: 1rem; color: #fff; background: transparent;
-    border: 2px solid rgba(255,255,255,.75); border-radius: 6px; padding: .3rem .8rem; cursor: pointer;
-  }
+  .logout { font: inherit; font-size: 1rem; color: #fff; background: transparent; border: 2px solid rgba(255,255,255,.75); border-radius: 6px; padding: .3rem .8rem; cursor: pointer; }
   nav.tabs { background: #fff; border-bottom: 2px solid var(--line); }
   nav.tabs .wrap { display: flex; gap: .25rem; flex-wrap: wrap; }
-  nav.tabs button {
-    font: inherit; font-weight: 700; color: var(--accent); background: none; border: none;
-    border-bottom: 5px solid transparent; padding: .85rem 1.1rem .6rem; cursor: pointer;
-  }
+  nav.tabs button { font: inherit; font-weight: 700; color: var(--accent); background: none; border: none; border-bottom: 5px solid transparent; padding: .85rem 1.1rem .6rem; cursor: pointer; }
   nav.tabs button:hover { background: var(--accent-soft); }
   nav.tabs button[aria-current="page"] { color: var(--ink); border-bottom-color: var(--accent); }
 
@@ -92,11 +85,7 @@
 
   /* ---------- Building blocks ---------- */
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 1.4rem 1.5rem; margin-bottom: 1.25rem; }
-  .btn {
-    font: inherit; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
-    min-height: 3.1rem; padding: .55rem 1.3rem; border-radius: 8px;
-    border: 2px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; text-decoration: none;
-  }
+  .btn { font: inherit; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 3.1rem; padding: .55rem 1.3rem; border-radius: 8px; border: 2px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; text-decoration: none; }
   .btn:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
   .btn.secondary { background: #fff; color: var(--accent); }
   .btn.secondary:hover { background: var(--accent-soft); }
@@ -113,10 +102,7 @@
   .banner.big { font-size: 1.4rem; font-weight: 700; }
 
   .steps { display: flex; gap: .5rem; list-style: none; padding: 0; margin: 0 0 1.25rem; flex-wrap: wrap; }
-  .steps li {
-    display: flex; align-items: center; gap: .55rem; padding: .4rem 1rem .4rem .45rem; border-radius: 999px;
-    background: #fff; border: 2px solid var(--line); color: var(--ink-soft); font-size: 1.05rem;
-  }
+  .steps li { display: flex; align-items: center; gap: .55rem; padding: .4rem 1rem .4rem .45rem; border-radius: 999px; background: #fff; border: 2px solid var(--line); color: var(--ink-soft); font-size: 1.05rem; }
   .steps .n { display: inline-grid; place-items: center; width: 1.9rem; height: 1.9rem; border-radius: 50%; background: var(--line); color: var(--ink); font-weight: 700; }
   .steps li.now { border-color: var(--accent); color: var(--ink); font-weight: 700; }
   .steps li.now .n { background: var(--accent); color: #fff; }
@@ -125,13 +111,20 @@
   .field { margin-bottom: 1.4rem; }
   .field > label, .field > .label { display: block; font-weight: 700; margin-bottom: .2rem; }
   .help { font-size: 1rem; color: var(--ink-soft); margin: 0 0 .45rem; }
-  input.text, textarea, select {
-    font: inherit; padding: .45rem .6rem; border: 2px solid #8a978e; border-radius: 6px;
-    width: 100%; max-width: 32rem; background: #fff; color: var(--ink);
-  }
+  input.text, textarea, select { font: inherit; padding: .45rem .6rem; border: 2px solid #8a978e; border-radius: 6px; width: 100%; max-width: 32rem; background: #fff; color: var(--ink); }
   input.text.short { max-width: 9rem; }
+  select.round { width: auto; font-size: 1rem; padding: .25rem .4rem; }
   textarea { max-width: none; min-height: 5.5rem; resize: vertical; }
   .inline { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
+
+  /* Speelt / Slaper / Afwezig */
+  .seg { display: inline-flex; border: 2px solid #8a978e; border-radius: 8px; overflow: hidden; }
+  .seg button { font: inherit; font-size: 1rem; padding: .35rem .75rem; border: none; border-left: 2px solid #8a978e; background: #fff; color: var(--ink); cursor: pointer; }
+  .seg button:first-child { border-left: none; }
+  .seg button[aria-pressed="true"] { font-weight: 700; }
+  .seg button[data-st="speelt"][aria-pressed="true"] { background: var(--st-speelt); }
+  .seg button[data-st="slaper"][aria-pressed="true"] { background: var(--st-slaper); }
+  .seg button[data-st="afwezig"][aria-pressed="true"] { background: var(--st-afwezig); }
 
   /* ---------- Avonden ---------- */
   .next { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem 2rem; border-left: 8px solid var(--accent); }
@@ -140,11 +133,12 @@
   table.list th { text-align: left; font-size: 1rem; color: var(--ink-soft); padding: .45rem .6rem; border-bottom: 2px solid var(--line); }
   table.list td { padding: .55rem .6rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
   table.list tr:last-child td { border-bottom: none; }
+  table.list tr.off td { color: var(--ink-soft); font-style: italic; }
   .status-ok { color: var(--ok-ink); font-weight: 700; }
   .status-warn { color: var(--warn-ink); font-weight: 700; }
   .status-open { color: var(--ink-soft); font-weight: 700; }
 
-  /* ---------- Entry ---------- */
+  /* ---------- Entry + preparation ---------- */
   .dateline { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; align-items: center; margin-bottom: 1rem; }
   .dateline .date { font-size: 1.45rem; font-weight: 700; }
   table.entry { width: 100%; border-collapse: collapse; }
@@ -152,29 +146,45 @@
   table.entry td { padding: .3rem .5rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
   table.entry tbody tr:nth-child(even) td { background: #f6f9f7; }
   table.entry .name { font-weight: 700; }
-  table.entry tr.is-absent .name { color: var(--ink-soft); font-weight: 400; }
-  .present { display: inline-flex; align-items: center; gap: .5rem; cursor: pointer; user-select: none; font-size: 1.05rem; }
-  .present input { width: 1.6rem; height: 1.6rem; accent-color: var(--accent); cursor: pointer; margin: 0; }
-  input.num {
-    font: inherit; font-size: 1.3rem; width: 6.2em; padding: .3rem .5rem; border: 2px solid #8a978e; border-radius: 6px;
-    text-align: right; font-variant-numeric: tabular-nums; background: #fff; color: var(--ink);
-  }
+  table.entry tr.is-afwezig .name { color: var(--ink-soft); font-weight: 400; }
+  input.num { font: inherit; font-size: 1.3rem; width: 6.2em; padding: .3rem .5rem; border: 2px solid #8a978e; border-radius: 6px; text-align: right; font-variant-numeric: tabular-nums; background: #fff; color: var(--ink); }
   input.num.pits { width: 3.4em; }
   input.num:disabled { background: #eceeec; color: #5b625d; border-color: #cfd5d1; }
   input.num.flag { border-color: var(--warn-line); background: var(--warn-bg); }
   input.num.bad { border-color: var(--bad-ink); background: var(--bad-bg); }
-  input.text.subname { max-width: 16rem; }
-  td.hint { font-size: 1rem; min-width: 14rem; }
+  td.hint { font-size: 1rem; min-width: 13rem; }
   .hint.warn { color: var(--warn-ink); font-weight: 700; }
   .hint.bad { color: var(--bad-ink); font-weight: 700; }
-  .hint.absent { color: var(--ink-soft); }
+  .hint.info { color: var(--ink-soft); }
   .mockfill { font-size: .95rem; color: var(--ink-soft); }
+  .count-line { font-size: 1.15rem; }
+  .count-line b { font-size: 1.3rem; }
 
   .savebar { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 3px solid var(--accent); box-shadow: 0 -4px 14px rgba(0,0,0,.08); z-index: 5; }
   .savebar .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem 1.5rem; padding-top: .7rem; padding-bottom: .7rem; }
   .facts { display: flex; flex-wrap: wrap; gap: .2rem 1.4rem; font-size: 1.05rem; }
   .facts b { font-size: 1.15rem; }
   .facts .todo { color: var(--warn-ink); font-weight: 700; }
+
+  /* Table plan */
+  .rounds { display: grid; grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); gap: 1rem; }
+  .round { border: 2px solid var(--line); border-radius: 10px; padding: .8rem 1rem; background: #fbfcfb; }
+  .round h3 { margin-bottom: .4rem; }
+  .round table { width: 100%; border-collapse: collapse; font-size: 1rem; }
+  .round td { padding: .25rem .3rem; border-top: 1px solid var(--line); vertical-align: top; }
+  .round td.t { font-weight: 700; white-space: nowrap; width: 5.2rem; }
+  .round .vs { color: var(--ink-soft); font-size: .9rem; }
+  .round .nr { color: var(--ink-soft); font-size: .85rem; }
+  .round .stil { background: var(--st-slaper); }
+
+  /* Score cards (print preview) */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: .8rem; }
+  .scard { border: 1.5px solid #333; padding: .6rem .7rem; font-size: .95rem; background: #fff; }
+  .scard .club { font-weight: 700; display: flex; justify-content: space-between; }
+  .scard .tag { background: var(--st-slaper); padding: 0 .35rem; font-size: .85rem; }
+  .scard table { width: 100%; border-collapse: collapse; margin-top: .35rem; }
+  .scard th, .scard td { border: 1px solid #555; padding: .15rem .35rem; text-align: left; }
+  .scard td.stil { background: #f2f2a6; font-size: .85rem; }
 
   /* ---------- Standings (the sheet look; also used in the mail) ---------- */
   /* Stacked on screen and in the mail (no sideways scrolling); the PDF keeps the sheet's side-by-side layout */
@@ -197,7 +207,6 @@
   .cr { background: var(--c-rest) !important; }
   .legend { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .6rem; font-size: .9rem; }
   .legend span { padding: .1rem .7rem; border: 1px solid #6f7a73; }
-
   .winners { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; margin: 0 0 1rem; padding: 0; list-style: none; }
   .winners li { display: flex; align-items: center; gap: .5rem; }
   .medal { display: inline-grid; place-items: center; width: 1.8rem; height: 1.8rem; border-radius: 50%; border: 1px solid #6f7a73; font-weight: 700; font-size: .95rem; }
@@ -227,14 +236,13 @@
   table.ptab td.r, table.ptab th.r { text-align: right; }
   table.ptab td.pl { width: 2rem; text-align: center; font-weight: 700; }
 
-  /* ---------- Sign-in ---------- */
+  /* ---------- Sign-in + modal ---------- */
   .login { max-width: 30rem; margin: 3rem auto; }
   .login .brand { color: var(--accent); margin-bottom: 1rem; }
-
-  /* ---------- Modal ---------- */
   .modal-back { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: center; justify-content: center; z-index: 20; padding: 1rem; }
   .modal-back.open { display: flex; }
-  .modal { background: #fff; border-radius: 12px; padding: 1.75rem; max-width: 36rem; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,.3); }
+  .modal { background: #fff; border-radius: 12px; padding: 1.75rem; max-width: 36rem; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,.3); }
+  .modal.wide { max-width: 64rem; }
   .modal h2 { margin-bottom: .6rem; }
 </style>
 </head>
@@ -243,7 +251,7 @@
 <div class="mockbar">
   <div class="wrap">
     <strong>Ontwerp</strong>
-    <span>Rondklikken mag: er wordt niets opgeslagen of verstuurd. Namen zijn verzonnen.</span>
+    <span>Rondklikken mag: er wordt niets opgeslagen, geprint of verstuurd. Namen zijn verzonnen.</span>
     <span class="views">
       <button type="button" data-view="admin" aria-pressed="true">Scherm van Pa</button>
       <button type="button" data-view="mail" aria-pressed="false">De e-mail</button>
@@ -257,7 +265,7 @@
 <div id="view-admin">
   <header class="top">
     <div class="wrap">
-      <div class="brand"><span class="suit" aria-hidden="true">♣</span> Klaverjassen 2026 <small>Beheer</small></div>
+      <div class="brand"><span class="suit" aria-hidden="true">♣</span> <span class="club-name">De Samenspelers</span> <small>Beheer</small></div>
       <button type="button" class="logout" data-view="login">Uitloggen</button>
     </div>
   </header>
@@ -275,70 +283,124 @@
     <!-- Avonden -->
     <section id="s-avonden">
       <h1>Avonden</h1>
-      <p class="lead">Na elke speelavond: klik op <b>Avond invoeren</b> en typ de scores over.</p>
+      <p class="lead">Vóór de avond: <b>Avond voorbereiden</b> (wie er is, loting, tafels, kaartjes). Na de avond: <b>Uitslag invullen</b>.</p>
       <div class="card next">
         <div>
           <p class="muted" style="margin:0">Volgende speelavond</p>
           <p class="when" id="next-when"></p>
+          <p class="muted" id="next-state" style="margin:0; font-size:1rem"></p>
         </div>
-        <button type="button" class="btn big" id="btn-new-evening">Avond invoeren</button>
+        <div class="actions">
+          <button type="button" class="btn big" id="btn-prep">Avond voorbereiden</button>
+          <button type="button" class="btn secondary" id="btn-result">Uitslag invullen</button>
+        </div>
       </div>
       <div class="card">
-        <h2>Alle avonden van 2026</h2>
+        <h2>Alle avonden van <span class="season">2026</span></h2>
         <table class="list">
-          <thead><tr><th>Datum</th><th>Week</th><th>Aanwezig</th><th>Invallers</th><th>E-mail</th><th></th></tr></thead>
+          <thead><tr><th>Datum</th><th>Week</th><th>Spelers</th><th>Slapers</th><th>E-mail</th><th></th></tr></thead>
           <tbody id="evenings"></tbody>
         </table>
         <p style="margin:.75rem 0 0"><button type="button" class="linkbtn" id="btn-older">Oudere avonden tonen</button></p>
       </div>
     </section>
 
-    <!-- Avond invoeren / wijzigen -->
-    <section id="s-invoer" hidden>
+    <!-- Avond voorbereiden -->
+    <section id="s-voorbereiden" hidden>
       <ol class="steps">
-        <li class="now"><span class="n">1</span> Invullen</li>
-        <li><span class="n">2</span> Controleren</li>
-        <li><span class="n">3</span> Versturen</li>
+        <li class="now"><span class="n">1</span> Voorbereiden</li>
+        <li><span class="n">2</span> Uitslag invullen</li>
+        <li><span class="n">3</span> Controleren</li>
+        <li><span class="n">4</span> Versturen</li>
       </ol>
-      <h1 id="entry-title">Avond invoeren</h1>
-      <div class="dateline">
-        <span class="date" id="entry-date"></span>
-        <button type="button" class="linkbtn" id="btn-other-date">Andere datum kiezen</button>
-        <input type="date" class="text short" id="entry-date-input" hidden style="max-width:13rem">
-      </div>
+      <h1>Avond voorbereiden</h1>
+      <div class="dateline"><span class="date" id="prep-date"></span></div>
+
       <div class="card">
-        <p style="margin-bottom:.4rem">Typ per speler de <b>punten</b> en de <b>pitten</b> van het scorebriefje.
-          Met <b>Enter</b> of <b>Tab</b> gaat u naar het volgende vakje.</p>
-        <p class="help">Was iemand er niet? Klik het vinkje bij <b>Aanwezig</b> weg. Die speler krijgt dan vanzelf
-          <span class="absent-score">4200</span> punten en geen pitten.</p>
-        <p class="mockfill" id="mockfill-line">Ontwerp: <button type="button" class="linkbtn" id="btn-mockfill">vul de lege vakjes met voorbeeldgetallen</button></p>
+        <h2>Wie speelt er mee?</h2>
+        <p class="help">Klik per lid op <b>Speelt</b>, <b>Slaper</b> (zit één ronde stil, krijgt daarvoor <span class="sleep-score">1600</span> punten) of <b>Afwezig</b>.
+          Het programma stelt de slapers voor: wie dit jaar het minst heeft stilgezeten. U mag dat altijd veranderen.</p>
         <div class="scroll">
           <table class="entry">
-            <thead><tr><th>Naam</th><th>Aanwezig</th><th>Punten</th><th>Pitten</th><th>Let op</th></tr></thead>
+            <thead><tr><th>Naam</th><th>Vanavond</th><th>Stil in</th><th>Dit jaar stilgezeten</th></tr></thead>
+            <tbody id="prep-rows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Invallers</h2>
+        <p class="help">Komt er een invaller? Kies die uit de lijst (Spelers → soort Invaller), of maak een nieuwe aan.</p>
+        <div id="prep-subs"></div>
+        <div class="inline" style="margin-top:.6rem">
+          <select id="prep-sub-pick" style="max-width:16rem" aria-label="Kies een invaller"></select>
+          <button type="button" class="btn secondary small" id="btn-prep-add-sub">Toevoegen</button>
+          <button type="button" class="linkbtn" id="btn-prep-new-sub">Nieuwe invaller</button>
+        </div>
+      </div>
+
+      <div class="card" id="prep-count"></div>
+
+      <div class="card" id="prep-plan-card" hidden>
+        <div class="actions" style="justify-content:space-between; margin-bottom:.75rem">
+          <h2 style="margin:0">Tafelindeling</h2>
+          <button type="button" class="btn secondary small" id="btn-redraw">Opnieuw loten</button>
+        </div>
+        <p class="help">Iedereen heeft een nummer gekregen (de slapers de laagste, zoals nu). Niemand zit vanavond twee keer met dezelfde mensen aan tafel.</p>
+        <div class="rounds" id="prep-plan"></div>
+        <div class="actions" style="margin-top:1.25rem">
+          <button type="button" class="btn" id="btn-print-cards">Kaartjes printen</button>
+          <button type="button" class="btn secondary" id="btn-print-plan">Tafelindeling printen</button>
+          <button type="button" class="btn secondary" id="btn-prep-done">Klaar, terug naar Avonden</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Uitslag invullen -->
+    <section id="s-invoer" hidden>
+      <ol class="steps">
+        <li class="done"><span class="n">✓</span> Voorbereiden</li>
+        <li class="now"><span class="n">2</span> Uitslag invullen</li>
+        <li><span class="n">3</span> Controleren</li>
+        <li><span class="n">4</span> Versturen</li>
+      </ol>
+      <h1 id="entry-title">Uitslag invullen</h1>
+      <div class="dateline"><span class="date" id="entry-date"></span></div>
+      <div class="card">
+        <p style="margin-bottom:.4rem">Typ per speler het <b>totaal</b> en de <b>pitten</b> van het puntenkaartje.
+          Met <b>Enter</b> of <b>Tab</b> gaat u naar het volgende vakje.</p>
+        <p class="help">Bij een <b>slaper</b> typt u de punten van de twee gespeelde rondes; de <span class="sleep-score">1600</span> voor de stille ronde telt het programma er zelf bij.
+          Wie <b>afwezig</b> is, krijgt vanzelf <span class="absent-score">4200</span> punten. Klopt de status niet meer? Klik hem gewoon om.</p>
+        <p class="mockfill">Ontwerp: <button type="button" class="linkbtn" id="btn-mockfill">vul de lege vakjes met voorbeeldgetallen</button></p>
+        <div class="scroll">
+          <table class="entry">
+            <thead><tr><th>Naam</th><th>Status</th><th>Punten</th><th>Pitten</th><th>Let op</th></tr></thead>
             <tbody id="entry-rows"></tbody>
           </table>
         </div>
       </div>
       <div class="card">
         <h2>Invallers</h2>
-        <p class="help">Speelde er iemand mee die geen lid is? Zet die hier. Een invaller kan de avond winnen,
-          maar telt niet mee in de jaarstand.</p>
+        <p class="help">Een invaller kan de avond winnen, maar telt niet mee in de jaarstand.</p>
         <table class="entry" id="subs-table">
-          <thead><tr><th>Naam</th><th>Punten</th><th>Pitten</th><th></th></tr></thead>
+          <thead><tr><th>Naam</th><th>Status</th><th>Punten</th><th>Pitten</th><th>Let op</th></tr></thead>
           <tbody id="subs-rows"></tbody>
         </table>
         <p class="muted" id="subs-empty" style="margin:.5rem 0 1rem">Deze avond geen invallers.</p>
-        <button type="button" class="btn secondary" id="btn-add-sub">+ Invaller toevoegen</button>
-        <datalist id="sub-names"><option value="Bert"></option><option value="Henny"></option></datalist>
+        <div class="inline">
+          <select id="sub-pick" style="max-width:16rem" aria-label="Kies een invaller"></select>
+          <button type="button" class="btn secondary small" id="btn-add-sub">+ Invaller toevoegen</button>
+        </div>
       </div>
     </section>
 
     <!-- Stand versturen -->
     <section id="s-stand" hidden>
       <ol class="steps">
-        <li class="done"><span class="n">✓</span> Invullen</li>
-        <li class="now" id="step-check"><span class="n">2</span> Controleren</li>
-        <li id="step-send"><span class="n">3</span> Versturen</li>
+        <li class="done"><span class="n">✓</span> Voorbereiden</li>
+        <li class="done"><span class="n">✓</span> Uitslag invullen</li>
+        <li class="now" id="step-check"><span class="n">3</span> Controleren</li>
+        <li id="step-send"><span class="n">4</span> Versturen</li>
       </ol>
       <div id="stand-banner"></div>
       <h1 id="stand-title"></h1>
@@ -346,7 +408,7 @@
       <div class="card">
         <div class="actions" style="justify-content:space-between; margin-bottom:1rem">
           <h2 style="margin:0">Zo zien de spelers de stand</h2>
-          <span>Klopt er iets niet? <button type="button" class="btn secondary small" id="btn-fix">Avond wijzigen</button></span>
+          <span>Klopt er iets niet? <button type="button" class="btn secondary small" id="btn-fix">Uitslag wijzigen</button></span>
         </div>
         <ul class="winners" id="stand-winners"></ul>
         <div id="stand-tables"></div>
@@ -371,20 +433,25 @@
     <!-- Spelers -->
     <section id="s-spelers" hidden>
       <h1>Spelers</h1>
-      <p class="lead">De leden van de competitie. Invallers hoeven hier niet in: die typt u op de avond zelf.</p>
+      <p class="lead">De leden en de invallers. Alleen leden staan in de jaarstand.</p>
       <div id="players-banner"></div>
       <div class="card">
+        <div class="actions" style="justify-content:flex-end; margin-bottom:.5rem">
+          <button type="button" class="btn secondary small" id="btn-print-members">Ledenlijst printen</button>
+        </div>
         <table class="list">
-          <thead><tr><th>Naam</th><th>E-mailadres</th><th>Doet mee?</th><th></th></tr></thead>
+          <thead><tr><th>Naam</th><th>Soort</th><th>E-mailadres</th><th>Doet mee?</th><th></th></tr></thead>
           <tbody id="players-rows"></tbody>
         </table>
         <p class="help" style="margin:1rem 0 0">Een naam verbeteren past hem overal aan, ook in oude weken.
-          Stopt iemand? Zet die op <b>Gestopt</b>: de oude scores blijven staan, maar de naam komt niet meer op het invulscherm.</p>
+          Stopt iemand? Zet die op <b>Gestopt</b>: de oude scores blijven staan, maar de naam komt niet meer op het invulscherm.
+          Adres, telefoon en verjaardag staan onder <b>Wijzigen</b>.</p>
       </div>
       <div class="card">
         <h2>Nieuwe speler</h2>
         <div class="inline">
           <input class="text" id="new-name" placeholder="Voornaam en achternaam" style="max-width:20rem" aria-label="Naam van de nieuwe speler">
+          <select id="new-kind" style="max-width:10rem" aria-label="Soort"><option value="lid">Lid</option><option value="invaller">Invaller</option></select>
           <input class="text" id="new-email" placeholder="E-mailadres (mag leeg)" style="max-width:20rem" aria-label="E-mailadres van de nieuwe speler">
           <button type="button" class="btn" id="btn-add-player">Toevoegen</button>
         </div>
@@ -397,18 +464,50 @@
       <p class="lead">Alles hieronder mag u veranderen. Vergeet niet op <b>Opslaan</b> te klikken.</p>
       <div id="settings-banner"></div>
       <div class="card">
+        <h2>Club</h2>
+        <div class="field">
+          <label for="set-club">Naam van de club</label>
+          <p class="help">Staat bovenaan de schermen, op de kaartjes, in de e-mail en op de PDF.</p>
+          <input class="text" id="set-club">
+        </div>
+      </div>
+      <div class="card">
         <h2>Spelregels</h2>
         <div class="field">
           <label for="set-absent">Punten bij afwezigheid</label>
-          <p class="help">Wie er niet is, krijgt dit aantal punten en geen pitten.</p>
+          <p class="help">Wie een avond overslaat, krijgt dit aantal punten en geen pitten.</p>
           <input class="text short" id="set-absent" inputmode="numeric">
         </div>
         <div class="field">
+          <label for="set-sleep">Punten voor een stille ronde</label>
+          <p class="help">Wie een ronde moet slapen (stilzitten), krijgt dit aantal punten voor die ronde.</p>
+          <input class="text short" id="set-sleep" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label for="set-rounds">Rondes per avond</label>
+          <p class="help">Partijen van 16 spellen.</p>
+          <input class="text short" id="set-rounds" inputmode="numeric" value="3">
+        </div>
+        <div class="field">
           <label for="set-day">Speelavond</label>
-          <p class="help">Op deze dag stelt het programma de volgende avond voor.</p>
-          <select id="set-day" style="max-width:14rem">
-            <option>maandag</option><option>dinsdag</option><option>woensdag</option><option>donderdag</option><option>vrijdag</option>
-          </select>
+          <select id="set-day" style="max-width:14rem"><option>maandag</option><option>dinsdag</option><option>woensdag</option><option>donderdag</option><option>vrijdag</option></select>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Seizoen <span class="season">2026</span></h2>
+        <div class="field">
+          <label for="set-start">Eerste speelavond</label>
+          <input class="text" id="set-start" value="maandag 12 januari 2026" style="max-width:20rem">
+        </div>
+        <div class="field">
+          <span class="label">Geen klaverjassen op</span>
+          <p class="help">Deze avonden slaat het programma over. In de stand staat dan de reden, zoals nu.</p>
+          <table class="list" style="max-width:40rem"><tbody id="holidays"></tbody></table>
+          <div class="inline" style="margin-top:.6rem">
+            <input class="text" id="hol-date" placeholder="Datum, bijv. 28 december" style="max-width:14rem" aria-label="Datum zonder klaverjassen">
+            <input class="text" id="hol-why" placeholder="Reden, bijv. Kerst" style="max-width:14rem" aria-label="Reden">
+            <button type="button" class="btn secondary small" id="btn-add-hol">Toevoegen</button>
+          </div>
         </div>
       </div>
       <div class="card">
@@ -440,8 +539,7 @@
       </div>
       <div class="card">
         <h2>Link voor de spelers</h2>
-        <p class="help">Deze link staat in elke e-mail. Wie hem heeft, kan de stand bekijken (niets wijzigen).
-          Een nieuwe link maken zet de oude uit.</p>
+        <p class="help">Deze link staat in elke e-mail. Wie hem heeft, kan de stand bekijken (niets wijzigen). Een nieuwe link maken zet de oude uit.</p>
         <div class="inline">
           <input class="text" id="set-link" readonly style="max-width:30rem" aria-label="Link voor de spelers">
           <button type="button" class="btn secondary small" id="btn-copy">Kopiëren</button>
@@ -490,11 +588,8 @@
 <div id="view-login" hidden>
   <main class="wrap">
     <div class="card login">
-      <div class="brand"><span class="suit" aria-hidden="true">♣</span> Klaverjassen</div>
-      <div class="field">
-        <label for="pw">Wachtwoord</label>
-        <input class="text" type="password" id="pw">
-      </div>
+      <div class="brand"><span class="suit" aria-hidden="true">♣</span> <span class="club-name">De Samenspelers</span></div>
+      <div class="field"><label for="pw">Wachtwoord</label><input class="text" type="password" id="pw"></div>
       <button type="button" class="btn big" data-view="admin" style="width:100%">Inloggen</button>
       <p class="help" style="margin-top:1rem">U blijft een jaar ingelogd op deze computer.<br>Wachtwoord vergeten? Bel de beheerder van de site.</p>
     </div>
@@ -502,7 +597,7 @@
 </div>
 
 <div class="modal-back" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-  <div class="modal">
+  <div class="modal" id="modal-box">
     <h2 id="modal-title"></h2>
     <div id="modal-text"></div>
     <div class="actions" id="modal-actions" style="margin-top:1.25rem"></div>
@@ -512,76 +607,76 @@
 <script>
 'use strict';
 
-/* ---------------- Data (invented names, numbers from the week-47 sheet) ---------------- */
+/* ---------------- Data (invented names, numbers from the week-47 standings) ---------------- */
 const MONTH = [45, 46, 47, 48, 49];
 const DATE = { 45: '2-11', 46: '9-11', 47: '16-11', 48: '23-11', 49: '30-11' };
-const LONG = {
-  45: 'maandag 2 november 2026', 46: 'maandag 9 november 2026', 47: 'maandag 16 november 2026',
-  48: 'maandag 23 november 2026', 49: 'maandag 30 november 2026'
-};
+const LONG = { 45: 'maandag 2 november 2026', 46: 'maandag 9 november 2026', 47: 'maandag 16 november 2026', 48: 'maandag 23 november 2026', 49: 'maandag 30 november 2026' };
 const SHORT = { 45: 'ma 2 nov', 46: 'ma 9 nov', 47: 'ma 16 nov', 48: 'ma 23 nov', 49: 'ma 30 nov' };
 const A = 'A';
-// name, points total after week 47, points [wk45, wk46, wk47] (A = absent),
-// pits total after week 47, pits [wk45, wk46, wk47] ('' = not filled in, as on the sheet)
+// name, points total after week 47, points [wk45, wk46, wk47] (A = absent; S<n> = slept, the 2 rounds played),
+// pits total after week 47, pits [wk45, wk46, wk47], times sat out this season (invented)
 const SHEET = [
-  ['Annie de Graaf', 198883, [4285, 4479, 4918], 53, [0, 3, 0]],
-  ['Kees Bakker', 194033, [4884, 4045, 5178], 34, [0, 1, 3]],
-  ['Joop Verhoeven', 192477, [4033, 4986, 5244], 53, [0, 2, 3]],
-  ['Riet Mulder', 191524, [4976, 4122, 4155], 43, [1, 1, 1]],
-  ['Corrie Smits', 191515, [4354, 4391, 6276], 63, [1, 1, 7]],
-  ['Piet de Wit', 190369, [4428, 4558, 4329], 45, [0, 3, 1]],
-  ['Marga Peters', 190030, [4423, 4940, A], 23, [1, 1, 0]],
-  ['Theo Jansen', 189968, [4622, 4639, 4440], 44, [1, 1, 3]],
-  ['Ria Bos', 188492, [4622, 5359, A], 36, [1, 5, 0]],
-  ['Nel Hendriks', 188100, [3998, 5156, 4083], 42, [2, 1, 3]],
-  ['Ton Dekker', 185938, [4378, 4710, 4826], 25, [1, 1, 1]],
-  ['Harrie van Dam', 185471, [4307, 4143, 4410], 44, [0, 1, 1]],
-  ['Gerrit Kok', 184139, [4473, 4651, 4905], 33, [1, 0, 5]],
-  ['Bep Willems', 184129, [A, 4613, 4521], 42, [0, 3, 2]],
-  ['Wilhelmina van Oosterhout', 183548, [4472, 4400, 4683], 23, [0, 1, 1]],
-  ['Sjaak Meijer', 179723, [4189, 4514, 3905], 10, [1, 2, '']],
-  ['Lenie Brouwer', 178308, [4774, 4270, 3678], 27, [1, 0, 1]],
-  ['Dineke Prins', 178236, [A, A, A], 36, [0, 0, 0]],
-  ['Frits Hoekstra', 178200, [4201, A, 4908], 26, [0, 0, 3]],
-  ['Mien Koster', 176013, [4527, 3811, 4381], 6, [1, 1, '']]
+  ['Annie de Graaf', 198883, [4285, 4479, 4918], 53, [0, 3, 0], 3],
+  ['Kees Bakker', 194033, [4884, 4045, 5178], 34, [0, 1, 3], 2],
+  ['Joop Verhoeven', 192477, [4033, 4986, 5244], 53, [0, 2, 3], 4],
+  ['Riet Mulder', 191524, [4976, 4122, 4155], 43, [1, 1, 1], 3],
+  ['Corrie Smits', 191515, [4354, 4391, 6276], 63, [1, 1, 7], 2],
+  ['Piet de Wit', 190369, [4428, 4558, 4329], 45, [0, 3, 1], 3],
+  ['Marga Peters', 190030, [4423, 4940, A], 23, [1, 1, 0], 1],
+  ['Theo Jansen', 189968, [4622, 4639, 4440], 44, [1, 1, 3], 2],
+  ['Ria Bos', 188492, [4622, 5359, A], 36, [1, 5, 0], 2],
+  ['Nel Hendriks', 188100, [3998, 5156, 4083], 42, [2, 1, 3], 4],
+  ['Ton Dekker', 185938, [4378, 4710, 'S1:3226'], 25, [1, 1, 1], 4],
+  ['Harrie van Dam', 185471, [4307, 4143, 'S2:2810'], 44, [0, 1, 1], 3],
+  ['Gerrit Kok', 184139, [4473, 4651, 4905], 33, [1, 0, 5], 1],
+  ['Bep Willems', 184129, [A, 4613, 4521], 42, [0, 3, 2], 2],
+  ['Wilhelmina van Oosterhout', 183548, [4472, 4400, 4683], 23, [0, 1, 1], 1],
+  ['Sjaak Meijer', 179723, [4189, 4514, 3905], 10, [1, 2, 1], 0],
+  ['Lenie Brouwer', 178308, [4774, 4270, 3678], 27, [1, 0, 1], 2],
+  ['Dineke Prins', 178236, [A, A, A], 36, [0, 0, 0], 1],
+  ['Frits Hoekstra', 178200, [4201, A, 4908], 26, [0, 0, 3], 2],
+  ['Mien Koster', 176013, [4527, 3811, 'S3:2781'], 6, [1, 1, 0], 2]
 ];
+const SUBS = [['Bert van Loon', { 45: 5292 }], ['Henny Dijkstra', {}], ['Gijs Mertens', {}]];
 const NO_EMAIL = ['Dineke Prins', 'Bep Willems'];
 
 const settings = {
-  absent: 4200,
-  day: 'maandag',
-  sender: 'Wedstrijdleiding Klaverjassen',
-  reply: 'pa@voorbeeld.nl',
-  subject: 'Standen week',
+  club: 'De Samenspelers', absent: 4200, sleep: 1600, day: 'maandag',
+  sender: 'Klaverjasclub De Samenspelers', reply: 'pa@voorbeeld.nl', subject: 'Standen week',
   link: 'https://klaverjas.gemberkoekje.nl/stand/k7f3-x9p2',
   colors: { first: '#ffff00', second: '#e9a3e4', third: '#5bb8ec', absent: '#92d88b' }
 };
+const holidays = [['maandag 6 april', 'Pasen'], ['maandag 4 mei', 'Dodenherdenking'], ['maandag 25 mei', 'Pinksteren']];
 
 function makeEmail(name) {
   const parts = name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z ]/g, '').split(/\s+/);
   return parts[0] + '.' + parts.slice(1).join('') + '@voorbeeld.nl';
 }
+function sheetWeek(v, pit) {
+  if (v === A) return { status: 'afwezig', round: 0, pts: '', pits: '' };
+  if (typeof v === 'string') { const [s, p] = v.split(':'); return { status: 'slaper', round: Number(s.slice(1)), pts: p, pits: String(pit) }; }
+  return { status: 'speelt', round: 0, pts: String(v), pits: String(pit) };
+}
 
 let nextId = 1;
-const players = SHEET.map(([name, total, pts, pitsTotal, pits]) => {
+const players = SHEET.map(([name, total, pts, pitsTotal, pits, sleeps]) => {
   const weeks = {};
-  [45, 46, 47].forEach((wk, j) => {
-    const absent = pts[j] === A;
-    weeks[wk] = { absent, pts: absent ? '' : String(pts[j]), pits: absent ? '' : String(pits[j]) };
-  });
-  const monthPts = pts.reduce((s, v) => s + (v === A ? 4200 : v), 0);
-  const monthPits = pits.reduce((s, v) => s + (Number(v) || 0), 0);
-  return {
-    id: nextId++, name, email: NO_EMAIL.includes(name) ? '' : makeEmail(name), active: true,
-    base: total - monthPts, basePits: pitsTotal - monthPits, weeks
-  };
+  [45, 46, 47].forEach((wk, j) => { weeks[wk] = sheetWeek(pts[j], pits[j]); });
+  const p = { id: nextId++, name, kind: 'lid', email: NO_EMAIL.includes(name) ? '' : makeEmail(name), active: true, sleeps, weeks, base: 0, basePits: 0 };
+  p.base = total - [45, 46, 47].reduce((s, wk) => s + scoreOf(weeks[wk], 4200, 1600), 0);
+  p.basePits = pitsTotal - [45, 46, 47].reduce((s, wk) => s + pitsOf(weeks[wk]), 0);
+  return p;
 });
-const subs = { 45: [{ name: 'Bert', pts: '5292', pits: '' }], 46: [], 47: [] };
+SUBS.forEach(([name, wks]) => {
+  const weeks = {};
+  Object.entries(wks).forEach(([wk, v]) => { weeks[wk] = { status: 'speelt', round: 0, pts: String(v), pits: '0' }; });
+  players.push({ id: nextId++, name, kind: 'invaller', email: makeEmail(name), active: true, sleeps: 0, weeks, base: 0, basePits: 0 });
+});
 
+// Evening states: 'voorbereid' (draw done, no result yet) or 'ingevuld' (result entered)
+const evenings = { 45: { state: 'ingevuld', sleepers: 9 }, 46: { state: 'ingevuld', sleepers: 6 }, 47: { state: 'ingevuld', sleepers: 3 } };
 let sent = { week: 47, at: 'maandag 16 november om 22:41', count: 18 };
-let changedSinceSend = false;
-let justSaved = false;
-let justSent = false;
+let changedSinceSend = false, justSaved = false, justSent = false;
 
 /* ---------------- Helpers ---------------- */
 const $ = s => document.querySelector(s);
@@ -589,36 +684,43 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;'
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 const byName = (a, b) => a.name.localeCompare(b.name, 'nl');
 const firstName = n => n.split(' ')[0];
+const members = () => players.filter(p => p.kind === 'lid');
+const subsList = () => players.filter(p => p.kind === 'invaller');
+const byId = id => players.find(p => p.id === Number(id));
 
-function savedWeeks() { return MONTH.filter(wk => players.some(p => p.weeks[wk])); }
-function latestWeek() { return Math.max(...savedWeeks()); }
-function scoreOf(w) { if (!w) return null; if (w.absent) return settings.absent; return w.pts === '' ? null : Number(w.pts); }
-function pitsOf(w) { return (!w || w.absent) ? 0 : (Number(w.pits) || 0); }
+function scoreOf(w, absent = settings.absent, sleep = settings.sleep) {
+  if (!w) return 0;
+  if (w.status === 'afwezig') return absent;
+  if (w.pts === '') return 0;
+  return Number(w.pts) + (w.status === 'slaper' ? sleep : 0);
+}
+function pitsOf(w) { return (!w || w.status === 'afwezig') ? 0 : (Number(w.pits) || 0); }
+function isDone(wk) { return evenings[wk] && evenings[wk].state === 'ingevuld'; }
+function doneWeeks() { return MONTH.filter(isDone); }
+function latestWeek() { return Math.max(...doneWeeks()); }
 function placeClass(place) { return place === 1 ? 'c1' : place === 2 ? 'c2' : place === 3 ? 'c3' : ''; }
 
 function compute() {
-  const rows = players.map(p => {
+  const rows = members().map(p => {
     let total = p.base, pits = p.basePits;
-    MONTH.forEach(wk => { const s = scoreOf(p.weeks[wk]); if (s !== null) total += s; pits += pitsOf(p.weeks[wk]); });
+    doneWeeks().forEach(wk => { total += scoreOf(p.weeks[wk]); pits += pitsOf(p.weeks[wk]); });
     return { p, total, pits };
   });
-  rankBy(rows, 'total', 'rank');
-  rankBy(rows, 'pits', 'pitsRank');
+  rows.forEach(r => { r.rank = 1 + rows.filter(o => o.total > r.total).length; r.pitsRank = 1 + rows.filter(o => o.pits > r.pits).length; });
   return rows;
 }
-function rankBy(rows, key, out) { rows.forEach(r => { r[out] = 1 + rows.filter(o => o[key] > r[key]).length; }); }
-
-// Scores of everyone who played that evening (members and substitutes); absent members don't count.
 function eveningScores(wk) {
-  const list = [];
-  players.forEach(p => { const w = p.weeks[wk]; if (w && !w.absent && w.pts !== '') list.push({ name: p.name, pts: Number(w.pts) }); });
-  (subs[wk] || []).forEach(s => { if (s.pts !== '') list.push({ name: s.name + ' (invaller)', pts: Number(s.pts) }); });
-  return list;
+  if (!isDone(wk)) return [];
+  return players.filter(p => { const w = p.weeks[wk]; return w && w.status !== 'afwezig' && w.pts !== ''; })
+    .map(p => ({ name: p.name + (p.kind === 'invaller' ? ' (invaller)' : ''), pts: scoreOf(p.weeks[wk]) }));
 }
-function placeIn(wk) { const scores = eveningScores(wk).map(e => e.pts); return v => 1 + scores.filter(s => s > v).length; }
+function placeIn(wk) { const s = eveningScores(wk).map(e => e.pts); return v => 1 + s.filter(x => x > v).length; }
 function winners(wk) {
   const place = placeIn(wk);
   return eveningScores(wk).map(e => ({ ...e, place: place(e.pts) })).filter(e => e.place <= 3).sort((a, b) => a.place - b.place || b.pts - a.pts);
+}
+function winnersHtml(wk) {
+  return winners(wk).map(w => `<li><span class="medal ${placeClass(w.place)}">${w.place}</span> ${esc(w.name)} <b>${w.pts}</b></li>`).join('');
 }
 
 /* ---------------- Standings tables (the sheet look) ---------------- */
@@ -627,308 +729,386 @@ function standTables() {
   const byPts = [...rows].sort((a, b) => a.rank - b.rank || byName(a.p, b.p));
   const byPits = [...rows].sort((a, b) => a.pitsRank - b.pitsRank || byName(a.p, b.p));
   const place = {}; MONTH.forEach(wk => { place[wk] = placeIn(wk); });
-  const weekHead = MONTH.map(wk => `<th>wk ${wk}<br>${DATE[wk]}</th>`).join('');
-
+  const cell = (p, wk) => {
+    const w = p.weeks[wk];
+    if (!isDone(wk) || !w || (w.status !== 'afwezig' && w.pts === '')) return '<td></td>';
+    if (w.status === 'afwezig') return `<td class="ca">${settings.absent}</td>`;
+    const v = scoreOf(w);
+    return `<td class="${placeClass(place[wk](v))}">${v}</td>`;
+  };
   let h = '<div class="stand-wrap"><div class="scroll"><table class="stand"><caption>Punten 2026</caption><thead>';
   h += '<tr><th rowspan="2">Plaats</th><th rowspan="2">Naam</th><th rowspan="2">Totaal</th><th rowspan="2">Verschil<br>met vorige</th><th colspan="5">November</th></tr>';
-  h += `<tr>${weekHead}</tr></thead><tbody>`;
+  h += `<tr>${MONTH.map(wk => `<th>wk ${wk}<br>${DATE[wk]}</th>`).join('')}</tr></thead><tbody>`;
   let prev = null;
   byPts.forEach(r => {
     const gap = prev === null ? 0 : prev - r.total; prev = r.total;
-    h += `<tr><td>${r.rank}</td><td class="nm">${esc(r.p.name)}</td><td class="tot ${placeClass(r.rank) || 'cr'}">${r.total}</td><td class="gap">${gap}</td>`;
-    MONTH.forEach(wk => {
-      const w = r.p.weeks[wk];
-      if (!w || (!w.absent && w.pts === '')) { h += '<td></td>'; return; }
-      if (w.absent) { h += `<td class="ca">${settings.absent}</td>`; return; }
-      const v = Number(w.pts);
-      h += `<td class="${placeClass(place[wk](v))}">${v}</td>`;
-    });
-    h += '</tr>';
+    h += `<tr><td>${r.rank}</td><td class="nm">${esc(r.p.name)}</td><td class="tot ${placeClass(r.rank) || 'cr'}">${r.total}</td><td class="gap">${gap}</td>${MONTH.map(wk => cell(r.p, wk)).join('')}</tr>`;
   });
-  // Substitutes: one row per name, under the table, not ranked
-  const subNames = [];
-  MONTH.forEach(wk => (subs[wk] || []).forEach(s => { if (s.name && !subNames.includes(s.name)) subNames.push(s.name); }));
-  subNames.forEach(n => {
-    h += `<tr class="sub"><td></td><td class="nm">${esc(n)} (invaller)</td><td></td><td></td>`;
-    MONTH.forEach(wk => {
-      const s = (subs[wk] || []).find(x => x.name === n && x.pts !== '');
-      h += s ? `<td class="${placeClass(place[wk](Number(s.pts)))}">${Number(s.pts)}</td>` : '<td></td>';
-    });
-    h += '</tr>';
+  subsList().filter(s => MONTH.some(wk => isDone(wk) && s.weeks[wk])).forEach(s => {
+    h += `<tr class="sub"><td></td><td class="nm">${esc(s.name)} (invaller)</td><td></td><td></td>${MONTH.map(wk => cell(s, wk)).join('')}</tr>`;
   });
   h += '</tbody></table>';
-  h += `<div class="legend"><span class="c1">1e plaats</span><span class="c2">2e plaats</span><span class="c3">3e plaats</span><span class="ca">Niet aanwezig</span></div></div>`;
-
+  h += '<div class="legend"><span class="c1">1e plaats</span><span class="c2">2e plaats</span><span class="c3">3e plaats</span><span class="ca">Niet aanwezig</span></div></div>';
   h += '<div class="scroll"><table class="stand"><caption>Pitten 2026</caption><thead>';
   h += '<tr><th rowspan="2">Plaats</th><th rowspan="2">Naam</th><th rowspan="2">Totaal</th><th colspan="5">November</th></tr>';
   h += `<tr>${MONTH.map(wk => `<th>wk ${wk}</th>`).join('')}</tr></thead><tbody>`;
   byPits.forEach(r => {
     h += `<tr><td>${r.pitsRank}</td><td class="nm">${esc(r.p.name)}</td><td class="tot ${placeClass(r.pitsRank) || 'cr'}">${r.pits}</td>`;
-    MONTH.forEach(wk => {
-      const w = r.p.weeks[wk];
-      h += `<td>${!w ? '' : w.absent ? '0' : esc(w.pits)}</td>`;
-    });
+    MONTH.forEach(wk => { const w = r.p.weeks[wk]; h += `<td>${!isDone(wk) || !w ? '' : w.status === 'afwezig' ? '0' : esc(w.pits)}</td>`; });
     h += '</tr>';
   });
   h += '</tbody><tfoot><tr><td></td><td class="nm">Week totalen</td><td></td>';
-  MONTH.forEach(wk => {
-    const has = players.some(p => p.weeks[wk]);
-    h += `<td>${has ? players.reduce((s, p) => s + pitsOf(p.weeks[wk]), 0) : ''}</td>`;
-  });
+  MONTH.forEach(wk => { h += `<td>${isDone(wk) ? members().reduce((s, p) => s + pitsOf(p.weeks[wk]), 0) : ''}</td>`; });
   h += '</tr></tfoot></table></div></div>';
   return h;
 }
 
-function winnersHtml(wk) {
-  return winners(wk).map(w => `<li><span class="medal ${placeClass(w.place)}">${w.place}</span> ${esc(w.name)} <b>${w.pts}</b></li>`).join('');
-}
-
 /* ---------------- Views and screens ---------------- */
-let currentView = 'admin';
 let currentScreen = 'avonden';
-
 function setView(v) {
-  currentView = v;
   ['admin', 'mail', 'public', 'login'].forEach(x => { $('#view-' + x).hidden = x !== v; });
   document.querySelectorAll('.mockbar [data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === v)));
-  if (v === 'admin') show(currentScreen === 'invoer' ? 'invoer' : currentScreen);
+  if (v === 'admin') show(currentScreen);
   if (v === 'mail') renderMail();
   if (v === 'public') renderPhone();
   window.scrollTo(0, 0);
 }
-
 function show(screen) {
   currentScreen = screen;
-  ['avonden', 'invoer', 'stand', 'spelers', 'instellingen'].forEach(s => { $('#s-' + s).hidden = s !== screen; });
-  const tab = screen === 'invoer' ? 'avonden' : screen;
-  document.querySelectorAll('nav.tabs [data-go]').forEach(b => {
-    if (b.dataset.go === tab) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
-  });
+  ['avonden', 'voorbereiden', 'invoer', 'stand', 'spelers', 'instellingen'].forEach(s => { $('#s-' + s).hidden = s !== screen; });
+  const tab = (screen === 'invoer' || screen === 'voorbereiden') ? 'avonden' : screen;
+  document.querySelectorAll('nav.tabs [data-go]').forEach(b => { if (b.dataset.go === tab) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
   $('#savebar').hidden = screen !== 'invoer';
   $('#admin-main').classList.toggle('has-savebar', screen === 'invoer');
-  ({ avonden: renderEvenings, invoer: renderEntry, stand: renderStand, spelers: renderPlayers, instellingen: renderSettings })[screen]();
+  document.querySelectorAll('.club-name').forEach(e => { e.textContent = settings.club; });
+  document.querySelectorAll('.absent-score').forEach(e => { e.textContent = settings.absent; });
+  document.querySelectorAll('.sleep-score').forEach(e => { e.textContent = settings.sleep; });
+  ({ avonden: renderEvenings, voorbereiden: renderPrep, invoer: renderEntry, stand: renderStand, spelers: renderPlayers, instellingen: renderSettings })[screen]();
   window.scrollTo(0, 0);
+}
+function segHtml(status, allowAbsent = true) {
+  const opts = [['speelt', 'Speelt'], ['slaper', 'Slaper']].concat(allowAbsent ? [['afwezig', 'Afwezig']] : []);
+  return `<span class="seg" role="group" aria-label="Status">${opts.map(([v, l]) => `<button type="button" data-st="${v}" aria-pressed="${status === v}">${l}</button>`).join('')}</span>`;
+}
+function roundSelect(round) {
+  return `<select class="round" aria-label="Stil in ronde">${[1, 2, 3].map(r => `<option value="${r}" ${round === r ? 'selected' : ''}>ronde ${r}</option>`).join('')}</select>`;
 }
 
 /* ---------------- Avonden ---------------- */
+function nextWeek() { return MONTH.find(wk => !isDone(wk)) || 49; }
 function renderEvenings() {
-  const latest = latestWeek();
-  const next = latest + 1;
-  $('#next-when').innerHTML = next <= 49 ? `${cap(LONG[next])} <span class="muted" style="font-weight:400">(week ${next})</span>` : 'Maandag 7 december 2026 <span class="muted" style="font-weight:400">(week 50)</span>';
-  const active = players.filter(p => p.active).length;
+  const next = nextWeek();
+  $('#next-when').innerHTML = `${cap(LONG[next])} <span class="muted" style="font-weight:400">(week ${next})</span>`;
+  const st = evenings[next];
+  $('#next-state').textContent = st && st.state === 'voorbereid' ? '✓ Voorbereid: tafels geloot, kaartjes klaar. Na de avond: Uitslag invullen.' : 'Nog niet voorbereid.';
+  $('#btn-prep').textContent = st ? 'Voorbereiding bekijken' : 'Avond voorbereiden';
+  $('#btn-prep').className = st ? 'btn secondary' : 'btn big';
+  $('#btn-result').className = st ? 'btn big' : 'btn secondary';
   let h = '';
-  [...savedWeeks()].reverse().forEach(wk => {
-    const present = players.filter(p => p.weeks[wk] && !p.weeks[wk].absent).length;
-    const total = players.filter(p => p.weeks[wk]).length;
-    const sb = (subs[wk] || []).map(s => esc(s.name)).join(', ') || '–';
+  [...MONTH].reverse().filter(wk => evenings[wk]).forEach(wk => {
+    const ws = players.map(p => p.weeks[wk]).filter(Boolean);
+    const playing = ws.filter(w => w.status !== 'afwezig').length;
+    const sleepers = ws.filter(w => w.status === 'slaper').length;
     let status;
-    if (wk === sent.week) status = changedSinceSend ? '<span class="status-warn">Gewijzigd na versturen</span>' : `<span class="status-ok">✓ Verstuurd</span><br><span class="muted" style="font-size:1rem">${esc(sent.at)}</span>`;
+    if (!isDone(wk)) status = '<span class="status-open">Voorbereid, uitslag nog invullen</span>';
+    else if (wk === sent.week) status = changedSinceSend ? '<span class="status-warn">Gewijzigd na versturen</span>' : `<span class="status-ok">✓ Verstuurd</span><br><span class="muted" style="font-size:1rem">${esc(sent.at)}</span>`;
     else if (wk < sent.week) status = '<span class="status-ok">✓ Verstuurd</span>';
     else status = '<span class="status-open">Nog niet verstuurd</span>';
-    h += `<tr><td><b>${cap(SHORT[wk])}</b></td><td>${wk}</td><td>${present} van ${total}</td><td>${sb}</td><td>${status}</td>
-      <td style="text-align:right"><button type="button" class="btn secondary small" data-edit="${wk}">Wijzigen</button></td></tr>`;
+    h += `<tr><td><b>${cap(SHORT[wk])}</b></td><td>${wk}</td><td>${playing}</td><td>${wk === 47 || wk > 47 ? sleepers : evenings[wk].sleepers}</td><td>${status}</td>
+      <td style="text-align:right; white-space:nowrap">${isDone(wk) ? `<button type="button" class="btn secondary small" data-edit="${wk}">Wijzigen</button>` : `<button type="button" class="btn small" data-edit="${wk}">Uitslag invullen</button>`}</td></tr>`;
   });
-  [[44, 'Ma 26 okt', 19], [43, 'Ma 19 okt', 18]].forEach(([wk, d, n]) => {
-    h += `<tr><td><b>${d}</b></td><td>${wk}</td><td>${n} van ${active}</td><td>–</td><td><span class="status-ok">✓ Verstuurd</span></td>
-      <td style="text-align:right"><button type="button" class="btn secondary small" data-old="1">Wijzigen</button></td></tr>`;
-  });
+  h += '<tr><td><b>Ma 26 okt</b></td><td>44</td><td>19</td><td>9</td><td><span class="status-ok">✓ Verstuurd</span></td><td style="text-align:right"><button type="button" class="btn secondary small" data-old="1">Wijzigen</button></td></tr>';
+  h += '<tr class="off"><td>Ma 25 mei</td><td>22</td><td colspan="4">Geen klaverjassen: Pinksteren</td></tr>';
   $('#evenings').innerHTML = h;
 }
 
-/* ---------------- Entry ---------------- */
-let editWeek = null, draft = null, draftSubs = null, editIsNew = false;
+/* ---------------- Avond voorbereiden ---------------- */
+let prepWeek = null, prep = null;
+function openPrep(wk) {
+  prepWeek = wk;
+  if (evenings[wk]) {
+    prep = { st: {}, subs: [], plan: evenings[wk].plan, numbers: evenings[wk].numbers };
+    players.forEach(p => { const w = p.weeks[wk]; if (!w) return; if (p.kind === 'invaller') prep.subs.push(p.id); prep.st[p.id] = { status: w.status, round: w.round }; });
+  } else {
+    prep = { st: {}, subs: [], plan: null, numbers: null };
+    members().filter(p => p.active).forEach(p => { prep.st[p.id] = { status: ['Dineke Prins', 'Marga Peters', 'Ria Bos'].includes(p.name) ? 'afwezig' : 'speelt', round: 0 }; });
+    autoSleepers();
+  }
+  show('voorbereiden');
+}
+function prepPeople() { return Object.keys(prep.st).map(byId).filter(Boolean); }
+function sleepersPerRound(n) { return n % 4; }
+function autoSleepers() {
+  const ids = Object.keys(prep.st);
+  ids.forEach(id => { if (prep.st[id].status === 'slaper') prep.st[id] = { status: 'speelt', round: 0 }; });
+  const playing = ids.filter(id => prep.st[id].status !== 'afwezig');
+  const s = sleepersPerRound(playing.length);
+  const pick = playing.filter(id => byId(id).kind === 'lid').map(byId).sort((a, b) => a.sleeps - b.sleeps || byName(a, b)).slice(0, 3 * s);
+  pick.forEach((p, i) => { prep.st[p.id] = { status: 'slaper', round: (i % 3) + 1 }; });
+  prep.plan = null;
+}
+function renderPrep() {
+  $('#prep-date').textContent = `${cap(LONG[prepWeek])} (week ${prepWeek})`;
+  $('#prep-rows').innerHTML = members().filter(p => prep.st[p.id]).sort(byName).map(p => {
+    const s = prep.st[p.id];
+    return `<tr data-id="${p.id}" class="is-${s.status}"><td class="name">${esc(p.name)}</td><td>${segHtml(s.status)}</td>
+      <td>${s.status === 'slaper' ? roundSelect(s.round) : ''}</td><td class="muted">${p.sleeps}×</td></tr>`;
+  }).join('');
+  $('#prep-subs').innerHTML = prep.subs.length ? `<table class="entry"><tbody>${prep.subs.map(id => {
+    const p = byId(id), s = prep.st[id];
+    return `<tr data-id="${id}"><td class="name">${esc(p.name)}</td><td>${segHtml(s.status, false)}</td><td>${s.status === 'slaper' ? roundSelect(s.round) : ''}</td>
+      <td><button type="button" class="btn danger small" data-unsub="${id}">Weghalen</button></td></tr>`;
+  }).join('')}</tbody></table>` : '<p class="muted" style="margin:0">Vanavond geen invallers.</p>';
+  $('#prep-sub-pick').innerHTML = subsList().filter(s => !prep.subs.includes(s.id)).map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  renderPrepCount();
+  renderPlan();
+}
+function prepCheck() {
+  const ppl = prepPeople().filter(p => prep.st[p.id].status !== 'afwezig');
+  const n = ppl.length, s = sleepersPerRound(n);
+  const perRound = [1, 2, 3].map(r => ({ r, sleep: ppl.filter(p => prep.st[p.id].status === 'slaper' && prep.st[p.id].round === r).length }));
+  perRound.forEach(x => { x.play = n - x.sleep; x.ok = x.play % 4 === 0 && x.play > 0; });
+  return { n, s, perRound, ok: perRound.every(x => x.ok) };
+}
+function renderPrepCount() {
+  const c = prepCheck();
+  let h = `<p class="count-line" style="margin-bottom:.5rem"><b>${c.n}</b> spelers vanavond → <b>${Math.floor(c.n / 4)}</b> tafels, per ronde <b>${c.s}</b> ${c.s === 1 ? 'slaper' : 'slapers'} (${3 * c.s} in totaal).</p>`;
+  h += '<ul style="margin:0 0 1rem; padding-left:1.25rem">' + c.perRound.map(x => `<li>Ronde ${x.r}: ${x.play} spelen, ${x.sleep} stil ${x.ok ? '<span class="status-ok">✓</span>' : `<span class="status-warn">— ${x.play} gaat niet op in tafels van 4</span>`}</li>`).join('') + '</ul>';
+  h += `<div class="actions"><button type="button" class="btn big" id="btn-draw" ${c.ok ? '' : 'disabled style="opacity:.5;cursor:not-allowed"'}>Loten en tafels indelen</button>
+    <button type="button" class="btn secondary" id="btn-auto">Kies de slapers voor mij</button></div>`;
+  $('#prep-count').innerHTML = h;
+}
 
+// Seeded random, so "Opnieuw loten" gives a new plan and the same plan comes back after a reload.
+let seed = 47;
+function rnd() { seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const pairKey = (a, b) => a < b ? a + '-' + b : b + '-' + a;
+function draw() {
+  const ppl = prepPeople().filter(p => prep.st[p.id].status !== 'afwezig');
+  const sleepers = [1, 2, 3].flatMap(r => ppl.filter(p => prep.st[p.id].status === 'slaper' && prep.st[p.id].round === r));
+  const rest = shuffle(ppl.filter(p => prep.st[p.id].status !== 'slaper'));
+  prep.numbers = {}; [...sleepers, ...rest].forEach((p, i) => { prep.numbers[p.id] = i + 1; });
+  const rounds = [1, 2, 3].map(r => ppl.filter(p => !(prep.st[p.id].status === 'slaper' && prep.st[p.id].round === r)).map(p => p.id));
+  for (let attempt = 0; attempt < 400; attempt++) {
+    const met = new Set(), plan = []; let ok = true;
+    for (const playing of rounds) {
+      let tables = null;
+      for (let t = 0; t < 400 && !tables; t++) {
+        const s = shuffle([...playing]), tb = []; let good = true;
+        for (let i = 0; i < s.length && good; i += 4) {
+          const g = s.slice(i, i + 4);
+          for (let x = 0; x < 4 && good; x++) for (let y = x + 1; y < 4; y++) if (met.has(pairKey(g[x], g[y]))) { good = false; break; }
+          tb.push(g);
+        }
+        if (good) tables = tb;
+      }
+      if (!tables) { ok = false; break; }
+      tables.forEach(g => { for (let x = 0; x < 4; x++) for (let y = x + 1; y < 4; y++) met.add(pairKey(g[x], g[y])); });
+      plan.push(tables);
+    }
+    if (ok) { prep.plan = plan; return; }
+  }
+  prep.plan = rounds.map(playing => { const s = shuffle([...playing]), tb = []; for (let i = 0; i < s.length; i += 4) tb.push(s.slice(i, i + 4)); return tb; });
+}
+function nameNr(id) { const p = byId(id); return `${esc(p.name)} <span class="nr">(${prep.numbers[id]})</span>`; }
+function planHtml() {
+  return prep.plan.map((tables, i) => {
+    const r = i + 1;
+    const stil = prepPeople().filter(p => prep.st[p.id].status === 'slaper' && prep.st[p.id].round === r);
+    return `<div class="round"><h3>Ronde ${r}</h3><table>${tables.map((g, t) => `<tr><td class="t">Tafel ${t + 1}</td><td>${nameNr(g[0])} &amp; ${nameNr(g[1])}<br><span class="vs">tegen</span> ${nameNr(g[2])} &amp; ${nameNr(g[3])}</td></tr>`).join('')}
+      ${stil.length ? `<tr><td class="t stil">Stil</td><td class="stil">${stil.map(p => nameNr(p.id)).join(', ')}</td></tr>` : ''}</table></div>`;
+  }).join('');
+}
+function renderPlan() {
+  $('#prep-plan-card').hidden = !prep.plan;
+  if (prep.plan) $('#prep-plan').innerHTML = planHtml();
+}
+function savePrep() {
+  Object.entries(prep.st).forEach(([id, s]) => {
+    const p = byId(id), old = p.weeks[prepWeek];
+    p.weeks[prepWeek] = { status: s.status, round: s.round, pts: old ? old.pts : '', pits: old ? old.pits : '' };
+  });
+  players.forEach(p => { if (p.kind === 'invaller' && p.weeks[prepWeek] && !prep.st[p.id]) delete p.weeks[prepWeek]; });
+  evenings[prepWeek] = { ...(evenings[prepWeek] || { state: 'voorbereid' }), plan: prep.plan, numbers: prep.numbers };
+}
+function cardsHtml() {
+  const ppl = prepPeople().filter(p => prep.st[p.id].status !== 'afwezig').sort((a, b) => prep.numbers[a.id] - prep.numbers[b.id]);
+  return `<div class="cards">${ppl.map(p => {
+    const s = prep.st[p.id];
+    const rows = [1, 2, 3].map(r => s.status === 'slaper' && s.round === r ? `<tr><td>${r}</td><td class="stil" colspan="2">stil: ${settings.sleep}</td></tr>` : `<tr><td>${r}</td><td></td><td></td></tr>`).join('');
+    return `<div class="scard"><div class="club"><span>"${esc(settings.club)}"</span>${s.status === 'slaper' ? `<span class="tag">slaper ${s.round}</span>` : ''}</div>
+      <div>Naam: <b>${esc(p.name)}</b></div><div>Nummer: <b>${prep.numbers[p.id]}</b> · ${SHORT[prepWeek]}</div>
+      <table><tr><th>Ronde</th><th>Punten</th><th>Pitten</th></tr>${rows}<tr><th>Totaal</th><td></td><td></td></tr></table></div>`;
+  }).join('')}</div>`;
+}
+
+/* ---------------- Uitslag invullen ---------------- */
+let editWeek = null, draft = null, editIsNew = false;
 function openEntry(wk) {
   editWeek = wk;
-  editIsNew = !players.some(p => p.weeks[wk]);
+  editIsNew = !isDone(wk);
   draft = {};
-  players.filter(p => p.active || p.weeks[wk]).forEach(p => {
+  players.forEach(p => {
     const w = p.weeks[wk];
-    draft[p.id] = w ? { ...w } : { absent: false, pts: '', pits: '' };
+    if (w) draft[p.id] = { ...w };
+    else if (p.kind === 'lid' && p.active && !evenings[wk]) draft[p.id] = { status: 'speelt', round: 0, pts: '', pits: '' };
   });
-  draftSubs = (subs[wk] || []).map(s => ({ ...s }));
   show('invoer');
 }
-
-function renderEntry() {
-  $('#entry-title').textContent = editIsNew ? 'Avond invoeren' : 'Avond wijzigen';
-  $('#entry-date').textContent = `${cap(LONG[editWeek])} (week ${editWeek})`;
-  $('#entry-date-input').hidden = true;
-  document.querySelectorAll('.absent-score').forEach(e => { e.textContent = settings.absent; });
-  const list = players.filter(p => draft[p.id]).sort(byName);
-  $('#entry-rows').innerHTML = list.map(rowHtml).join('');
-  document.querySelectorAll('#entry-rows tr').forEach(checkRow);
-  renderSubs();
-  updateFacts();
-}
-
-function rowHtml(p) {
+function entryRow(p) {
   const d = draft[p.id];
-  return `<tr data-id="${p.id}" class="${d.absent ? 'is-absent' : ''}">
+  return `<tr data-id="${p.id}" class="is-${d.status}">
     <td class="name">${esc(p.name)}</td>
-    <td><label class="present"><input type="checkbox" class="chk" ${d.absent ? '' : 'checked'}> Aanwezig</label></td>
-    <td><input class="num pts" inputmode="numeric" autocomplete="off" aria-label="Punten van ${esc(p.name)}" value="${d.absent ? settings.absent : esc(d.pts)}" ${d.absent ? 'disabled' : ''}></td>
-    <td><input class="num pits" inputmode="numeric" autocomplete="off" aria-label="Pitten van ${esc(p.name)}" value="${d.absent ? '' : esc(d.pits)}" ${d.absent ? 'disabled' : ''}></td>
+    <td style="white-space:nowrap">${segHtml(d.status, p.kind === 'lid')}${d.status === 'slaper' ? ' ' + roundSelect(d.round) : ''}</td>
+    <td><input class="num pts" inputmode="numeric" autocomplete="off" aria-label="Punten van ${esc(p.name)}" value="${d.status === 'afwezig' ? settings.absent : esc(d.pts)}" ${d.status === 'afwezig' ? 'disabled' : ''}></td>
+    <td><input class="num pits" inputmode="numeric" autocomplete="off" aria-label="Pitten van ${esc(p.name)}" value="${d.status === 'afwezig' ? '' : esc(d.pits)}" ${d.status === 'afwezig' ? 'disabled' : ''}></td>
     <td class="hint"></td></tr>`;
 }
-
+function renderEntry() {
+  $('#entry-title').textContent = editIsNew ? 'Uitslag invullen' : 'Uitslag wijzigen';
+  $('#entry-date').textContent = `${cap(LONG[editWeek])} (week ${editWeek})`;
+  const ids = Object.keys(draft).map(byId);
+  $('#entry-rows').innerHTML = ids.filter(p => p.kind === 'lid').sort(byName).map(entryRow).join('');
+  const subs = ids.filter(p => p.kind === 'invaller').sort(byName);
+  $('#subs-rows').innerHTML = subs.map(entryRow).join('');
+  $('#subs-table').hidden = subs.length === 0;
+  $('#subs-empty').hidden = subs.length > 0;
+  $('#sub-pick').innerHTML = subsList().filter(s => !draft[s.id]).map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('') + '<option value="new">Nieuwe invaller…</option>';
+  document.querySelectorAll('#entry-rows tr, #subs-rows tr').forEach(checkRow);
+  updateFacts();
+}
 function rowProblem(d) {
-  if (d.absent) return { text: `Niet aanwezig: krijgt ${settings.absent} punten`, kind: 'absent' };
-  if (d.pts === '') return { text: 'Punten nog invullen', kind: 'warn', field: 'pts' };
+  if (d.status === 'afwezig') return { text: `Afwezig: krijgt ${settings.absent} punten`, kind: 'info' };
+  if (d.pts === '') return { text: d.status === 'slaper' ? 'Punten van 2 rondes invullen' : 'Punten nog invullen', kind: 'warn', field: 'pts' };
   if (!/^\d+$/.test(d.pts)) return { text: 'Alleen cijfers, graag', kind: 'bad', field: 'pts' };
-  if (Number(d.pts) < 2500) return { text: 'Klopt dit? Erg weinig punten', kind: 'warn', field: 'pts' };
-  if (Number(d.pts) > 8000) return { text: 'Klopt dit? Erg veel punten', kind: 'warn', field: 'pts' };
+  const tot = scoreOf(d);
+  if (tot < 2500) return { text: 'Klopt dit? Erg weinig punten', kind: 'warn', field: 'pts' };
+  if (tot > 8000) return { text: 'Klopt dit? Erg veel punten', kind: 'warn', field: 'pts' };
   if (d.pits === '') return { text: 'Pitten leeg (telt als 0)', kind: 'warn', field: 'pits' };
   if (!/^\d+$/.test(d.pits)) return { text: 'Alleen cijfers, graag', kind: 'bad', field: 'pits' };
   if (Number(d.pits) > 12) return { text: 'Klopt dit? Erg veel pitten', kind: 'warn', field: 'pits' };
+  if (d.status === 'slaper') return { text: `+ ${settings.sleep} (stil in ronde ${d.round}) = ${tot}`, kind: 'info' };
   return null;
 }
-
 function checkRow(tr) {
-  const d = draft[tr.dataset.id];
-  const pr = rowProblem(d);
-  const hint = tr.querySelector('.hint');
+  const d = draft[tr.dataset.id], pr = rowProblem(d), hint = tr.querySelector('.hint');
   hint.className = 'hint' + (pr ? ' ' + pr.kind : '');
   hint.textContent = pr ? pr.text : '';
   tr.querySelectorAll('input.num').forEach(i => i.classList.remove('flag', 'bad'));
   if (pr && pr.field) tr.querySelector('input.' + pr.field).classList.add(pr.kind === 'bad' ? 'bad' : 'flag');
 }
-
 function updateFacts() {
-  const ds = Object.values(draft);
-  const present = ds.filter(d => !d.absent).length;
-  const absent = ds.length - present;
-  const pits = ds.reduce((s, d) => s + (d.absent ? 0 : Number(d.pits) || 0), 0);
-  const noPts = ds.filter(d => !d.absent && d.pts === '').length;
-  const nSubs = draftSubs.filter(s => s.name.trim()).length;
-  let h = `<span><b>${present}</b> aanwezig</span><span><b>${absent}</b> niet aanwezig</span><span><b>${nSubs}</b> ${nSubs === 1 ? 'invaller' : 'invallers'}</span><span><b>${pits}</b> pitten</span>`;
+  const ds = Object.entries(draft), lid = ds.filter(([id]) => byId(id).kind === 'lid').map(([, d]) => d);
+  const playing = ds.filter(([, d]) => d.status !== 'afwezig').length;
+  const sleepers = ds.filter(([, d]) => d.status === 'slaper').length;
+  const absent = lid.filter(d => d.status === 'afwezig').length;
+  const pits = lid.reduce((s, d) => s + pitsOf(d), 0);
+  const noPts = ds.filter(([, d]) => d.status !== 'afwezig' && d.pts === '').length;
+  let h = `<span><b>${playing}</b> gespeeld</span><span><b>${sleepers}</b> slapers</span><span><b>${absent}</b> afwezig</span><span><b>${pits}</b> pitten</span>`;
   if (noPts) h += `<span class="todo">Nog ${noPts} keer punten invullen</span>`;
   $('#facts').innerHTML = h;
 }
-
-function renderSubs() {
-  $('#subs-rows').innerHTML = draftSubs.map((s, i) => `<tr data-i="${i}">
-    <td><input class="text subname" list="sub-names" value="${esc(s.name)}" placeholder="Naam" aria-label="Naam van de invaller"></td>
-    <td><input class="num pts" inputmode="numeric" value="${esc(s.pts)}" aria-label="Punten van de invaller"></td>
-    <td><input class="num pits" inputmode="numeric" value="${esc(s.pits)}" aria-label="Pitten van de invaller"></td>
-    <td><button type="button" class="btn danger small" data-remove="${i}">Weghalen</button></td></tr>`).join('');
-  $('#subs-table').hidden = draftSubs.length === 0;
-  $('#subs-empty').hidden = draftSubs.length > 0;
-}
-
 function focusNext(input) {
-  const all = [...document.querySelectorAll('#s-invoer input.num:not(:disabled), #s-invoer input.subname')];
+  const all = [...document.querySelectorAll('#s-invoer input.num:not(:disabled)')];
   const i = all.indexOf(input);
-  if (i >= 0 && i < all.length - 1) { all[i + 1].focus(); all[i + 1].select(); }
-  else $('#btn-save').focus();
+  if (i >= 0 && i < all.length - 1) { all[i + 1].focus(); all[i + 1].select(); } else $('#btn-save').focus();
 }
-
 function trySave() {
-  const missing = players.filter(p => draft[p.id] && !draft[p.id].absent && draft[p.id].pts === '').map(p => p.name);
-  const bad = players.filter(p => { const pr = draft[p.id] && rowProblem(draft[p.id]); return pr && pr.kind === 'bad'; }).map(p => p.name);
+  const ids = Object.keys(draft);
+  const missing = ids.filter(id => { const d = draft[id]; return d.status !== 'afwezig' && d.pts === ''; }).map(id => byId(id).name);
+  const bad = ids.filter(id => { const pr = rowProblem(draft[id]); return pr && pr.kind === 'bad'; }).map(id => byId(id).name);
   if (missing.length || bad.length) {
     const list = [...new Set([...missing, ...bad])];
-    modal('Nog niet helemaal klaar',
-      `<p>Bij ${list.length === 1 ? 'deze speler' : 'deze spelers'} klopt het nog niet:</p><p><b>${list.map(esc).join(', ')}</b></p>
-       <p>Vul de punten in, of klik het vinkje bij <b>Aanwezig</b> weg als iemand er niet was.</p>`,
-      [{ label: 'Terug naar invullen', primary: true }]);
+    modal('Nog niet helemaal klaar', `<p>Bij ${list.length === 1 ? 'deze speler' : 'deze spelers'} klopt het nog niet:</p><p><b>${list.map(esc).join(', ')}</b></p><p>Vul de punten in, of zet de status op <b>Afwezig</b> als iemand er niet was.</p>`, [{ label: 'Terug naar invullen', primary: true }]);
     return;
   }
-  const emptyPits = players.filter(p => draft[p.id] && !draft[p.id].absent && draft[p.id].pits === '').map(p => p.name);
+  const emptyPits = ids.filter(id => { const d = draft[id]; return d.status !== 'afwezig' && d.pits === ''; }).map(id => byId(id).name);
   if (emptyPits.length) {
-    modal('Pitten leeg',
-      `<p>Bij ${emptyPits.length === 1 ? 'deze speler is' : 'deze spelers zijn'} de pitten leeg:</p><p><b>${emptyPits.map(esc).join(', ')}</b></p><p>Zal ik daar 0 invullen?</p>`,
-      [{ label: 'Ja, 0 invullen en opslaan', primary: true, run: () => { players.forEach(p => { const d = draft[p.id]; if (d && !d.absent && d.pits === '') d.pits = '0'; }); commit(); } },
-       { label: 'Nee, ik vul ze zelf in' }]);
+    modal('Pitten leeg', `<p>Bij ${emptyPits.length === 1 ? 'deze speler zijn' : 'deze spelers zijn'} de pitten leeg:</p><p><b>${emptyPits.map(esc).join(', ')}</b></p><p>Zal ik daar 0 invullen?</p>`,
+      [{ label: 'Ja, 0 invullen en opslaan', primary: true, run: () => { ids.forEach(id => { const d = draft[id]; if (d.status !== 'afwezig' && d.pits === '') d.pits = '0'; }); commit(); } }, { label: 'Nee, ik vul ze zelf in' }]);
     return;
   }
   commit();
 }
-
 function commit() {
-  players.forEach(p => { if (draft[p.id]) p.weeks[editWeek] = { ...draft[p.id] }; });
-  subs[editWeek] = draftSubs.filter(s => s.name.trim()).map(s => ({ name: s.name.trim(), pts: s.pts, pits: s.pits }));
+  players.forEach(p => { if (draft[p.id]) p.weeks[editWeek] = { ...draft[p.id] }; else if (p.kind === 'invaller') delete p.weeks[editWeek]; });
+  evenings[editWeek] = { ...(evenings[editWeek] || {}), state: 'ingevuld' };
   if (sent && editWeek <= sent.week) changedSinceSend = true;
   justSaved = true;
   show('stand');
 }
 
 /* ---------------- Stand versturen ---------------- */
-function recipients() { return players.filter(p => p.active && p.email); }
-
+function recipients() { return members().filter(p => p.active && p.email); }
+function subjectFor(wk) { return `${settings.subject} ${wk}` + (sent.week === wk && changedSinceSend ? ' (verbeterd)' : ''); }
 function renderStand() {
-  const wk = latestWeek();
-  const isSent = sent.week === wk;
+  const wk = latestWeek(), isSent = sent.week === wk;
   $('#stand-title').textContent = `Stand na week ${wk}`;
   $('#stand-sub').textContent = cap(LONG[wk]);
-  $('#stand-winners').innerHTML = `<li class="muted">Winnaars van de avond:</li>` + winnersHtml(wk);
+  $('#stand-winners').innerHTML = '<li class="muted">Winnaars van de avond:</li>' + winnersHtml(wk);
   $('#stand-tables').innerHTML = standTables();
-
   $('#step-check').className = justSent ? 'done' : 'now';
   $('#step-send').className = justSent ? 'done' : '';
-  $('#step-check .n').textContent = justSent ? '✓' : '2';
-  $('#step-send .n').textContent = justSent ? '✓' : '3';
+  $('#step-check .n').textContent = justSent ? '✓' : '3';
+  $('#step-send .n').textContent = justSent ? '✓' : '4';
   let b = '';
   if (justSent) b = `<div class="banner ok big"><p>✓ Verstuurd! ${sent.count} e-mails zijn onderweg.</p></div>`;
-  else if (isSent && changedSinceSend) b = `<div class="banner warn"><p><b>U heeft iets gewijzigd nadat de stand verstuurd is.</b><br>Verstuur de verbeterde stand, dan hebben de spelers de goede cijfers.</p></div>`;
-  else if (justSaved) b = `<div class="banner ok"><p><b>De avond is opgeslagen.</b> Kijk of de stand klopt en verstuur hem dan.</p></div>`;
+  else if (isSent && changedSinceSend) b = '<div class="banner warn"><p><b>U heeft iets gewijzigd nadat de stand verstuurd is.</b><br>Verstuur de verbeterde stand, dan hebben de spelers de goede cijfers.</p></div>';
+  else if (justSaved) b = '<div class="banner ok"><p><b>De uitslag is opgeslagen.</b> Kijk of de stand klopt en verstuur hem dan.</p></div>';
   else if (isSent) b = `<div class="banner ok"><p>Deze stand is al verstuurd: ${esc(sent.at)}, naar ${sent.count} spelers.</p></div>`;
   $('#stand-banner').innerHTML = b;
   justSaved = false; justSent = false;
-
-  const sendBtn = $('#btn-send');
-  sendBtn.textContent = isSent ? (changedSinceSend ? 'Verbeterde stand versturen' : 'Nog een keer versturen') : 'Verstuur naar alle spelers';
-  const missing = players.filter(p => p.active && !p.email).map(p => p.name);
-  $('#no-email').innerHTML = `De e-mail gaat naar <b>${recipients().length} spelers</b>.` +
-    (missing.length ? ` ${missing.length === 1 ? 'Deze speler heeft' : 'Deze spelers hebben'} geen e-mailadres: <b>${missing.map(esc).join(', ')}</b>. Print de PDF voor ${missing.length === 1 ? 'die speler' : 'hen'}.` : '');
+  $('#btn-send').textContent = isSent ? (changedSinceSend ? 'Verbeterde stand versturen' : 'Nog een keer versturen') : 'Verstuur naar alle spelers';
+  const missing = members().filter(p => p.active && !p.email).map(p => p.name);
+  $('#no-email').innerHTML = `De e-mail gaat naar <b>${recipients().length} leden</b>.` + (missing.length ? ` ${missing.length === 1 ? 'Deze speler heeft' : 'Deze spelers hebben'} geen e-mailadres: <b>${missing.map(esc).join(', ')}</b>. Print de PDF voor ${missing.length === 1 ? 'die speler' : 'hen'}.` : '');
 }
-
-function subjectFor(wk) { return `${settings.subject} ${wk}` + (sent.week === wk && changedSinceSend ? ' (verbeterd)' : ''); }
 
 /* ---------------- Spelers ---------------- */
 let editingPlayer = null;
 function renderPlayers() {
-  $('#players-rows').innerHTML = [...players].sort(byName).map(p => {
+  const kindLabel = k => k === 'lid' ? 'Lid' : 'Invaller';
+  const list = [...members().sort(byName), ...subsList().sort(byName)];
+  $('#players-rows').innerHTML = list.map(p => {
     if (p.id === editingPlayer) {
-      return `<tr data-pid="${p.id}"><td><input class="text" id="ed-name" value="${esc(p.name)}" aria-label="Naam"></td>
-        <td><input class="text" id="ed-email" value="${esc(p.email)}" aria-label="E-mailadres"></td>
-        <td><select id="ed-active" aria-label="Doet mee?"><option value="1" ${p.active ? 'selected' : ''}>Doet mee</option><option value="0" ${p.active ? '' : 'selected'}>Gestopt</option></select></td>
-        <td style="white-space:nowrap; text-align:right"><button type="button" class="btn small" data-psave="${p.id}">Opslaan</button> <button type="button" class="btn secondary small" data-pcancel="1">Annuleren</button></td></tr>`;
+      return `<tr><td colspan="5"><div class="inline" style="gap:.6rem 1rem">
+        <input class="text" id="ed-name" value="${esc(p.name)}" aria-label="Naam" style="max-width:18rem">
+        <select id="ed-kind" aria-label="Soort" style="max-width:9rem"><option value="lid" ${p.kind === 'lid' ? 'selected' : ''}>Lid</option><option value="invaller" ${p.kind === 'invaller' ? 'selected' : ''}>Invaller</option></select>
+        <input class="text" id="ed-email" value="${esc(p.email)}" placeholder="E-mailadres" aria-label="E-mailadres" style="max-width:18rem">
+        <input class="text" placeholder="Telefoon" aria-label="Telefoon" style="max-width:11rem">
+        <input class="text" placeholder="Adres" aria-label="Adres" style="max-width:16rem">
+        <input class="text" placeholder="Verjaardag, bijv. 5 februari" aria-label="Verjaardag" style="max-width:15rem">
+        <select id="ed-active" aria-label="Doet mee?" style="max-width:10rem"><option value="1" ${p.active ? 'selected' : ''}>Doet mee</option><option value="0" ${p.active ? '' : 'selected'}>Gestopt</option></select>
+        <button type="button" class="btn small" data-psave="${p.id}">Opslaan</button> <button type="button" class="btn secondary small" data-pcancel="1">Annuleren</button></div></td></tr>`;
     }
-    return `<tr><td><b>${esc(p.name)}</b></td><td>${p.email ? esc(p.email) : '<span class="muted">geen e-mail</span>'}</td>
-      <td>${p.active ? 'Doet mee' : '<span class="muted">Gestopt</span>'}</td>
-      <td style="text-align:right"><button type="button" class="btn secondary small" data-pedit="${p.id}">Wijzigen</button></td></tr>`;
+    return `<tr><td><b>${esc(p.name)}</b></td><td>${kindLabel(p.kind)}</td><td>${p.email ? esc(p.email) : '<span class="muted">geen e-mail</span>'}</td>
+      <td>${p.active ? 'Doet mee' : '<span class="muted">Gestopt</span>'}</td><td style="text-align:right"><button type="button" class="btn secondary small" data-pedit="${p.id}">Wijzigen</button></td></tr>`;
   }).join('');
 }
 
 /* ---------------- Instellingen ---------------- */
 function renderSettings() {
+  $('#set-club').value = settings.club;
   $('#set-absent').value = settings.absent;
+  $('#set-sleep').value = settings.sleep;
   $('#set-day').value = settings.day;
   $('#set-sender').value = settings.sender;
   $('#set-reply').value = settings.reply;
   $('#set-subject').value = settings.subject;
   $('#subject-example').textContent = `${settings.subject} ${latestWeek()}`;
   $('#set-link').value = settings.link;
-  $('#col-first').value = settings.colors.first;
-  $('#col-second').value = settings.colors.second;
-  $('#col-third').value = settings.colors.third;
-  $('#col-absent').value = settings.colors.absent;
+  ['first', 'second', 'third', 'absent'].forEach(k => { $('#col-' + k).value = settings.colors[k]; });
+  $('#holidays').innerHTML = holidays.map(([d, why], i) => `<tr><td>${esc(d)}</td><td>${esc(why)}</td><td style="text-align:right"><button type="button" class="btn danger small" data-unhol="${i}">Weghalen</button></td></tr>`).join('');
 }
 function applyColors() {
   const r = document.documentElement.style;
-  r.setProperty('--c-first', settings.colors.first);
-  r.setProperty('--c-second', settings.colors.second);
-  r.setProperty('--c-third', settings.colors.third);
-  r.setProperty('--c-absent', settings.colors.absent);
+  r.setProperty('--c-first', settings.colors.first); r.setProperty('--c-second', settings.colors.second);
+  r.setProperty('--c-third', settings.colors.third); r.setProperty('--c-absent', settings.colors.absent);
 }
 
 /* ---------------- The mail ---------------- */
 function renderMail() {
-  const wk = latestWeek();
-  const rows = compute();
-  const top = [...rows].sort((a, b) => a.rank - b.rank)[0];
-  const note = $('#note').value.trim();
+  const wk = latestWeek(), rows = compute(), top = [...rows].sort((a, b) => a.rank - b.rank)[0], note = $('#note').value.trim();
   $('#mail').innerHTML = `
     <div class="mail-head">
       <div class="subject">${esc(subjectFor(wk))}</div>
@@ -951,14 +1131,13 @@ function renderMail() {
 
 /* ---------------- Players' page (phone) ---------------- */
 function renderPhone() {
-  const wk = latestWeek();
-  const rows = compute();
+  const wk = latestWeek(), rows = compute();
   const byPts = [...rows].sort((a, b) => a.rank - b.rank || byName(a.p, b.p));
   const byPits = [...rows].sort((a, b) => a.pitsRank - b.pitsRank || byName(a.p, b.p));
   const place = placeIn(wk);
-  const cell = r => { const w = r.p.weeks[wk]; if (!w) return ''; if (w.absent) return `<td class="r ca">${settings.absent}</td>`; return w.pts === '' ? '<td></td>' : `<td class="r ${placeClass(place(Number(w.pts)))}">${w.pts}</td>`; };
+  const cell = r => { const w = r.p.weeks[wk]; if (!w) return '<td></td>'; if (w.status === 'afwezig') return `<td class="r ca">${settings.absent}</td>`; const v = scoreOf(w); return `<td class="r ${placeClass(place(v))}">${v}</td>`; };
   $('#phone').innerHTML = `
-    <div class="p-head"><span aria-hidden="true">♣</span> Klaverjassen 2026</div>
+    <div class="p-head"><span aria-hidden="true">♣</span> ${esc(settings.club)} 2026</div>
     <div class="p-body">
       <h2>Stand na week ${wk}</h2>
       <p class="muted" style="margin:0">${cap(LONG[wk])}</p>
@@ -969,29 +1148,28 @@ function renderPhone() {
       </tbody></table>
       <h3>Pitten</h3>
       <table class="ptab"><thead><tr><th class="pl">#</th><th>Naam</th><th class="r">Pitten</th><th class="r">wk ${wk}</th></tr></thead><tbody>
-      ${byPits.map(r => { const w = r.p.weeks[wk]; return `<tr><td class="pl ${placeClass(r.pitsRank)}">${r.pitsRank}</td><td>${esc(r.p.name)}</td><td class="r"><b>${r.pits}</b></td><td class="r">${!w ? '' : w.absent ? '0' : esc(w.pits)}</td></tr>`; }).join('')}
+      ${byPits.map(r => { const w = r.p.weeks[wk]; return `<tr><td class="pl ${placeClass(r.pitsRank)}">${r.pitsRank}</td><td>${esc(r.p.name)}</td><td class="r"><b>${r.pits}</b></td><td class="r">${!w ? '' : w.status === 'afwezig' ? '0' : esc(w.pits)}</td></tr>`; }).join('')}
       </tbody></table>
       <p class="muted" style="font-size:.9rem">Op een computer ziet u alle weken van de maand. Vragen? Antwoord op de e-mail.</p>
     </div>`;
 }
 
 /* ---------------- Modal ---------------- */
-function modal(title, html, buttons) {
+function modal(title, html, buttons, wide = false) {
+  $('#modal-box').classList.toggle('wide', wide);
   $('#modal-title').textContent = title;
   $('#modal-text').innerHTML = html;
-  const box = $('#modal-actions');
-  box.innerHTML = '';
+  const box = $('#modal-actions'); box.innerHTML = '';
   buttons.forEach(b => {
     const el = document.createElement('button');
-    el.type = 'button';
-    el.className = 'btn' + (b.primary ? ' big' : ' secondary');
-    el.textContent = b.label;
+    el.type = 'button'; el.className = 'btn' + (b.primary ? ' big' : ' secondary'); el.textContent = b.label;
     el.addEventListener('click', () => { $('#modal').classList.remove('open'); if (b.run) b.run(); });
     box.appendChild(el);
   });
   $('#modal').classList.add('open');
   box.firstChild.focus();
 }
+const ok = [{ label: 'Oké', primary: true }];
 
 /* ---------------- Events ---------------- */
 document.addEventListener('click', e => {
@@ -1000,102 +1178,110 @@ document.addEventListener('click', e => {
   if (t.dataset.view) { setView(t.dataset.view); return; }
   if (t.dataset.go) { show(t.dataset.go); return; }
   if (t.dataset.edit) { openEntry(Number(t.dataset.edit)); return; }
-  if (t.dataset.old) { modal('Alleen in het echt', '<p>In dit ontwerp zijn alleen de avonden van november te openen. In het echte programma kunt u elke avond wijzigen.</p>', [{ label: 'Oké', primary: true }]); return; }
-  if (t.dataset.remove !== undefined) { draftSubs.splice(Number(t.dataset.remove), 1); renderSubs(); updateFacts(); return; }
+  if (t.dataset.old) { modal('Alleen in het echt', '<p>In dit ontwerp zijn alleen de avonden van november te openen. In het echte programma kunt u elke avond wijzigen.</p>', ok); return; }
+  if (t.dataset.st) {
+    const tr = t.closest('tr'), id = tr.dataset.id, st = t.dataset.st;
+    if (t.closest('#s-voorbereiden')) {
+      prep.st[id] = { status: st, round: st === 'slaper' ? (prep.st[id].round || 1) : 0 }; prep.plan = null; renderPrep();
+    } else {
+      const d = draft[id]; d.status = st; d.round = st === 'slaper' ? (d.round || 1) : 0; if (st === 'afwezig') { d.pts = ''; d.pits = ''; }
+      tr.outerHTML = entryRow(byId(id));
+      const fresh = document.querySelector(`#s-invoer tr[data-id="${id}"]`); checkRow(fresh); updateFacts();
+      const inp = fresh.querySelector('input.pts:not(:disabled)'); if (inp) inp.focus();
+    }
+    return;
+  }
+  if (t.dataset.unsub) { const id = Number(t.dataset.unsub); prep.subs = prep.subs.filter(x => x !== id); delete prep.st[id]; prep.plan = null; renderPrep(); return; }
+  if (t.dataset.unhol !== undefined) { holidays.splice(Number(t.dataset.unhol), 1); renderSettings(); return; }
   if (t.dataset.pedit) { editingPlayer = Number(t.dataset.pedit); renderPlayers(); $('#ed-name').focus(); return; }
   if (t.dataset.pcancel) { editingPlayer = null; renderPlayers(); return; }
   if (t.dataset.psave) {
-    const p = players.find(x => x.id === Number(t.dataset.psave));
-    const old = p.name;
-    p.name = $('#ed-name').value.trim() || p.name;
-    p.email = $('#ed-email').value.trim();
-    p.active = $('#ed-active').value === '1';
+    const p = byId(t.dataset.psave), old = p.name;
+    p.name = $('#ed-name').value.trim() || p.name; p.email = $('#ed-email').value.trim(); p.kind = $('#ed-kind').value; p.active = $('#ed-active').value === '1';
     editingPlayer = null;
     $('#players-banner').innerHTML = `<div class="banner ok"><p>Opgeslagen.${old !== p.name ? ` Overal staat nu <b>${esc(p.name)}</b> in plaats van ${esc(old)}.` : ''}</p></div>`;
-    renderPlayers();
-    return;
+    renderPlayers(); return;
   }
+  if (t.id === 'btn-draw') { draw(); savePrep(); renderPlan(); $('#prep-plan-card').scrollIntoView({ behavior: 'smooth' }); return; }
+  if (t.id === 'btn-auto') { autoSleepers(); renderPrep(); return; }
+});
+document.addEventListener('change', e => {
+  if (!e.target.classList.contains('round')) return;
+  const id = e.target.closest('tr').dataset.id, r = Number(e.target.value);
+  if (e.target.closest('#s-voorbereiden')) { prep.st[id].round = r; prep.plan = null; renderPrep(); }
+  else { draft[id].round = r; checkRow(e.target.closest('tr')); }
 });
 
-$('#btn-new-evening').addEventListener('click', () => { const n = latestWeek() + 1; if (n <= 49) openEntry(n); else modal('November is vol', '<p>In dit ontwerp gaat het alleen over november.</p>', [{ label: 'Oké', primary: true }]); });
-$('#btn-older').addEventListener('click', () => modal('Oudere avonden', '<p>Hier komen alle avonden vanaf januari, uit de Excel van Pa.</p>', [{ label: 'Oké', primary: true }]));
-$('#btn-other-date').addEventListener('click', () => { const i = $('#entry-date-input'); i.hidden = !i.hidden; if (!i.hidden) i.focus(); });
-$('#btn-cancel').addEventListener('click', () => modal('Annuleren?', '<p>Wat u net hebt ingetypt, wordt niet bewaard.</p>',
-  [{ label: 'Nee, verder met invullen', primary: true }, { label: 'Ja, niet bewaren', run: () => show('avonden') }]));
+$('#btn-prep').addEventListener('click', () => openPrep(nextWeek()));
+$('#btn-result').addEventListener('click', () => openEntry(nextWeek()));
+$('#btn-older').addEventListener('click', () => modal('Oudere avonden', '<p>Hier komen alle avonden vanaf januari, uit de Excel van Pa.</p>', ok));
+$('#btn-prep-add-sub').addEventListener('click', () => { const id = Number($('#prep-sub-pick').value); if (!id) return; prep.subs.push(id); prep.st[id] = { status: 'speelt', round: 0 }; prep.plan = null; renderPrep(); });
+$('#btn-prep-new-sub').addEventListener('click', () => modal('Nieuwe invaller', '<p>Hier typt u de naam (en eventueel het e-mailadres) van de invaller. Die komt dan in de lijst bij Spelers, zodat u hem een volgende keer kunt kiezen.</p>', ok));
+$('#btn-redraw').addEventListener('click', () => { draw(); savePrep(); renderPlan(); });
+$('#btn-print-cards').addEventListener('click', () => modal('Kaartjes printen', `<p class="help">Zo komen de kaartjes op papier (6 per A4). De slapers krijgen hun stille ronde al ingevuld.</p>${cardsHtml()}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true));
+$('#btn-print-plan').addEventListener('click', () => modal('Tafelindeling printen', `<p class="help">Eén A4 voor aan de muur of op de tafels.</p><div class="rounds">${planHtml()}</div>`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true));
+$('#btn-prep-done').addEventListener('click', () => { savePrep(); show('avonden'); });
+$('#btn-cancel').addEventListener('click', () => modal('Annuleren?', '<p>Wat u net hebt ingetypt, wordt niet bewaard.</p>', [{ label: 'Nee, verder met invullen', primary: true }, { label: 'Ja, niet bewaren', run: () => show('avonden') }]));
 $('#btn-save').addEventListener('click', trySave);
-$('#btn-add-sub').addEventListener('click', () => { draftSubs.push({ name: '', pts: '', pits: '' }); renderSubs(); updateFacts(); const ins = document.querySelectorAll('#subs-rows input.subname'); ins[ins.length - 1].focus(); });
+$('#btn-add-sub').addEventListener('click', () => {
+  const v = $('#sub-pick').value;
+  if (v === 'new') { modal('Nieuwe invaller', '<p>Hier typt u de naam van de invaller. Die komt dan ook in de lijst bij Spelers.</p>', ok); return; }
+  draft[v] = { status: 'speelt', round: 0, pts: '', pits: '' }; renderEntry();
+  const inp = document.querySelector(`#subs-rows tr[data-id="${v}"] input.pts`); if (inp) inp.focus();
+});
 $('#btn-mockfill').addEventListener('click', () => {
   Object.values(draft).forEach(d => {
-    if (d.absent) return;
-    if (d.pts === '') d.pts = String(3600 + Math.floor(Math.random() * 2000));
-    if (d.pits === '') d.pits = String(Math.floor(Math.random() * 4));
+    if (d.status === 'afwezig') return;
+    if (d.pts === '') d.pts = String(d.status === 'slaper' ? 2400 + Math.floor(rnd() * 1300) : 3600 + Math.floor(rnd() * 2000));
+    if (d.pits === '') d.pits = String(Math.floor(rnd() * 4));
   });
   renderEntry();
 });
-
-$('#entry-rows').addEventListener('input', e => {
-  const tr = e.target.closest('tr'); const d = draft[tr.dataset.id];
+$('#s-invoer').addEventListener('input', e => {
+  const tr = e.target.closest('tr'); if (!tr || !tr.dataset.id) return;
+  const d = draft[tr.dataset.id];
   if (e.target.classList.contains('pts')) d.pts = e.target.value.trim();
   if (e.target.classList.contains('pits')) d.pits = e.target.value.trim();
   checkRow(tr); updateFacts();
 });
-$('#entry-rows').addEventListener('change', e => {
-  if (!e.target.classList.contains('chk')) return;
-  const tr = e.target.closest('tr'); const id = tr.dataset.id;
-  draft[id].absent = !e.target.checked;
-  const p = players.find(x => x.id === Number(id));
-  tr.outerHTML = rowHtml(p);
-  const fresh = document.querySelector(`#entry-rows tr[data-id="${id}"]`);
-  checkRow(fresh); updateFacts();
-  if (!draft[id].absent) fresh.querySelector('input.pts').focus(); else fresh.querySelector('.chk').focus();
-});
-$('#subs-rows').addEventListener('input', e => {
-  const s = draftSubs[Number(e.target.closest('tr').dataset.i)];
-  if (e.target.classList.contains('subname')) s.name = e.target.value;
-  if (e.target.classList.contains('pts')) s.pts = e.target.value.trim();
-  if (e.target.classList.contains('pits')) s.pits = e.target.value.trim();
-  updateFacts();
-});
-$('#s-invoer').addEventListener('keydown', e => {
-  if (e.key === 'Enter' && e.target.matches('input.num, input.subname')) { e.preventDefault(); focusNext(e.target); }
-});
+$('#s-invoer').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('input.num')) { e.preventDefault(); focusNext(e.target); } });
 
 $('#btn-fix').addEventListener('click', () => openEntry(latestWeek()));
-$('#btn-test').addEventListener('click', () => modal('Proefmail verstuurd', `<p>Er is een proefmail gestuurd naar <b>${esc(settings.reply)}</b>.</p><p>Kijk in uw e-mail of alles goed staat. De spelers hebben nog niets gekregen.</p>`, [{ label: 'Oké', primary: true }]));
-$('#btn-pdf').addEventListener('click', () => modal('PDF', '<p>In het echte programma opent hier de PDF: een A4 (liggend) die eruitziet als de stand op dit scherm, net als de PDF van nu. Die kunt u printen voor wie geen e-mail heeft.</p>', [{ label: 'Oké', primary: true }]));
+$('#btn-test').addEventListener('click', () => modal('Proefmail verstuurd', `<p>Er is een proefmail gestuurd naar <b>${esc(settings.reply)}</b>.</p><p>Kijk in uw e-mail of alles goed staat. De spelers hebben nog niets gekregen.</p>`, ok));
+$('#btn-pdf').addEventListener('click', () => modal('PDF', '<p>In het echte programma opent hier de PDF: een A4 (liggend) met de punten en de pitten naast elkaar, net als de PDF van nu. Die kunt u printen voor wie geen e-mail heeft.</p>', ok));
 $('#btn-send').addEventListener('click', () => {
-  const wk = latestWeek(); const n = recipients().length;
+  const wk = latestWeek(), n = recipients().length;
   $('#step-send').className = 'now'; $('#step-check').className = 'done'; $('#step-check .n').textContent = '✓';
-  modal(`Stand van week ${wk} versturen?`,
-    `<p>De e-mail <b>"${esc(subjectFor(wk))}"</b> gaat naar <b>${n} spelers</b>.</p><p>Ziet u daarna nog een fout? Dan kunt u die verbeteren en de stand opnieuw versturen.</p>`,
+  modal(`Stand van week ${wk} versturen?`, `<p>De e-mail <b>"${esc(subjectFor(wk))}"</b> gaat naar <b>${n} leden</b>.</p><p>Ziet u daarna nog een fout? Dan kunt u die verbeteren en de stand opnieuw versturen.</p>`,
     [{ label: 'Ja, versturen', primary: true, run: () => { sent = { week: wk, at: 'zojuist', count: n }; changedSinceSend = false; justSent = true; renderStand(); window.scrollTo(0, 0); } },
-     { label: 'Nee, nog niet', run: () => { $('#step-check').className = 'now'; $('#step-send').className = ''; $('#step-check .n').textContent = '2'; } }]);
+     { label: 'Nee, nog niet', run: () => { $('#step-check').className = 'now'; $('#step-send').className = ''; $('#step-check .n').textContent = '3'; } }]);
 });
-
+$('#btn-print-members').addEventListener('click', () => modal('Ledenlijst printen', '<p>In het echte programma komt hier de ledenlijst op papier: naam, adres, postcode, woonplaats, telefoon, verjaardag en e-mail, zoals nu in Excel.</p>', ok));
 $('#btn-add-player').addEventListener('click', () => {
   const name = $('#new-name').value.trim(); if (!name) { $('#new-name').focus(); return; }
-  players.push({ id: nextId++, name, email: $('#new-email').value.trim(), active: true, base: 0, basePits: 0, weeks: {} });
+  const kind = $('#new-kind').value;
+  players.push({ id: nextId++, name, kind, email: $('#new-email').value.trim(), active: true, sleeps: 0, base: 0, basePits: 0, weeks: {} });
   $('#new-name').value = ''; $('#new-email').value = '';
-  $('#players-banner').innerHTML = `<div class="banner ok"><p><b>${esc(name)}</b> is toegevoegd en staat vanaf de volgende avond op het invulscherm.</p></div>`;
+  $('#players-banner').innerHTML = `<div class="banner ok"><p><b>${esc(name)}</b> is toegevoegd als ${kind === 'lid' ? 'lid' : 'invaller'}.</p></div>`;
   renderPlayers();
 });
-
+$('#btn-add-hol').addEventListener('click', () => { const d = $('#hol-date').value.trim(); if (!d) { $('#hol-date').focus(); return; } holidays.push([d, $('#hol-why').value.trim() || '–']); $('#hol-date').value = ''; $('#hol-why').value = ''; renderSettings(); });
 ['first', 'second', 'third', 'absent'].forEach(k => $('#col-' + k).addEventListener('input', e => { settings.colors[k] = e.target.value; applyColors(); }));
 $('#set-subject').addEventListener('input', e => { $('#subject-example').textContent = `${e.target.value} ${latestWeek()}`; });
-$('#btn-copy').addEventListener('click', () => modal('Gekopieerd', '<p>De link is gekopieerd. U kunt hem in een e-mail plakken.</p>', [{ label: 'Oké', primary: true }]));
+$('#btn-copy').addEventListener('click', () => modal('Gekopieerd', '<p>De link is gekopieerd. U kunt hem in een e-mail plakken.</p>', ok));
 $('#btn-newlink').addEventListener('click', () => modal('Nieuwe link maken?', '<p>De oude link werkt dan niet meer. De volgende e-mail bevat vanzelf de nieuwe link.</p>',
-  [{ label: 'Ja, nieuwe link', primary: true, run: () => { settings.link = 'https://klaverjas.gemberkoekje.nl/stand/' + Math.random().toString(36).slice(2, 6) + '-' + Math.random().toString(36).slice(2, 6); $('#set-link').value = settings.link; } },
-   { label: 'Nee' }]));
+  [{ label: 'Ja, nieuwe link', primary: true, run: () => { settings.link = 'https://klaverjas.gemberkoekje.nl/stand/' + Math.floor(rnd() * 1e8).toString(36); $('#set-link').value = settings.link; } }, { label: 'Nee' }]));
 $('#btn-save-settings').addEventListener('click', () => {
-  const a = parseInt($('#set-absent').value, 10);
-  if (!Number.isNaN(a) && a > 0) settings.absent = a;
+  const num = (sel, cur) => { const v = parseInt($(sel).value, 10); return !Number.isNaN(v) && v > 0 ? v : cur; };
+  settings.club = $('#set-club').value.trim() || settings.club;
+  settings.absent = num('#set-absent', settings.absent);
+  settings.sleep = num('#set-sleep', settings.sleep);
   settings.day = $('#set-day').value;
   settings.sender = $('#set-sender').value.trim() || settings.sender;
   settings.reply = $('#set-reply').value.trim() || settings.reply;
   settings.subject = $('#set-subject').value.trim() || settings.subject;
   $('#settings-banner').innerHTML = '<div class="banner ok"><p><b>Opgeslagen.</b> De stand rekent vanaf nu met deze instellingen.</p></div>';
-  renderSettings();
-  window.scrollTo(0, 0);
+  show('instellingen');
 });
 
 show('avonden');
