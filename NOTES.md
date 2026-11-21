@@ -3269,6 +3269,17 @@ and the geneaducatie entry above: this is the same setup with another name.
 - **After the merge:** both addresses show the mock (the certificate can take a minute or two), and
   `curl -I` shows `X-Robots-Tag: noindex, nofollow`.
 
+## 2026-11-21 — klaverjas: mock version 2
+
+- **Change:** only the page (`apps/klaverjas/index.html`) and a header line in `deployment.yaml`. The
+  mock now follows the two workbooks the club uses today. It adds an "Avond voorbereiden" screen (who
+  plays, sits out or is absent, the draw, the table plan, printing score cards), statuses on the
+  entry screen (a slaper gets 1600 for the round sat out), substitutes kept in the member list, and
+  evenings without play. The member names are still invented. The plan is `Klaverjas/PLAN.md` in
+  Gemberkoekje/projects.
+- **After the merge:** the ConfigMap's hashed name changes, so the pod rolls by itself.
+  `https://klaverjas.gemberkoekje.nl` then shows "Avond voorbereiden" on the Avonden screen.
+
 ## 2026-11-21 — SpaceTraders: one alert per ship anomaly, and 3 cores
 
 To understand this, read the `spacetraders-ship-anomalies` rule (and the comment above it) in
