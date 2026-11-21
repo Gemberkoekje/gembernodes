@@ -472,7 +472,7 @@ data:
             for: 1m
             annotations:
               summary: 'Prometheus has not scraped the SpaceTraders bot for 10 minutes'
-          # The database size limits have a rule of their own below.
+          # The database size limits and the ships' anomalies have rules of their own below.
           - uid: spacetraders-anomaly
             title: SpaceTraders anomaly active
             condition: C
@@ -484,7 +484,7 @@ data:
                 datasourceUid: prometheus
                 model:
                   refId: A
-                  expr: 'max by (rule, subject) (spacetraders_anomaly_active{namespace="spacetraders", rule!~"DbSize.*"})'
+                  expr: 'max by (rule, subject) (spacetraders_anomaly_active{namespace="spacetraders", rule!~"DbSize.*|ShipLeftIdle|ShipStuck"})'
                   instant: true
               - refId: C
                 datasourceUid: "__expr__"
@@ -502,6 +502,50 @@ data:
             for: 15m
             annotations:
               summary: 'SpaceTraders anomaly {{ $labels.rule }} on {{ $labels.subject }} has been active for 15 minutes'
+          # The anomalies of single ships, one alert per rule (ShipLeftIdle, ShipStuck) instead of one per
+          # ship. Per ship, every ship that crossed 15 minutes or cleared changed the alert group and sent
+          # a mail: when the bot's plan tick slows down, dozens of probes go idle and clear in turn
+          # (2026-11-21: a 14-minute tick, ~89 mails in 72 hours from ShipLeftIdle alone). A counts the
+          # ships with the anomaly, and 0 while the rule has none, so the alert ends by its condition and
+          # keepFiringFor applies. It fires once ships have had it for 15 minutes on end (not
+          # necessarily the same ship) and ends an hour after the last one clears, so a slow tick mails
+          # once at its start and once at its end; over those 72 hours, about 5 mails. The count in the
+          # mail is the one at the time; the dashboard's "Active anomalies" table lists the ships.
+          # missing_series_evals_to_resolve: a restart takes the series away for a few minutes; that
+          # alone doesn't end it.
+          - uid: spacetraders-ship-anomalies
+            title: SpaceTraders ships with an anomaly
+            condition: C
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 600
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  refId: A
+                  expr: 'count by (rule) (max by (rule, subject) (spacetraders_anomaly_active{namespace="spacetraders", rule=~"ShipLeftIdle|ShipStuck"}) == 1) or (max by (rule) (spacetraders_anomaly_active{namespace="spacetraders", rule=~"ShipLeftIdle|ShipStuck"}) * 0)'
+                  instant: true
+              - refId: C
+                datasourceUid: "__expr__"
+                model:
+                  refId: C
+                  type: threshold
+                  expression: A
+                  conditions:
+                    - evaluator:
+                        type: gt
+                        params:
+                          - 0
+            noDataState: OK
+            execErrState: Error
+            for: 15m
+            keepFiringFor: 1h
+            missing_series_evals_to_resolve: 15
+            annotations:
+              summary: 'SpaceTraders anomaly {{ $labels.rule }} is active on {{ printf "%.0f" $values.A.Value }} ships, and has been on at least one for 15 minutes'
+              __dashboardUid__: spacetraders
+              __panelId__: "20"
           # The database shares the Postgres volume with every app: over the soft limit (the
           # Database.SoftLimitMegabytes setting, 1 GB by default) warns; over the hard limit
           # (3 GB) the bot switches its automation off.

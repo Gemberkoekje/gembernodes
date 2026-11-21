@@ -3268,3 +3268,36 @@ and the geneaducatie entry above: this is the same setup with another name.
 - **Later:** the real app will take over `klaverjas.gemberkoekje.nl`, and this Caddy app goes when it does.
 - **After the merge:** both addresses show the mock (the certificate can take a minute or two), and
   `curl -I` shows `X-Robots-Tag: noindex, nofollow`.
+
+## 2026-11-21 — SpaceTraders: one alert per ship anomaly, and 3 cores
+
+To understand this, read the `spacetraders-ship-anomalies` rule (and the comment above it) in
+[infrastructure/monitoring/grafana-alerting-provisioning.yaml](infrastructure/monitoring/grafana-alerting-provisioning.yaml),
+then the `resources` block of the `spacetraders-api` container in
+[apps/spacetraders/deployment-api.yaml](apps/spacetraders/deployment-api.yaml).
+
+- **The complaint:** Grafana sent 85 mails, and as many Home Assistant notifications, in 16 hours
+  (`grafana_alerting_notifications_total` on `/grafana/metrics`, counted from Grafana's start at
+  02:24Z). About half came from "SpaceTraders anomaly active", half from "SpaceTraders logged errors".
+- **The cause of both:** the bot used 1.8 of its 2 cores and was CFS-throttled in about half of the
+  scheduling periods. Its plan tick took ~14 minutes (about 11 seconds on 2026-11-16, early in the run):
+  the probes wait a tick for their next market, so dozens of them raised `ShipLeftIdle` and cleared it
+  in turn, and arrival handlers ran past Wolverine's 60-second default and were retried (each one an
+  Error line). The work grows with the markets the explorers find: the trade list covers 6,841
+  markets and takes 268 s a build. Cutting that work is the SpaceTraders repo's job (B94 there).
+- **The alert:** "SpaceTraders anomaly active" was one alert per (rule, ship). Each ship that crossed
+  15 minutes or cleared changed the group and sent a mail. `ShipLeftIdle` and `ShipStuck` now have a
+  rule of their own: the number of ships per rule, `for: 15m`, `keepFiringFor: 1h`. A simulation on the
+  72 hours before (Prometheus at 1-minute steps, `group_wait` 1m and `group_interval` 5m) gave about
+  89 mails from `ShipLeftIdle` the old way, about 81 counting ships without `keepFiringFor`, and about
+  5 with it. The other anomalies (`ApiThrottled`, `RepeatingError`, ...) stay one alert per subject.
+  The key names come from Grafana's `AlertRuleV1` (`keepFiringFor`, `missing_series_evals_to_resolve`);
+  the file-provisioning docs don't list them.
+- **The CPU:** the limit goes from 2 to 3 cores. gembernode-03, where the pod ran, used 1.8 of its 4
+  cores; gembernode-02 used 0.3. The request stays 100m.
+- **Not changed:** "SpaceTraders logged errors". Its mails should fall with the throttling.
+- **After the merge:** the pod restarts once (Recreate, a few minutes at ~250 ships) and the limit
+  reads 3. The rule change needs a Grafana restart
+  (`kubectl -n monitoring rollout restart deployment grafana`). Then Grafana's alert list shows
+  "SpaceTraders ships with an anomaly", and the plan tick should be faster: count it from the `Tick`
+  property in Loki, `max(max_over_time({namespace="spacetraders"} | json | Tick=~"[0-9]+" | unwrap Tick [30m]))`.
