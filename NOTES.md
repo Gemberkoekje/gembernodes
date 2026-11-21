@@ -3306,9 +3306,13 @@ then the `resources` block of the `spacetraders-api` container in
   the file-provisioning docs don't list them.
 - **The CPU:** the limit goes from 2 to 3 cores. gembernode-03, where the pod ran, used 1.8 of its 4
   cores; gembernode-02 used 0.3. The request stays 100m.
+- **The image:** the api and webui images go to `fc49fb2f`, the merge of projects#272: SpaceTraders
+  slice 6.75, which measures the bot's loops (`spacetraders_plan_tick_seconds`,
+  `spacetraders_plan_pass_seconds{plan}`, `spacetraders_step_round_seconds`,
+  `spacetraders_trade_list_build_seconds`). The slow-tick alert that reads them comes in a later PR.
 - **Not changed:** "SpaceTraders logged errors". Its mails should fall with the throttling.
-- **After the merge:** the pod restarts once (Recreate, a few minutes at ~250 ships) and the limit
-  reads 3. The rule change needs a Grafana restart
+- **After the merge:** the pod restarts once (Recreate, a few minutes at ~250 ships) on `fc49fb2f`,
+  and the limit reads 3. The rule change needs a Grafana restart
   (`kubectl -n monitoring rollout restart deployment grafana`). Then Grafana's alert list shows
-  "SpaceTraders ships with an anomaly", and the plan tick should be faster: count it from the `Tick`
-  property in Loki, `max(max_over_time({namespace="spacetraders"} | json | Tick=~"[0-9]+" | unwrap Tick [30m]))`.
+  "SpaceTraders ships with an anomaly", `spacetraders_plan_tick_seconds` has a value after the first
+  tick, and the tick should be faster than the ~14 minutes before.
