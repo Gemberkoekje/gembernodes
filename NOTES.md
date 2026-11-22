@@ -3316,3 +3316,42 @@ then the `resources` block of the `spacetraders-api` container in
   (`kubectl -n monitoring rollout restart deployment grafana`). Then Grafana's alert list shows
   "SpaceTraders ships with an anomaly", `spacetraders_plan_tick_seconds` has a value after the first
   tick, and the tick should be faster than the ~14 minutes before.
+
+## 2026-11-22 — SpaceTraders: the error alert mails once a stretch, and the backup moves to 01:00
+
+To understand this, read the comments above the `spacetraders-error-logs` and `spacetraders-anomaly`
+rules in [infrastructure/monitoring/grafana-alerting-provisioning.yaml](infrastructure/monitoring/grafana-alerting-provisioning.yaml),
+then the schedule in [infrastructure/postgresql-backup/backup-cronjob.yaml](infrastructure/postgresql-backup/backup-cronjob.yaml).
+
+- **The complaint:** still a lot of mail in the night after the 2026-11-21 change. Grafana sent 24
+  mails (and 24 Home Assistant pushes) from its restart at 00:22Z to 10:22Z, half the rate before.
+- **Where they came from:** a replay of that night (Loki and Prometheus at 1-minute steps, the rules'
+  `for`, `group_wait` 1m, `group_interval` 5m) gave 11-21 mails from "SpaceTraders logged errors", 5 from
+  `RepeatingError` in "SpaceTraders anomaly active", 2 from "SpaceTraders ships with an anomaly" and 1 from
+  "Backup is stale". The error alert ended in every 5-minute window without an error line and started again
+  with the next one. The bot's errors that night: one ship failing the same sale every round all night,
+  a market-price query running into its 30-second timeout since 02:02, arrival handlers timing out, and
+  two minutes without a database at 02:02 (SpaceTraders B95 and B96, and B94).
+- **The error alert:** `keepFiringFor: 30m`. A window without errors returns nothing, and with
+  `noDataState: OK` Grafana 13 applies that to the alert already there as "condition false", so the
+  keep-firing window holds it (`setNextStateForAll` in `pkg/services/ngalert/state/manager.go`; a
+  `missing_series_evals_to_resolve` would not, since the series isn't treated as missing). It mails when
+  errors start and once they have stopped for 30 minutes. Replayed on the night: 1 mail. While it fires,
+  a new kind of error sends no mail of its own.
+- **`RepeatingError`:** out of "SpaceTraders anomaly active". Its errors are the ones the error alert
+  mails; repeated warnings go unmailed with it (the dashboard's "Active anomalies" table lists them).
+- **The backup:** kured drained gembernode-01 for a reboot at 02:00:57Z (its window is 02:00-05:00 UTC),
+  which evicted PostgreSQL in the middle of `postgresql-backup`, started at 02:00:00. All three tries
+  failed ("the database system is shutting down"), as on 2026-11-18 (kured drained gembernode-01 at
+  02:01:04Z). The last good dump is from
+  2026-11-21 02:00, so "Backup is stale" fired at 04:12 and is right. The CronJob now runs at 01:00 UTC
+  (`timeZone: Etc/UTC`); a dump takes about 5 minutes. The SQLite backups (03:30 Amsterdam, 02:30 UTC)
+  and the Jellyfin one (Sundays 04:00 Amsterdam) also fall in kured's window; that night they ran after
+  the reboot and succeeded.
+- **Not changed:** the ship-anomaly rule (2 mails: `ShipLeftIdle` from 00:38, `ShipStuck` joined at
+  01:03), the slow-tick alert planned on 2026-11-21 (held: at today's ~12-minute tick it would fire all
+  day; it comes when SpaceTraders B94 has cut the tick).
+- **After the merge:** Grafana needs a restart for the rules
+  (`kubectl -n monitoring rollout restart deployment grafana`). Flux applies the CronJob schedule by
+  itself; the next dump runs at 01:00 UTC. "Backup is stale" ends after a dump succeeds: tonight's, or a
+  manual one (`kubectl -n flux-system create job --from=cronjob/postgresql-backup postgresql-backup-manual`).

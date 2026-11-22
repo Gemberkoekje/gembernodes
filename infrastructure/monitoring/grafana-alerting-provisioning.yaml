@@ -102,6 +102,14 @@ data:
           # lines whose level ("@l") is Error or Fatal (Information has no "@l"), and the lines
           # that aren't JSON (nginx, the init container) containing "error", as above. Otherwise
           # the same as the rule above; the email opens the Errors panel of the bot's dashboard.
+          # The bot's errors come in long stretches of a few lines at a time (a ship failing the
+          # same step every round, a slow query): each 5-minute window with none ended the alert and
+          # the next error started it again, ~15 mails on the night of 2026-11-22. A 5-minute window
+          # without errors returns nothing; with noDataState OK, Grafana (13) treats that as the
+          # condition being false for the alert already there, so keepFiringFor holds it on for 30
+          # minutes: it mails when errors start and when they have stopped for half an hour. Replayed
+          # on that night: 1 mail.
+          # While it fires, a new kind of error sends no mail of its own; the Errors panel lists them.
           - uid: spacetraders-error-logs
             title: SpaceTraders logged errors
             condition: C
@@ -138,6 +146,7 @@ data:
             noDataState: OK
             execErrState: Error
             for: 5m
+            keepFiringFor: 30m
             annotations:
               summary: 'SpaceTraders logged {{ $values.A }} error lines in the last 5 minutes'
               description: |-
@@ -473,6 +482,10 @@ data:
             annotations:
               summary: 'Prometheus has not scraped the SpaceTraders bot for 10 minutes'
           # The database size limits and the ships' anomalies have rules of their own below.
+          # RepeatingError (a log statement repeating) mails no more: its errors are what the
+          # "SpaceTraders logged errors" alert above already mails, and each statement that started or
+          # stopped repeating sent a mail of its own (5 on the night of 2026-11-22). Repeated warnings
+          # go unmailed with it; the dashboard's "Active anomalies" table still lists them.
           - uid: spacetraders-anomaly
             title: SpaceTraders anomaly active
             condition: C
@@ -484,7 +497,7 @@ data:
                 datasourceUid: prometheus
                 model:
                   refId: A
-                  expr: 'max by (rule, subject) (spacetraders_anomaly_active{namespace="spacetraders", rule!~"DbSize.*|ShipLeftIdle|ShipStuck"})'
+                  expr: 'max by (rule, subject) (spacetraders_anomaly_active{namespace="spacetraders", rule!~"DbSize.*|ShipLeftIdle|ShipStuck|RepeatingError"})'
                   instant: true
               - refId: C
                 datasourceUid: "__expr__"
