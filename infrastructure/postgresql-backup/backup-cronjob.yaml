@@ -4,7 +4,11 @@ metadata:
   name: postgresql-backup
   namespace: flux-system
 spec:
-  schedule: "0 2 * * *"
+  # 01:00 UTC, before kured's reboot window (02:00-05:00 UTC, infrastructure/kured/kured-release.yaml).
+  # At 02:00 a reboot drained the node PostgreSQL ran on in the middle of the dump, which failed
+  # with its retries (2026-11-18, 2026-11-22). A dump takes about 5 minutes.
+  schedule: "0 1 * * *"
+  timeZone: Etc/UTC
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
