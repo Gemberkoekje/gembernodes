@@ -3355,3 +3355,27 @@ then the schedule in [infrastructure/postgresql-backup/backup-cronjob.yaml](infr
   (`kubectl -n monitoring rollout restart deployment grafana`). Flux applies the CronJob schedule by
   itself; the next dump runs at 01:00 UTC. "Backup is stale" ends after a dump succeeds: tonight's, or a
   manual one (`kubectl -n flux-system create job --from=cronjob/postgresql-backup postgresql-backup-manual`).
+
+## 2026-11-22 — SpaceTraders: deploy slices 6.78 and 6.79 (B95, B96)
+
+To understand this, read the `image:` lines of
+[apps/spacetraders/deployment-api.yaml](apps/spacetraders/deployment-api.yaml) and
+[apps/spacetraders/deployment-webui.yaml](apps/spacetraders/deployment-webui.yaml), then SpaceTraders' PLAN.md (slices
+6.78 and 6.79) in the projects repo.
+
+- **The image:** api and webui go from `fc49fb2f` (slice 6.75) to `3d573406`, the merge of projects#274. It carries
+  projects#273 too.
+- **6.78 (B95):** when the API refuses a sale because the ship's cargo doesn't hold the units, the goal step reads the
+  cargo from the API and goes on with what is aboard. On the night of 2026-11-22 SPECTER-1F4 sent the same refused sale
+  every round for 11 hours (236 Error lines); that kept "SpaceTraders logged errors" on.
+- **6.79 (B96):** `market_price_samples` gets a covering index on (`AgentId`, `WaypointSymbol`, `ObservedAt`) in place of
+  the four-column one, so a market's price history is read from the index alone. Since PostgreSQL moved to
+  gembernode-02 (kured, 02:02Z) that read took ~30 s from the cold NFS volume and timed out, and the arrival handlers
+  waiting on it timed out too. The bot's first start builds the index and drops the old one in its schema transaction
+  (2.3 s on a local disk for 1.5 million samples; slower on `qnap-nfs`, well inside the ten-minute start probe). The
+  database grows by about 18 MB.
+- **After the merge:** the pod restarts once (Recreate) on `3d573406`; the start takes longer than usual by the index
+  build. Then `SELECT indexname FROM pg_indexes WHERE tablename = 'market_price_samples'` lists
+  `IX_market_price_samples_AgentId_WaypointSymbol_ObservedAt` and not the `..._GoodSymbol_Obse~` one, the Error lines
+  `@i=627a98df` (the 30-second timeout) stop, and no ship repeats a refused sale. No Grafana restart is needed for this
+  one.
