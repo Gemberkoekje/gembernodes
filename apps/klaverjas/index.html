@@ -178,13 +178,17 @@
   .round .stil { background: var(--st-slaper); }
 
   /* Score cards (print preview) */
-  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: .8rem; }
+  .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; }
   .scard { border: 1.5px solid #333; padding: .6rem .7rem; font-size: .95rem; background: #fff; }
-  .scard .club { font-weight: 700; display: flex; justify-content: space-between; }
-  .scard .tag { background: var(--st-slaper); padding: 0 .35rem; font-size: .85rem; }
+  .scard .club { font-weight: 700; font-size: 1.05rem; display: flex; justify-content: space-between; align-items: center; }
+  .scard .nr-box { border: 2px solid #333; min-width: 2.2rem; text-align: center; font-size: 1.2rem; }
+  .scard .tag { background: var(--st-slaper); padding: 0 .35rem; font-size: .85rem; margin-top: .25rem; }
   .scard table { width: 100%; border-collapse: collapse; margin-top: .35rem; }
-  .scard th, .scard td { border: 1px solid #555; padding: .15rem .35rem; text-align: left; }
+  .scard th, .scard td { border: 1px solid #555; padding: .15rem .35rem; text-align: left; height: 1.7rem; }
+  .scard th { font-weight: 400; text-align: center; }
+  .scard td.lbl { width: 4.2rem; border-right: none; }
   .scard td.stil { background: #f2f2a6; font-size: .85rem; }
+  .scard tr td:first-child:not(.lbl) { font-weight: 700; font-size: 1.15rem; text-align: center; }
 
   /* ---------- Standings (the sheet look; also used in the mail) ---------- */
   /* Stacked on screen and in the mail (no sideways scrolling); the PDF keeps the sheet's side-by-side layout */
@@ -937,9 +941,11 @@ function cardsHtml() {
   return `<div class="cards">${ppl.map(p => {
     const s = prep.st[p.id];
     const rows = [1, 2, 3].map(r => s.status === 'slaper' && s.round === r ? `<tr><td>${r}</td><td class="stil" colspan="2">stil: ${settings.sleep}</td></tr>` : `<tr><td>${r}</td><td></td><td></td></tr>`).join('');
-    return `<div class="scard"><div class="club"><span>"${esc(settings.club)}"</span>${s.status === 'slaper' ? `<span class="tag">slaper ${s.round}</span>` : ''}</div>
-      <div>Naam: <b>${esc(p.name)}</b></div><div>Nummer: <b>${prep.numbers[p.id]}</b> · ${SHORT[prepWeek]}</div>
-      <table><tr><th>Ronde</th><th>Punten</th><th>Pitten</th></tr>${rows}<tr><th>Totaal</th><td></td><td></td></tr></table></div>`;
+    return `<div class="scard"><div class="club"><span>"${esc(settings.club)}"</span><span class="nr-box">${prep.numbers[p.id]}</span></div>
+      ${s.status === 'slaper' ? `<div class="tag">slaper ${s.round}: zit ronde ${s.round} stil</div>` : ''}
+      <table><tr><td class="lbl">Naam:</td><td colspan="2"><b>${esc(p.name)}</b></td></tr>
+      <tr><td class="lbl">Datum:</td><td colspan="2">${LONG[prepWeek].replace('maandag ', '').replace(' 2026', '')}</td></tr>
+      <tr><th>Ronde</th><th>Punten</th><th>Pitten</th></tr>${rows}<tr><th>Totaal:</th><td></td><td></td></tr></table></div>`;
   }).join('')}</div>`;
 }
 
@@ -1218,7 +1224,7 @@ $('#btn-older').addEventListener('click', () => modal('Oudere avonden', '<p>Hier
 $('#btn-prep-add-sub').addEventListener('click', () => { const id = Number($('#prep-sub-pick').value); if (!id) return; prep.subs.push(id); prep.st[id] = { status: 'speelt', round: 0 }; prep.plan = null; renderPrep(); });
 $('#btn-prep-new-sub').addEventListener('click', () => modal('Nieuwe invaller', '<p>Hier typt u de naam (en eventueel het e-mailadres) van de invaller. Die komt dan in de lijst bij Spelers, zodat u hem een volgende keer kunt kiezen.</p>', ok));
 $('#btn-redraw').addEventListener('click', () => { draw(); savePrep(); renderPlan(); });
-$('#btn-print-cards').addEventListener('click', () => modal('Kaartjes printen', `<p class="help">Zo komen de kaartjes op papier (6 per A4). De slapers krijgen hun stille ronde al ingevuld.</p>${cardsHtml()}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true));
+$('#btn-print-cards').addEventListener('click', () => modal('Kaartjes printen', `<p class="help">Zo komen de kaartjes op papier: 12 per A4, net als nu, met naam, nummer en datum al ingevuld. De slapers krijgen hun stille ronde al ingevuld.</p>${cardsHtml()}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true));
 $('#btn-print-plan').addEventListener('click', () => modal('Tafelindeling printen', `<p class="help">Eén A4 voor aan de muur of op de tafels.</p><div class="rounds">${planHtml()}</div>`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true));
 $('#btn-prep-done').addEventListener('click', () => { savePrep(); show('avonden'); });
 $('#btn-cancel').addEventListener('click', () => modal('Annuleren?', '<p>Wat u net hebt ingetypt, wordt niet bewaard.</p>', [{ label: 'Nee, verder met invullen', primary: true }, { label: 'Ja, niet bewaren', run: () => show('avonden') }]));
