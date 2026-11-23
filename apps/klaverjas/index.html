@@ -188,6 +188,22 @@
   .checklist label { display: flex; gap: .55rem; align-items: center; padding: .2rem 0; break-inside: avoid; cursor: pointer; }
   .checklist input { width: 1.4rem; height: 1.4rem; accent-color: var(--accent); }
   .round td.nrs { font-size: 1.15rem; }
+  .tsheets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  .tsheet { border: 1.5px solid #333; padding: .5rem .6rem; background: #fff; font-size: .85rem; }
+  .ts-head { display: flex; justify-content: space-between; gap: .3rem .8rem; flex-wrap: wrap; border-bottom: 1px solid #555; padding-bottom: .2rem; }
+  .ts-head b { font-size: 1.05rem; }
+  .ts-pairs { display: flex; justify-content: space-around; font-size: 1.05rem; padding: .3rem 0; }
+  .ts-body { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .5rem; align-items: start; }
+  .tsheet table { border-collapse: collapse; }
+  .tsheet th, .tsheet td { border: 1px solid #666; padding: 0 .3rem; height: 1.45rem; font-weight: 400; }
+  .tsheet table.split th { font-size: .7rem; height: auto; }
+  .tsheet table.split td { font-size: .62rem; line-height: 1.2; height: auto; padding: 0 .25rem; white-space: nowrap; border-color: #c4c4c4; }
+  .tsheet table.hands { width: 100%; }
+  .tsheet .c { text-align: center; }
+  .tsheet .suit { font-size: 1rem; }
+  .tsheet .suit.red { color: #c00; }
+  .tsheet tr.chk td { font-size: .68rem; background: #fff7cc; height: auto; text-align: right; }
+  .tsheet tr.tot th, .tsheet tr.tot td { border-top: 2px solid #333; font-weight: 700; }
   .scard .tag { background: var(--st-slaper); padding: 0 .35rem; font-size: .85rem; margin-top: .25rem; }
   .scard table { width: 100%; border-collapse: collapse; margin-top: .35rem; }
   .scard th, .scard td { border: 1px solid #555; padding: .15rem .35rem; text-align: left; height: 1.7rem; }
@@ -347,7 +363,8 @@
       </div>
       <div class="card">
         <h2>Tafelindeling (op nummer)</h2>
-        <p class="help">Welk nummer in welke ronde aan welke tafel zit, en welke nummers stil zitten. Dat hangt alleen af van het aantal spelers, niet van wie er komt.</p>
+        <p class="help">Welk nummer in welke ronde aan welke tafel zit, en welke nummers stil zitten. Dat hangt alleen af van het aantal spelers, niet van wie er komt.
+          <b>Deze tafelindeling printen</b> geeft het overzicht én de tafelbriefjes: per tafel per ronde, spel voor spel, met bovenaan de vier nummers van die tafel.</p>
         <div class="inline">
           <label for="prep-n" style="font-weight:700">Aantal spelers:</label>
           <select id="prep-n" style="max-width:7rem"></select>
@@ -921,6 +938,32 @@ function renderPlan() {
   $('#prep-plan').innerHTML = planHtmlFor(n);
 }
 
+// The table score sheet, like Dad's '16p4ta' sheets: one per table per round, hands 1-16.
+const SUITS = ['♥', '♣', '♦', '♠'];
+function splitStrip() {
+  let rows = '';
+  for (let i = 0; i <= 40; i++) rows += `<tr><td>${i} – ${162 - i}</td><td>${i + 41} – ${121 - i}</td></tr>`;
+  return `<table class="split"><tr><th colspan="2">Verdeling</th></tr>${rows}</table>`;
+}
+function tableSheetsHtml(n) {
+  const { plan } = planFor(n);
+  const date = LONG[prepWeek].replace('maandag ', '').replace(' 2026', '');
+  const strip = splitStrip(), sheets = [];
+  plan.forEach((tables, r) => tables.forEach((g, t) => {
+    let rows = '';
+    for (let h = 1; h <= 16; h++) {
+      rows += `<tr><td class="c">${h}</td><td></td><td></td><td></td><td></td><td></td><td class="c suit${h % 2 ? ' red' : ''}">${SUITS[(h - 1) % 4]}</td></tr>`;
+      if (h % 4 === 0) rows += `<tr class="chk"><td colspan="7">spel ${h - 3}–${h}: wij + zij samen 648 punten (zonder roem)</td></tr>`;
+    }
+    sheets.push(`<div class="tsheet"><div class="ts-head"><b>Ronde ${r + 1} · Tafel ${t + 1}</b><span>"${esc(settings.club)}" · ${date} · week ${prepWeek} · ${tables.length} tafels</span></div>
+      <div class="ts-pairs"><span>Wij: <b>${g[0]} &amp; ${g[1]}</b></span><span>Zij: <b>${g[2]} &amp; ${g[3]}</b></span></div>
+      <div class="ts-body">${strip}<table class="hands"><tr><th rowspan="2">Spel</th><th colspan="2">Wij</th><th colspan="2">Zij</th><th rowspan="2">Gever</th><th rowspan="2"></th></tr>
+      <tr><th>Punten</th><th>Roem</th><th>Punten</th><th>Roem</th></tr>${rows}
+      <tr class="tot"><th>Totaal</th><td></td><td></td><td></td><td></td><td colspan="2"></td></tr></table></div></div>`);
+  }));
+  return `<div class="tsheets">${sheets.join('')}</div>`;
+}
+
 // A QR-code look-alike for the mock (the real app makes a real one).
 function qrHtml() {
   let cells = '';
@@ -946,7 +989,7 @@ $('#prep-list').addEventListener('change', e => { const id = Number(e.target.dat
 $('#prep-blank').addEventListener('input', updateCardCount);
 $('#prep-n').addEventListener('change', renderPlan);
 $('#btn-print-cards').addEventListener('click', () => { savePrep(); modal('Kaartjes printen', `<p class="help">12 per A4, net als nu: met naam en datum, <b>zonder nummer</b>. Het nummer schrijft iedereen zelf in het vakje rechtsboven, na het trekken. Onderaan staat waar de stand online staat.</p>${cardsHtml()}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true); });
-$('#btn-print-plan').addEventListener('click', () => { const n = Number($('#prep-n').value); modal(`Tafelindeling voor ${n} spelers`, `<p class="help">Eén A4 voor aan de muur of op de tafels.</p><div class="rounds">${planHtmlFor(n)}</div>`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true); });
+$('#btn-print-plan').addEventListener('click', () => { const n = Number($('#prep-n').value); const count = planFor(n).plan.reduce((a, r) => a + r.length, 0); modal(`Tafelindeling voor ${n} spelers`, `<p class="help">Dit wordt geprint: eerst het <b>overzicht</b> (1 A4, voor aan de muur), dan de <b>tafelbriefjes</b>: één per tafel per ronde, ${count} briefjes, 2 per A4 (${Math.ceil(count / 2)} A4). Wie bij welk nummer hoort, blijkt pas bij het trekken.</p><h3>Overzicht</h3><div class="rounds">${planHtmlFor(n)}</div><h3 style="margin-top:1.25rem">Tafelbriefjes</h3>${tableSheetsHtml(n)}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true); });
 $('#btn-print-all').addEventListener('click', () => modal('Alle tafelindelingen', '<p>In het echte programma komt hier een boekje met de tafelindeling voor elk aantal spelers, van 4 tot en met 28, één per A4. Dan heeft u op de avond altijd de goede bij de hand, hoeveel mensen er ook komen.</p>', [{ label: 'Oké', primary: true }]));
 $('#btn-prep-done').addEventListener('click', () => { savePrep(); show('avonden'); });
 
