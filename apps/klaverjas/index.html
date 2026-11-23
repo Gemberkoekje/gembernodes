@@ -188,6 +188,8 @@
   .scard th { font-weight: 400; text-align: center; }
   .scard td.lbl { width: 4.2rem; border-right: none; }
   .scard td.stil { background: #f2f2a6; font-size: .85rem; }
+  .scard .cfoot { display: flex; justify-content: space-between; align-items: center; gap: .4rem; margin-top: .35rem; font-size: .78rem; line-height: 1.3; }
+  .scard .qr { width: 3.3rem; height: 3.3rem; flex: none; }
   .scard tr td:first-child:not(.lbl) { font-weight: 700; font-size: 1.15rem; text-align: center; }
 
   /* ---------- Standings (the sheet look; also used in the mail) ---------- */
@@ -227,6 +229,7 @@
   /* ---------- Players' page on a phone ---------- */
   .phone { width: 24.5rem; max-width: 100%; margin: 0 auto; border: 12px solid #222; border-radius: 2rem; background: #fff; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,.2); }
   .phone .screen { height: 46rem; overflow-y: auto; font-size: 1.05rem; }
+  .p-url { background: #e9ecea; color: #333; font-size: .85rem; padding: .35rem .8rem; text-align: center; }
   .p-head { background: var(--accent); color: #fff; padding: .8rem 1rem; font-weight: 700; font-size: 1.2rem; }
   .p-body { padding: 1rem; }
   .p-body h2 { font-size: 1.3rem; margin-bottom: .1rem; }
@@ -260,7 +263,7 @@
       <button type="button" data-view="admin" aria-pressed="true">Scherm van Pa</button>
       <button type="button" data-view="mail" aria-pressed="false">De e-mail</button>
       <button type="button" data-view="public" aria-pressed="false">Spelerspagina (telefoon)</button>
-      <button type="button" data-view="login" aria-pressed="false">Inloggen</button>
+      <button type="button" data-view="login" aria-pressed="false">Inloggen beheer</button>
     </span>
   </div>
 </div>
@@ -276,7 +279,7 @@
   <nav class="tabs" aria-label="Hoofdmenu">
     <div class="wrap">
       <button type="button" data-go="avonden">Avonden</button>
-      <button type="button" data-go="stand">Stand versturen</button>
+      <button type="button" data-go="stand">Stand online</button>
       <button type="button" data-go="spelers">Spelers</button>
       <button type="button" data-go="instellingen">Instellingen</button>
     </div>
@@ -302,7 +305,7 @@
       <div class="card">
         <h2>Alle avonden van <span class="season">2026</span></h2>
         <table class="list">
-          <thead><tr><th>Datum</th><th>Week</th><th>Spelers</th><th>Slapers</th><th>E-mail</th><th></th></tr></thead>
+          <thead><tr><th>Datum</th><th>Week</th><th>Spelers</th><th>Slapers</th><th>Online</th><th></th></tr></thead>
           <tbody id="evenings"></tbody>
         </table>
         <p style="margin:.75rem 0 0"><button type="button" class="linkbtn" id="btn-older">Oudere avonden tonen</button></p>
@@ -315,7 +318,7 @@
         <li class="now"><span class="n">1</span> Voorbereiden</li>
         <li><span class="n">2</span> Uitslag invullen</li>
         <li><span class="n">3</span> Controleren</li>
-        <li><span class="n">4</span> Versturen</li>
+        <li><span class="n">4</span> Online zetten</li>
       </ol>
       <h1>Avond voorbereiden</h1>
       <div class="dateline"><span class="date" id="prep-date"></span></div>
@@ -366,7 +369,7 @@
         <li class="done"><span class="n">✓</span> Voorbereiden</li>
         <li class="now"><span class="n">2</span> Uitslag invullen</li>
         <li><span class="n">3</span> Controleren</li>
-        <li><span class="n">4</span> Versturen</li>
+        <li><span class="n">4</span> Online zetten</li>
       </ol>
       <h1 id="entry-title">Uitslag invullen</h1>
       <div class="dateline"><span class="date" id="entry-date"></span></div>
@@ -404,7 +407,7 @@
         <li class="done"><span class="n">✓</span> Voorbereiden</li>
         <li class="done"><span class="n">✓</span> Uitslag invullen</li>
         <li class="now" id="step-check"><span class="n">3</span> Controleren</li>
-        <li id="step-send"><span class="n">4</span> Versturen</li>
+        <li id="step-send"><span class="n">4</span> Online zetten</li>
       </ol>
       <div id="stand-banner"></div>
       <h1 id="stand-title"></h1>
@@ -418,15 +421,17 @@
         <div id="stand-tables"></div>
       </div>
       <div class="card" id="send-card">
-        <h2>Versturen</h2>
+        <h2>Online zetten</h2>
+        <p>Met één klik staat de stand op <b>klaverjas.gemberkoekje.nl</b>. De spelers kijken daar met het wachtwoord van de club. E-mailen kan er los bij, maar hoeft niet.</p>
         <div class="field">
           <label for="note">Bericht erbij <span class="muted" style="font-weight:400">(mag leeg blijven)</span></label>
-          <p class="help">Dit komt in de e-mail boven de stand.</p>
+          <p class="help">Dit komt boven de stand: op de spelerspagina, en in de e-mail als u die ook stuurt.</p>
           <textarea id="note" placeholder="Bijvoorbeeld: volgende week beginnen we een half uur later.">Volgende week spelen we gewoon weer om half acht. Tot maandag!</textarea>
         </div>
         <div class="actions">
-          <button type="button" class="btn big" id="btn-send">Verstuur naar alle spelers</button>
-          <button type="button" class="btn secondary" id="btn-test">Proefmail naar mij</button>
+          <button type="button" class="btn big" id="btn-send">Zet de stand online</button>
+          <button type="button" class="btn secondary" data-view="public">Zo zien de spelers het</button>
+          <button type="button" class="btn secondary" id="btn-mail">Ook e-mailen</button>
           <button type="button" class="btn secondary" id="btn-pdf">PDF bekijken</button>
           <button type="button" class="btn secondary" data-view="mail">Zo ziet de e-mail eruit</button>
         </div>
@@ -542,13 +547,14 @@
         </div>
       </div>
       <div class="card">
-        <h2>Link voor de spelers</h2>
-        <p class="help">Deze link staat in elke e-mail. Wie hem heeft, kan de stand bekijken (niets wijzigen). Een nieuwe link maken zet de oude uit.</p>
-        <div class="inline">
-          <input class="text" id="set-link" readonly style="max-width:30rem" aria-label="Link voor de spelers">
-          <button type="button" class="btn secondary small" id="btn-copy">Kopiëren</button>
-          <button type="button" class="btn secondary small" id="btn-newlink">Nieuwe link maken</button>
+        <h2>Spelerspagina</h2>
+        <p class="help">De spelers bekijken de stand op <b>klaverjas.gemberkoekje.nl</b> (alleen kijken, niets wijzigen). De eerste keer vraagt de pagina dit wachtwoord; daarna onthoudt hun telefoon of computer het.
+          Verandert u het wachtwoord, dan moet iedereen het nieuwe één keer intypen. Uw eigen wachtwoord (voor /beheer) staat hieronder en is een ander.</p>
+        <div class="field">
+          <label for="set-ppw">Wachtwoord voor de spelers</label>
+          <input class="text" id="set-ppw" style="max-width:16rem">
         </div>
+        <label class="inline"><input type="checkbox" id="set-qr" checked style="width:1.4rem;height:1.4rem"> Adres en QR-code onderaan de kaartjes printen</label>
       </div>
       <div class="card">
         <h2>Wachtwoord</h2>
@@ -583,7 +589,7 @@
 <!-- ===================== Players' page ===================== -->
 <div id="view-public" hidden>
   <main class="wrap">
-    <p class="lead" style="text-align:center">Zo ziet de spelerspagina eruit op een telefoon. De link staat in elke e-mail; inloggen hoeft niet.</p>
+    <p class="lead" style="text-align:center">Zo ziet de spelerspagina eruit op een telefoon: klaverjas.gemberkoekje.nl. De eerste keer vraagt hij het wachtwoord van de club; daarna onthoudt de telefoon het.</p>
     <div class="phone"><div class="screen" id="phone"></div></div>
   </main>
 </div>
@@ -592,8 +598,9 @@
 <div id="view-login" hidden>
   <main class="wrap">
     <div class="card login">
-      <div class="brand"><span class="suit" aria-hidden="true">♣</span> <span class="club-name">Klaverjasclub</span></div>
-      <div class="field"><label for="pw">Wachtwoord</label><input class="text" type="password" id="pw"></div>
+      <div class="brand"><span class="suit" aria-hidden="true">♣</span> <span class="club-name">Klaverjasclub</span> <small style="color:var(--ink-soft)">Beheer</small></div>
+      <p class="help">klaverjas.gemberkoekje.nl/beheer, ook te vinden via het kleine woord "Beheer" onderaan de spelerspagina.</p>
+      <div class="field"><label for="pw">Wachtwoord voor het beheer</label><input class="text" type="password" id="pw"></div>
       <button type="button" class="btn big" data-view="admin" style="width:100%">Inloggen</button>
       <p class="help" style="margin-top:1rem">U blijft een jaar ingelogd op deze computer.<br>Wachtwoord vergeten? Bel de beheerder van de site.</p>
     </div>
@@ -647,7 +654,7 @@ const NO_EMAIL = ['Dineke Prins', 'Bep Willems'];
 const settings = {
   club: 'Klaverjasclub', absent: 4200, sleep: 1600, day: 'maandag',
   sender: 'Wedstrijdleiding klaverjassen', reply: 'pa@voorbeeld.nl', subject: 'Standen week',
-  link: 'https://klaverjas.gemberkoekje.nl/stand/k7f3-x9p2',
+  link: 'klaverjas.gemberkoekje.nl', playerPw: 'klaverjas26', qr: true,
   colors: { first: '#ffff00', second: '#e9a3e4', third: '#5bb8ec', absent: '#92d88b' }
 };
 const holidays = [['maandag 6 april', 'Pasen'], ['maandag 4 mei', 'Dodenherdenking'], ['maandag 25 mei', 'Pinksteren']];
@@ -815,13 +822,13 @@ function renderEvenings() {
     const sleepers = ws.filter(w => w.status === 'slaper').length;
     let status;
     if (!isDone(wk)) status = '<span class="status-open">Voorbereid, uitslag nog invullen</span>';
-    else if (wk === sent.week) status = changedSinceSend ? '<span class="status-warn">Gewijzigd na versturen</span>' : `<span class="status-ok">✓ Verstuurd</span><br><span class="muted" style="font-size:1rem">${esc(sent.at)}</span>`;
-    else if (wk < sent.week) status = '<span class="status-ok">✓ Verstuurd</span>';
-    else status = '<span class="status-open">Nog niet verstuurd</span>';
+    else if (wk === sent.week) status = changedSinceSend ? '<span class="status-warn">Gewijzigd, nog niet opnieuw online</span>' : `<span class="status-ok">✓ Online</span><br><span class="muted" style="font-size:1rem">${esc(sent.at)}</span>`;
+    else if (wk < sent.week) status = '<span class="status-ok">✓ Online</span>';
+    else status = '<span class="status-open">Nog niet online</span>';
     h += `<tr><td><b>${cap(SHORT[wk])}</b></td><td>${wk}</td><td>${playing}</td><td>${wk === 47 || wk > 47 ? sleepers : evenings[wk].sleepers}</td><td>${status}</td>
       <td style="text-align:right; white-space:nowrap">${isDone(wk) ? `<button type="button" class="btn secondary small" data-edit="${wk}">Wijzigen</button>` : `<button type="button" class="btn small" data-edit="${wk}">Uitslag invullen</button>`}</td></tr>`;
   });
-  h += '<tr><td><b>Ma 26 okt</b></td><td>44</td><td>19</td><td>9</td><td><span class="status-ok">✓ Verstuurd</span></td><td style="text-align:right"><button type="button" class="btn secondary small" data-old="1">Wijzigen</button></td></tr>';
+  h += '<tr><td><b>Ma 26 okt</b></td><td>44</td><td>19</td><td>9</td><td><span class="status-ok">✓ Online</span></td><td style="text-align:right"><button type="button" class="btn secondary small" data-old="1">Wijzigen</button></td></tr>';
   h += '<tr class="off"><td>Ma 25 mei</td><td>22</td><td colspan="4">Geen klaverjassen: Pinksteren</td></tr>';
   $('#evenings').innerHTML = h;
 }
@@ -936,6 +943,18 @@ function savePrep() {
   players.forEach(p => { if (p.kind === 'invaller' && p.weeks[prepWeek] && !prep.st[p.id]) delete p.weeks[prepWeek]; });
   evenings[prepWeek] = { ...(evenings[prepWeek] || { state: 'voorbereid' }), plan: prep.plan, numbers: prep.numbers };
 }
+// A QR-code look-alike for the mock (the real app makes a real one).
+function qrHtml() {
+  let cells = '';
+  for (let y = 0; y < 21; y++) for (let x = 0; x < 21; x++) {
+    const finder = (x < 7 && y < 7) || (x > 13 && y < 7) || (x < 7 && y > 13);
+    let on;
+    if (finder) { const cx = x < 7 ? x : x - 14, cy = y < 7 ? y : y - 14; on = cx === 0 || cx === 6 || cy === 0 || cy === 6 || (cx >= 2 && cx <= 4 && cy >= 2 && cy <= 4); }
+    else on = ((x * 7 + y * 13 + x * y) % 5) < 2;
+    if (on) cells += `<rect x="${x}" y="${y}" width="1" height="1"/>`;
+  }
+  return `<svg class="qr" viewBox="-1 -1 23 23" role="img" aria-label="QR-code (voorbeeld)"><rect x="-1" y="-1" width="23" height="23" fill="#fff"/><g fill="#000">${cells}</g></svg>`;
+}
 function cardsHtml() {
   const ppl = prepPeople().filter(p => prep.st[p.id].status !== 'afwezig').sort((a, b) => prep.numbers[a.id] - prep.numbers[b.id]);
   return `<div class="cards">${ppl.map(p => {
@@ -945,7 +964,7 @@ function cardsHtml() {
       ${s.status === 'slaper' ? `<div class="tag">slaper ${s.round}: zit ronde ${s.round} stil</div>` : ''}
       <table><tr><td class="lbl">Naam:</td><td colspan="2"><b>${esc(p.name)}</b></td></tr>
       <tr><td class="lbl">Datum:</td><td colspan="2">${LONG[prepWeek].replace('maandag ', '').replace(' 2026', '')}</td></tr>
-      <tr><th>Ronde</th><th>Punten</th><th>Pitten</th></tr>${rows}<tr><th>Totaal:</th><td></td><td></td></tr></table></div>`;
+      <tr><th>Ronde</th><th>Punten</th><th>Pitten</th></tr>${rows}<tr><th>Totaal:</th><td></td><td></td></tr></table>${settings.qr ? `<div class="cfoot"><span>De stand staat online:<br><b>klaverjas.gemberkoekje.nl</b></span>${qrHtml()}</div>` : ''}</div>`;
   }).join('')}</div>`;
 }
 
@@ -1059,15 +1078,15 @@ function renderStand() {
   $('#step-check .n').textContent = justSent ? '✓' : '3';
   $('#step-send .n').textContent = justSent ? '✓' : '4';
   let b = '';
-  if (justSent) b = `<div class="banner ok big"><p>✓ Verstuurd! ${sent.count} e-mails zijn onderweg.</p></div>`;
-  else if (isSent && changedSinceSend) b = '<div class="banner warn"><p><b>U heeft iets gewijzigd nadat de stand verstuurd is.</b><br>Verstuur de verbeterde stand, dan hebben de spelers de goede cijfers.</p></div>';
-  else if (justSaved) b = '<div class="banner ok"><p><b>De uitslag is opgeslagen.</b> Kijk of de stand klopt en verstuur hem dan.</p></div>';
-  else if (isSent) b = `<div class="banner ok"><p>Deze stand is al verstuurd: ${esc(sent.at)}, naar ${sent.count} spelers.</p></div>`;
+  if (justSent) b = '<div class="banner ok big"><p>✓ De stand staat online. De spelers zien hem nu op klaverjas.gemberkoekje.nl.</p></div>';
+  else if (isSent && changedSinceSend) b = '<div class="banner warn"><p><b>U heeft iets gewijzigd nadat de stand online is gezet.</b><br>Zet de verbeterde stand online, dan zien de spelers de goede cijfers.</p></div>';
+  else if (justSaved) b = '<div class="banner ok"><p><b>De uitslag is opgeslagen.</b> Kijk of de stand klopt en zet hem dan online.</p></div>';
+  else if (isSent) b = `<div class="banner ok"><p>Deze stand staat online sinds ${esc(sent.at)}.</p></div>`;
   $('#stand-banner').innerHTML = b;
   justSaved = false; justSent = false;
-  $('#btn-send').textContent = isSent ? (changedSinceSend ? 'Verbeterde stand versturen' : 'Nog een keer versturen') : 'Verstuur naar alle spelers';
+  $('#btn-send').textContent = isSent ? (changedSinceSend ? 'Verbeterde stand online zetten' : 'Staat online ✓') : 'Zet de stand online';
   const missing = members().filter(p => p.active && !p.email).map(p => p.name);
-  $('#no-email').innerHTML = `De e-mail gaat naar <b>${recipients().length} leden</b>.` + (missing.length ? ` ${missing.length === 1 ? 'Deze speler heeft' : 'Deze spelers hebben'} geen e-mailadres: <b>${missing.map(esc).join(', ')}</b>. Print de PDF voor ${missing.length === 1 ? 'die speler' : 'hen'}.` : '');
+  $('#no-email').innerHTML = `Mailen is een extra: de e-mail zou naar <b>${recipients().length} leden</b> gaan.` + (missing.length ? ` ${missing.length === 1 ? 'Deze speler heeft' : 'Deze spelers hebben'} geen e-mailadres: <b>${missing.map(esc).join(', ')}</b>. Print de PDF voor ${missing.length === 1 ? 'die speler' : 'hen'}.` : '');
 }
 
 /* ---------------- Spelers ---------------- */
@@ -1102,7 +1121,8 @@ function renderSettings() {
   $('#set-reply').value = settings.reply;
   $('#set-subject').value = settings.subject;
   $('#subject-example').textContent = `${settings.subject} ${latestWeek()}`;
-  $('#set-link').value = settings.link;
+  $('#set-ppw').value = settings.playerPw;
+  $('#set-qr').checked = settings.qr;
   ['first', 'second', 'third', 'absent'].forEach(k => { $('#col-' + k).value = settings.colors[k]; });
   $('#holidays').innerHTML = holidays.map(([d, why], i) => `<tr><td>${esc(d)}</td><td>${esc(why)}</td><td style="text-align:right"><button type="button" class="btn danger small" data-unhol="${i}">Weghalen</button></td></tr>`).join('');
 }
@@ -1130,20 +1150,30 @@ function renderMail() {
       <p style="margin-bottom:.4rem"><b>Winnaars van ${esc(LONG[wk])}:</b></p>
       <ul class="winners">${winnersHtml(wk)}</ul>
       ${standTables()}
-      <p style="margin-top:1.25rem">De stand staat ook online: <a href="#" onclick="setView('public');return false">${esc(settings.link)}</a></p>
+      <p style="margin-top:1.25rem">De stand staat altijd online op <a href="#" onclick="setView('public');return false">${esc(settings.link)}</a> (met het wachtwoord van de club).</p>
       <p>Groeten,<br>${esc(settings.sender)}</p>
     </div>`;
 }
 
 /* ---------------- Players' page (phone) ---------------- */
+let phoneIn = false;
 function renderPhone() {
+  const bar = '<div class="p-url">🔒 klaverjas.gemberkoekje.nl</div>';
+  if (!phoneIn) {
+    $('#phone').innerHTML = `${bar}<div class="p-head"><span aria-hidden="true">♣</span> ${esc(settings.club)}</div>
+      <div class="p-body"><h2>De stand bekijken</h2><p>Typ het wachtwoord van de club. Dat hoort u op de clubavond.</p>
+      <label for="p-pw" style="font-weight:700">Wachtwoord</label><input class="text" id="p-pw" type="password" value="${esc(settings.playerPw)}" style="margin:.3rem 0 1rem">
+      <button type="button" class="btn big" data-phone-in style="width:100%">Bekijk de stand</button>
+      <p class="muted" style="font-size:.9rem; margin-top:1rem">U blijft ingelogd op deze telefoon.</p></div>`;
+    return;
+  }
   const wk = latestWeek(), rows = compute();
   const byPts = [...rows].sort((a, b) => a.rank - b.rank || byName(a.p, b.p));
   const byPits = [...rows].sort((a, b) => a.pitsRank - b.pitsRank || byName(a.p, b.p));
   const place = placeIn(wk);
   const cell = r => { const w = r.p.weeks[wk]; if (!w) return '<td></td>'; if (w.status === 'afwezig') return `<td class="r ca">${settings.absent}</td>`; const v = scoreOf(w); return `<td class="r ${placeClass(place(v))}">${v}</td>`; };
   $('#phone').innerHTML = `
-    <div class="p-head"><span aria-hidden="true">♣</span> ${esc(settings.club)} 2026</div>
+    ${bar}<div class="p-head"><span aria-hidden="true">♣</span> ${esc(settings.club)} 2026</div>
     <div class="p-body">
       <h2>Stand na week ${wk}</h2>
       <p class="muted" style="margin:0">${cap(LONG[wk])}</p>
@@ -1156,7 +1186,8 @@ function renderPhone() {
       <table class="ptab"><thead><tr><th class="pl">#</th><th>Naam</th><th class="r">Pitten</th><th class="r">wk ${wk}</th></tr></thead><tbody>
       ${byPits.map(r => { const w = r.p.weeks[wk]; return `<tr><td class="pl ${placeClass(r.pitsRank)}">${r.pitsRank}</td><td>${esc(r.p.name)}</td><td class="r"><b>${r.pits}</b></td><td class="r">${!w ? '' : w.status === 'afwezig' ? '0' : esc(w.pits)}</td></tr>`; }).join('')}
       </tbody></table>
-      <p class="muted" style="font-size:.9rem">Op een computer ziet u alle weken van de maand. Vragen? Antwoord op de e-mail.</p>
+      <p class="muted" style="font-size:.9rem">Op een computer ziet u alle weken van de maand.</p>
+      <p style="text-align:right; font-size:.85rem; margin:0"><a href="#" onclick="setView('login');return false" class="muted">Beheer</a></p>
     </div>`;
 }
 
@@ -1181,6 +1212,7 @@ const ok = [{ label: 'Oké', primary: true }];
 document.addEventListener('click', e => {
   const t = e.target.closest('button, a');
   if (!t) return;
+  if (t.dataset.phoneIn !== undefined) { phoneIn = true; renderPhone(); return; }
   if (t.dataset.view) { setView(t.dataset.view); return; }
   if (t.dataset.go) { show(t.dataset.go); return; }
   if (t.dataset.edit) { openEntry(Number(t.dataset.edit)); return; }
@@ -1224,7 +1256,7 @@ $('#btn-older').addEventListener('click', () => modal('Oudere avonden', '<p>Hier
 $('#btn-prep-add-sub').addEventListener('click', () => { const id = Number($('#prep-sub-pick').value); if (!id) return; prep.subs.push(id); prep.st[id] = { status: 'speelt', round: 0 }; prep.plan = null; renderPrep(); });
 $('#btn-prep-new-sub').addEventListener('click', () => modal('Nieuwe invaller', '<p>Hier typt u de naam (en eventueel het e-mailadres) van de invaller. Die komt dan in de lijst bij Spelers, zodat u hem een volgende keer kunt kiezen.</p>', ok));
 $('#btn-redraw').addEventListener('click', () => { draw(); savePrep(); renderPlan(); });
-$('#btn-print-cards').addEventListener('click', () => modal('Kaartjes printen', `<p class="help">Zo komen de kaartjes op papier: 12 per A4, net als nu, met naam, nummer en datum al ingevuld. De slapers krijgen hun stille ronde al ingevuld.</p>${cardsHtml()}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true));
+$('#btn-print-cards').addEventListener('click', () => modal('Kaartjes printen', `<p class="help">Zo komen de kaartjes op papier: 12 per A4, net als nu, met naam, nummer en datum al ingevuld. Onderaan staat waar de stand online staat, met een QR-code. De slapers krijgen hun stille ronde al ingevuld.</p>${cardsHtml()}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true));
 $('#btn-print-plan').addEventListener('click', () => modal('Tafelindeling printen', `<p class="help">Eén A4 voor aan de muur of op de tafels.</p><div class="rounds">${planHtml()}</div>`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true));
 $('#btn-prep-done').addEventListener('click', () => { savePrep(); show('avonden'); });
 $('#btn-cancel').addEventListener('click', () => modal('Annuleren?', '<p>Wat u net hebt ingetypt, wordt niet bewaard.</p>', [{ label: 'Nee, verder met invullen', primary: true }, { label: 'Ja, niet bewaren', run: () => show('avonden') }]));
@@ -1253,13 +1285,13 @@ $('#s-invoer').addEventListener('input', e => {
 $('#s-invoer').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('input.num')) { e.preventDefault(); focusNext(e.target); } });
 
 $('#btn-fix').addEventListener('click', () => openEntry(latestWeek()));
-$('#btn-test').addEventListener('click', () => modal('Proefmail verstuurd', `<p>Er is een proefmail gestuurd naar <b>${esc(settings.reply)}</b>.</p><p>Kijk in uw e-mail of alles goed staat. De spelers hebben nog niets gekregen.</p>`, ok));
+$('#btn-mail').addEventListener('click', () => modal('Ook e-mailen?', `<p>Wie wil, krijgt de stand ook per e-mail: de e-mail gaat naar <b>${recipients().length} leden</b>, met de PDF erbij. Het hoeft niet: de stand staat al online.</p><p>Eerst een proefmail naar uzelf (${esc(settings.reply)}) kan ook.</p>`, [{ label: 'Versturen', primary: true }, { label: 'Proefmail naar mij' }, { label: 'Niet nu' }]));
 $('#btn-pdf').addEventListener('click', () => modal('PDF', '<p>In het echte programma opent hier de PDF: een A4 (liggend) met de punten en de pitten naast elkaar, net als de PDF van nu. Die kunt u printen voor wie geen e-mail heeft.</p>', ok));
 $('#btn-send').addEventListener('click', () => {
   const wk = latestWeek(), n = recipients().length;
   $('#step-send').className = 'now'; $('#step-check').className = 'done'; $('#step-check .n').textContent = '✓';
-  modal(`Stand van week ${wk} versturen?`, `<p>De e-mail <b>"${esc(subjectFor(wk))}"</b> gaat naar <b>${n} leden</b>.</p><p>Ziet u daarna nog een fout? Dan kunt u die verbeteren en de stand opnieuw versturen.</p>`,
-    [{ label: 'Ja, versturen', primary: true, run: () => { sent = { week: wk, at: 'zojuist', count: n }; changedSinceSend = false; justSent = true; renderStand(); window.scrollTo(0, 0); } },
+  modal(`Stand van week ${wk} online zetten?`, `<p>De spelers zien de stand dan op <b>klaverjas.gemberkoekje.nl</b>.</p><p>Ziet u daarna nog een fout? Verbeter hem en zet de stand opnieuw online.</p>`,
+    [{ label: 'Ja, zet online', primary: true, run: () => { sent = { week: wk, at: 'zojuist', count: n }; changedSinceSend = false; justSent = true; renderStand(); window.scrollTo(0, 0); } },
      { label: 'Nee, nog niet', run: () => { $('#step-check').className = 'now'; $('#step-send').className = ''; $('#step-check .n').textContent = '3'; } }]);
 });
 $('#btn-print-members').addEventListener('click', () => modal('Ledenlijst printen', '<p>In het echte programma komt hier de ledenlijst op papier: naam, adres, postcode, woonplaats, telefoon, verjaardag en e-mail, zoals nu in Excel.</p>', ok));
@@ -1274,9 +1306,6 @@ $('#btn-add-player').addEventListener('click', () => {
 $('#btn-add-hol').addEventListener('click', () => { const d = $('#hol-date').value.trim(); if (!d) { $('#hol-date').focus(); return; } holidays.push([d, $('#hol-why').value.trim() || '–']); $('#hol-date').value = ''; $('#hol-why').value = ''; renderSettings(); });
 ['first', 'second', 'third', 'absent'].forEach(k => $('#col-' + k).addEventListener('input', e => { settings.colors[k] = e.target.value; applyColors(); }));
 $('#set-subject').addEventListener('input', e => { $('#subject-example').textContent = `${e.target.value} ${latestWeek()}`; });
-$('#btn-copy').addEventListener('click', () => modal('Gekopieerd', '<p>De link is gekopieerd. U kunt hem in een e-mail plakken.</p>', ok));
-$('#btn-newlink').addEventListener('click', () => modal('Nieuwe link maken?', '<p>De oude link werkt dan niet meer. De volgende e-mail bevat vanzelf de nieuwe link.</p>',
-  [{ label: 'Ja, nieuwe link', primary: true, run: () => { settings.link = 'https://klaverjas.gemberkoekje.nl/stand/' + Math.floor(rnd() * 1e8).toString(36); $('#set-link').value = settings.link; } }, { label: 'Nee' }]));
 $('#btn-save-settings').addEventListener('click', () => {
   const num = (sel, cur) => { const v = parseInt($(sel).value, 10); return !Number.isNaN(v) && v > 0 ? v : cur; };
   settings.club = $('#set-club').value.trim() || settings.club;
@@ -1286,6 +1315,8 @@ $('#btn-save-settings').addEventListener('click', () => {
   settings.sender = $('#set-sender').value.trim() || settings.sender;
   settings.reply = $('#set-reply').value.trim() || settings.reply;
   settings.subject = $('#set-subject').value.trim() || settings.subject;
+  settings.playerPw = $('#set-ppw').value.trim() || settings.playerPw;
+  settings.qr = $('#set-qr').checked;
   $('#settings-banner').innerHTML = '<div class="banner ok"><p><b>Opgeslagen.</b> De stand rekent vanaf nu met deze instellingen.</p></div>';
   show('instellingen');
 });
