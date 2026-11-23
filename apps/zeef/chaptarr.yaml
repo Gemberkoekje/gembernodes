@@ -31,7 +31,7 @@ spec:
       enableServiceLinks: false
       containers:
         - name: chaptarr
-          image: chaptarr/chaptarr:0.9.965
+          image: chaptarr/chaptarr:0.9.1000
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
