@@ -8,8 +8,10 @@
 <!--
   Clickable mock for the Klaverjas app (see ../PLAN.md). Nothing is saved, printed or sent.
   Member names are invented; the numbers are the week-47 standings', so the rules can be checked.
-  Version 2 follows Dad's workbooks: Speler / Slaper / Afwezig, 1600 per round sat out, the draw and
-  the table plan, substitutes kept in the member list, evenings without play.
+  Version 2 follows Dad's workbooks: Speler / Slaper / Afwezig, the table plan, substitutes kept in
+  the member list, evenings without play. Since Dad's answers (2026-11-23): he picks the slapers
+  beforehand ("Slaper 1/2/3" on their card), the 1600 is already in the card total, first names on
+  the cards, a handout slip with the address and password.
   Screens are switched in script (the Claude browser pane opens local files as data: URLs,
   where hash routing does nothing).
 -->
@@ -192,10 +194,23 @@
   .scard th.punten { font-size: 1.4rem; }
   .scard th.pitten { font-size: 1.15rem; }
   .scard td.r { font-weight: 700; font-size: 1.4rem; }
+  .scard td.slaper { font-weight: 700; font-size: .95rem; padding: 0 .1rem; }
   .checklist { columns: 3 15rem; column-gap: 2rem; }
   .checklist label { display: flex; gap: .55rem; align-items: center; padding: .2rem 0; break-inside: avoid; cursor: pointer; }
   .checklist input { width: 1.4rem; height: 1.4rem; accent-color: var(--accent); }
   .round td.nrs { font-size: 1.15rem; }
+  /* Wie slaapt er: one row per round with a name picker per slaper */
+  .sleepers { display: grid; gap: .6rem; margin: 1rem 0 .4rem; }
+  .sleepers .srow { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; padding: .55rem .8rem; border: 2px solid var(--line); border-radius: 10px; background: #fbfcfb; }
+  .sleepers .srow b { min-width: 9rem; }
+  .sleepers .srow .tag { background: var(--st-slaper); border: 1.5px solid #b9b94a; padding: .05rem .45rem; font-weight: 700; font-size: .95rem; }
+  .sleepers select { width: 22rem; max-width: 100%; }
+  .print-row { margin-top: 1.25rem; padding-top: 1.1rem; border-top: 2px solid var(--line); }
+  /* Briefjes met adres en wachtwoord, 10 per A4 */
+  .slips { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; border: 1px dashed #888; background: #fff; max-width: 42rem; }
+  .slip { border: 1px dashed #888; padding: .8rem 1rem; font-size: .95rem; line-height: 1.35; }
+  .slip .sc { font-weight: 700; }
+  .slip .url { font-size: 1.1rem; font-weight: 700; }
   /* Table score sheets: A4 landscape pages, two A5 forms side by side, cut down the middle */
   .tpages { display: flex; flex-direction: column; gap: 1.6rem; align-items: flex-start; zoom: var(--z, 1); }
   .a4 { width: 60rem; flex: none; aspect-ratio: 297 / 210; background: #fff; border: 1px solid #999; box-shadow: 0 2px 8px rgba(0,0,0,.15); display: grid; grid-template-columns: 1fr 1fr; position: relative; }
@@ -366,7 +381,8 @@
       <div class="dateline"><span class="date" id="prep-date"></span></div>
       <div class="card">
         <p style="margin:0">De nummers worden <b>op de avond zelf getrokken</b>, zodat niemand kan denken dat er iets is voorgekookt.
-          Daarom staat er op de kaartjes nog geen nummer: dat schrijft iedereen zelf in het vakje, na het trekken.</p>
+          Daarom staat er op de kaartjes nog geen nummer: dat schrijft iedereen zelf in het vakje, na het trekken.
+          Alleen de <b>slapers</b> weten het van tevoren: op hun kaartje staat <b>Slaper 1</b>, <b>2</b> of <b>3</b>, de ronde waarin ze stilzitten.</p>
       </div>
       <div class="card">
         <h2>Wie krijgt een kaartje?</h2>
@@ -376,7 +392,22 @@
           <label for="prep-blank" style="font-weight:700">Lege kaartjes voor invallers:</label>
           <input class="text short" id="prep-blank" inputmode="numeric" value="2" style="max-width:5rem">
         </div>
-        <div class="actions" style="margin-top:1.25rem">
+      </div>
+      <div class="card">
+        <h2>Wie slaapt er?</h2>
+        <p class="help">Komen er niet precies 4, 8, 12 … spelers, dan zit er elke ronde iemand stil. U kiest zelf wie, om de beurt:
+          achter elke naam staat hoe vaak die dit jaar al heeft geslapen. De 1600 punten zet de slaper zelf op het kaartje, zoals nu.</p>
+        <div class="inline">
+          <label for="prep-expect" style="font-weight:700">Aantal spelers (verwacht):</label>
+          <select id="prep-expect" style="max-width:7rem"></select>
+          <span class="muted" id="prep-expect-info"></span>
+        </div>
+        <div id="prep-sleepers" class="sleepers"></div>
+        <div class="actions" id="prep-fair-row">
+          <button type="button" class="btn secondary" id="btn-fair">Eerlijk voorstel</button>
+          <span class="muted">Kiest wie dit jaar het minst heeft geslapen. U kunt het daarna gewoon veranderen.</span>
+        </div>
+        <div class="actions print-row">
           <button type="button" class="btn big" id="btn-print-cards">Kaartjes printen</button>
           <span class="muted" id="prep-card-count"></span>
         </div>
@@ -412,8 +443,9 @@
       <div class="card">
         <p style="margin-bottom:.4rem">Typ per speler het <b>totaal</b> en de <b>pitten</b> van het puntenkaartje.
           Met <b>Enter</b> of <b>Tab</b> gaat u naar het volgende vakje.</p>
-        <p class="help">Bij een <b>slaper</b> typt u de punten van de twee gespeelde rondes; de <span class="sleep-score">1600</span> voor de stille ronde telt het programma er zelf bij.
-          Wie <b>afwezig</b> is, krijgt vanzelf <span class="absent-score">4200</span> punten. Klopt de status niet meer? Klik hem gewoon om.</p>
+        <p class="help">Bij een <b>slaper</b> staat de 1600 voor de stille ronde al in het totaal op het kaartje: typ gewoon dat totaal.
+          Wie <b>afwezig</b> is, krijgt vanzelf <span class="absent-score">4200</span> punten; die worden groen in de stand.
+          Heeft iemand echt precies <span class="absent-score">4200</span> gespeeld? Typ dan gewoon 4200: dat wordt niet groen. Klopt de status niet meer? Klik hem gewoon om.</p>
         <p class="mockfill">Ontwerp: <button type="button" class="linkbtn" id="btn-mockfill">vul de lege vakjes met voorbeeldgetallen</button></p>
         <div class="scroll">
           <table class="entry">
@@ -489,8 +521,8 @@
           <tbody id="players-rows"></tbody>
         </table>
         <p class="help" style="margin:1rem 0 0">Een naam verbeteren past hem overal aan, ook in oude weken.
-          Stopt iemand? Zet die op <b>Gestopt</b>: de oude scores blijven staan, maar de naam komt niet meer op het invulscherm.
-          Moet iemand ook uit de stand (bijvoorbeeld als iemand is overleden)? Kies dan <b>Uit de stand halen</b>: de scores blijven bewaard, en u kunt het altijd terugzetten.
+          Stopt iemand (of is iemand overleden)? Zet die op <b>Gestopt</b>: de naam komt niet meer op de kaartjes en het invulscherm, en gaat <b>uit de stand</b> van dit seizoen.
+          De scores blijven bewaard, en u kunt het altijd terugzetten. Wilt u iemand die stopt toch in de stand houden? Kies dan <b>Blijft in de stand</b>.
           Adres, telefoon en verjaardag staan onder <b>Wijzigen</b>.</p>
       </div>
       <div class="card">
@@ -501,6 +533,7 @@
           <input class="text" id="new-email" placeholder="E-mailadres (mag leeg)" style="max-width:20rem" aria-label="E-mailadres van de nieuwe speler">
           <button type="button" class="btn" id="btn-add-player">Toevoegen</button>
         </div>
+        <p class="help" style="margin:.8rem 0 0">Een nieuw <b>lid</b> krijgt voor de avonden die dit seizoen al geweest zijn <span class="absent-score">4200</span> punten per avond, net als bij afwezigheid.</p>
       </div>
     </section>
 
@@ -523,11 +556,6 @@
           <label for="set-absent">Punten bij afwezigheid</label>
           <p class="help">Wie een avond overslaat, krijgt dit aantal punten en geen pitten.</p>
           <input class="text short" id="set-absent" inputmode="numeric">
-        </div>
-        <div class="field">
-          <label for="set-sleep">Punten voor een stille ronde</label>
-          <p class="help">Wie een ronde moet slapen (stilzitten), krijgt dit aantal punten voor die ronde.</p>
-          <input class="text short" id="set-sleep" inputmode="numeric">
         </div>
         <div class="field">
           <label for="set-rounds">Rondes per avond</label>
@@ -590,6 +618,11 @@
         <div class="field">
           <label for="set-ppw">Wachtwoord voor de spelers</label>
           <input class="text" id="set-ppw" style="max-width:16rem">
+        </div>
+        <div class="field">
+          <span class="label">Briefjes om uit te delen</span>
+          <p class="help">Kleine briefjes met het adres en het wachtwoord, 10 per A4. Printen, knippen en uitdelen op de avond.</p>
+          <button type="button" class="btn secondary" id="btn-print-slips">Briefjes printen</button>
         </div>
       </div>
       <div class="card">
@@ -688,12 +721,13 @@ const SUBS = [['Bert van Loon', { 45: 5292 }], ['Henny Dijkstra', {}], ['Gijs Me
 const NO_EMAIL = ['Dineke Prins', 'Bep Willems'];
 
 const settings = {
-  club: 'De Samenspelers', absent: 4200, sleep: 1600, day: 'maandag',
+  club: 'De Samenspelers', absent: 4200, day: 'maandag',
   sender: 'Wedstrijdleiding klaverjassen', reply: 'pa@voorbeeld.nl', subject: 'Standen week',
   link: 'klaverjas.gemberkoekje.nl', playerPw: 'klaverjas26',
   colors: { first: '#ffff00', second: '#e9a3e4', third: '#5bb8ec', absent: '#92d88b' }
 };
 const holidays = [['maandag 6 april', 'Pasen'], ['maandag 4 mei', 'Dodenherdenking'], ['maandag 25 mei', 'Pinksteren']];
+const EARLIER_EVENINGS = 39; // weeks 3–44 of 2026, minus the three Mondays above (the mock only holds November)
 
 function makeEmail(name) {
   const parts = name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z ]/g, '').split(/\s+/);
@@ -701,7 +735,8 @@ function makeEmail(name) {
 }
 function sheetWeek(v, pit) {
   if (v === A) return { status: 'afwezig', round: 0, pts: '', pits: '' };
-  if (typeof v === 'string') { const [s, p] = v.split(':'); return { status: 'slaper', round: Number(s.slice(1)), pts: p, pits: String(pit) }; }
+  // 'S1:3226' = slaper in round 1 with 3226 from the two rounds played; the card total includes the 1600 (Dad, Q9)
+  if (typeof v === 'string') { const [s, p] = v.split(':'); return { status: 'slaper', round: Number(s.slice(1)), pts: String(Number(p) + 1600), pits: String(pit) }; }
   return { status: 'speelt', round: 0, pts: String(v), pits: String(pit) };
 }
 
@@ -710,7 +745,7 @@ const players = SHEET.map(([name, total, pts, pitsTotal, pits, sleeps]) => {
   const weeks = {};
   [45, 46, 47].forEach((wk, j) => { weeks[wk] = sheetWeek(pts[j], pits[j]); });
   const p = { id: nextId++, name, kind: 'lid', email: NO_EMAIL.includes(name) ? '' : makeEmail(name), active: true, sleeps, weeks, base: 0, basePits: 0 };
-  p.base = total - [45, 46, 47].reduce((s, wk) => s + scoreOf(weeks[wk], 4200, 1600), 0);
+  p.base = total - [45, 46, 47].reduce((s, wk) => s + scoreOf(weeks[wk], 4200), 0);
   p.basePits = pitsTotal - [45, 46, 47].reduce((s, wk) => s + pitsOf(weeks[wk]), 0);
   return p;
 });
@@ -735,11 +770,12 @@ const members = () => players.filter(p => p.kind === 'lid');
 const subsList = () => players.filter(p => p.kind === 'invaller');
 const byId = id => players.find(p => p.id === Number(id));
 
-function scoreOf(w, absent = settings.absent, sleep = settings.sleep) {
+// A slaper's card total already includes the 1600 for the round sat out (Dad, Q9), so nothing is added.
+function scoreOf(w, absent = settings.absent) {
   if (!w) return 0;
   if (w.status === 'afwezig') return absent;
   if (w.pts === '') return 0;
-  return Number(w.pts) + (w.status === 'slaper' ? sleep : 0);
+  return Number(w.pts);
 }
 function pitsOf(w) { return (!w || w.status === 'afwezig') ? 0 : (Number(w.pits) || 0); }
 function isDone(wk) { return evenings[wk] && evenings[wk].state === 'ingevuld'; }
@@ -830,7 +866,6 @@ function show(screen) {
   $('#admin-main').classList.toggle('has-savebar', screen === 'invoer');
   document.querySelectorAll('.club-name').forEach(e => { e.textContent = settings.club; });
   document.querySelectorAll('.absent-score').forEach(e => { e.textContent = settings.absent; });
-  document.querySelectorAll('.sleep-score').forEach(e => { e.textContent = settings.sleep; });
   ({ avonden: renderEvenings, voorbereiden: renderPrep, invoer: renderEntry, stand: renderStand, spelers: renderPlayers, instellingen: renderSettings })[screen]();
   window.scrollTo(0, 0);
 }
@@ -871,13 +906,19 @@ function renderEvenings() {
 }
 
 /* ---------------- Avond voorbereiden (kaartjes en tafelindeling; de nummers worden op de avond getrokken) ---------------- */
-let prepWeek = null, prepCards = null;
+// prepSleep.slots[round - 1] = the member ids Dad picked to sit out that round ("Slaper 1/2/3" on their card).
+let prepWeek = null, prepCards = null, prepSleep = null, expectTouched = false;
 const planCache = {};
+const MOCK_AWAY = ['Dineke Prins', 'Marga Peters', 'Ria Bos']; // mock only: unticked, so the example has 17 players
 function openPrep(wk) {
   prepWeek = wk;
-  prepCards = new Set(evenings[wk] && evenings[wk].cards ? evenings[wk].cards : members().filter(p => p.active).map(p => p.id));
+  const ev = evenings[wk] || {};
+  prepCards = new Set(ev.cards ? ev.cards : members().filter(p => p.active && !MOCK_AWAY.includes(p.name)).map(p => p.id));
+  expectTouched = Boolean(ev.expect);
+  prepSleep = { expect: ev.expect || clampPlayers(prepCards.size), slots: ev.slots ? ev.slots.map(r => [...r]) : [[], [], []] };
   show('voorbereiden');
 }
+const clampPlayers = n => Math.min(28, Math.max(4, n));
 function blanks() { const v = parseInt($('#prep-blank').value, 10); return Number.isNaN(v) || v < 0 ? 0 : Math.min(v, 12); }
 function updateCardCount() { const n = prepCards.size + blanks(); $('#prep-card-count').textContent = `${n} kaartjes = ${Math.ceil(n / 12)} A4`; }
 function renderPrep() {
@@ -885,11 +926,41 @@ function renderPrep() {
   $('#prep-list').innerHTML = members().filter(p => p.active).sort(byName)
     .map(p => `<label><input type="checkbox" data-card="${p.id}" ${prepCards.has(p.id) ? 'checked' : ''}> ${esc(p.name)}</label>`).join('');
   updateCardCount();
-  const sel = $('#prep-n');
-  if (!sel.options.length) sel.innerHTML = Array.from({ length: 25 }, (_, i) => i + 4).map(n => `<option ${n === 17 ? 'selected' : ''}>${n}</option>`).join('');
+  const counts = Array.from({ length: 25 }, (_, i) => i + 4).map(n => `<option>${n}</option>`).join('');
+  if (!$('#prep-expect').options.length) $('#prep-expect').innerHTML = counts;
+  if (!$('#prep-n').options.length) $('#prep-n').innerHTML = counts;
+  $('#prep-expect').value = String(prepSleep.expect);
+  $('#prep-n').value = String(prepSleep.expect);
+  renderSleepers();
   renderPlan();
 }
-function savePrep() { evenings[prepWeek] = { ...(evenings[prepWeek] || { state: 'voorbereid' }), cards: [...prepCards] }; }
+function savePrep() { evenings[prepWeek] = { ...(evenings[prepWeek] || { state: 'voorbereid' }), cards: [...prepCards], expect: prepSleep.expect, slots: prepSleep.slots.map(r => [...r]) }; }
+
+/* Wie slaapt er: Dad picks them, by turns (Q10); players % 4 per round, so 0 to 3 per round. */
+const perRound = () => prepSleep.expect % 4;
+const chosenIds = () => prepSleep.slots.flat().filter(Boolean);
+function sleeperRound(id) { return prepSleep.slots.findIndex(r => r.includes(id)) + 1; }
+function fitSlots() { const s = perRound(); prepSleep.slots = prepSleep.slots.map(r => { const a = r.slice(0, s); while (a.length < s) a.push(null); return a; }); }
+// Fewest times sat out first; the real app breaks ties by who sat out longest ago.
+const sleepPool = () => members().filter(p => prepCards.has(p.id)).sort((a, b) => a.sleeps - b.sleeps || byName(a, b));
+function renderSleepers() {
+  fitSlots();
+  const s = perRound(), tables = Math.floor(prepSleep.expect / 4);
+  $('#prep-expect-info').textContent = `${tables} tafels, ` + (s ? `per ronde slaapt er ${s}` : 'niemand slaapt');
+  $('#prep-fair-row').hidden = !s;
+  if (!s) { $('#prep-sleepers').innerHTML = '<p class="muted" style="margin:0">Bij dit aantal spelers hoeft niemand te slapen.</p>'; return; }
+  const pool = sleepPool(), taken = chosenIds();
+  $('#prep-sleepers').innerHTML = [1, 2, 3].map(r => `<div class="srow"><b>Ronde ${r}</b>${prepSleep.slots[r - 1].map((id, i) =>
+    `<select data-sr="${r}" data-si="${i}" aria-label="Slaper ${i + 1} in ronde ${r}"><option value="">— kies een naam —</option>${pool.filter(p => p.id === id || !taken.includes(p.id))
+      .map(p => `<option value="${p.id}" ${p.id === id ? 'selected' : ''}>${esc(p.name)} (${p.sleeps}× geslapen)</option>`).join('')}</select>`).join('')}
+    <span class="muted">op het kaartje:</span> <span class="tag">Slaper ${r}</span></div>`).join('');
+}
+function fairProposal() {
+  const taken = new Set(chosenIds()), free = sleepPool().filter(p => !taken.has(p.id));
+  prepSleep.slots = prepSleep.slots.map(r => r.map(id => id || (free.length ? free.shift().id : null)));
+  renderSleepers();
+}
+function setExpect(n) { prepSleep.expect = clampPlayers(n); $('#prep-expect').value = String(prepSleep.expect); $('#prep-n').value = String(prepSleep.expect); renderSleepers(); renderPlan(); }
 
 // Seeded random, so the same number of players always gives the same plan (the real app uses Dad's own schemes).
 let seed = 47;
@@ -948,11 +1019,12 @@ function planHtmlFor(n) {
   const { plan, stil } = planFor(n);
   return plan.map((tables, i) => `<div class="round"><h3>Ronde ${i + 1}</h3><table>${tables.map((g, t) =>
     `<tr><td class="t">Tafel ${t + 1}</td><td class="nrs"><b>${g[0]}</b> &amp; <b>${g[1]}</b> <span class="vs">tegen</span> <b>${g[2]}</b> &amp; <b>${g[3]}</b></td></tr>`).join('')}
-    ${stil[i].length ? `<tr><td class="t stil">Stil</td><td class="stil nrs">nr ${stil[i].join(', ')}</td></tr>` : ''}</table></div>`).join('');
+    ${stil[i].length ? `<tr><td class="t stil">Stil</td><td class="stil nrs">nr ${andList(stil[i])} <span class="vs">(kaartje Slaper ${i + 1})</span></td></tr>` : ''}</table></div>`).join('');
 }
+const andList = a => a.length > 1 ? a.slice(0, -1).join(', ') + ' en ' + a[a.length - 1] : String(a[0]);
 function renderPlan() {
   const n = Number($('#prep-n').value), s = n % 4;
-  $('#prep-n-info').textContent = `${Math.floor(n / 4)} tafels` + (s ? `, per ronde ${s} stil (de laagste nummers, zoals nu)` : ', niemand zit stil') +
+  $('#prep-n-info').textContent = `${Math.floor(n / 4)} tafels` + (s ? `, per ronde ${s} stil: de slapers, met de laagste nummers` : ', niemand zit stil') +
     (planFor(n).strictOk ? '. Niemand zit twee keer met dezelfde mensen aan tafel.' : '. Met zo weinig tafels zit iedereen wel eens twee keer met iemand aan tafel, maar nooit twee keer met dezelfde maat.');
   $('#prep-plan').innerHTML = planHtmlFor(n);
 }
@@ -991,21 +1063,38 @@ function tableSheetsHtml(n) {
   return `<div class="tpages">${pages.join('')}</div>`;
 }
 
+// First name only on the card (Dad, Q16); the full name when two active members share a first name.
+function cardName(p) { const f = firstName(p.name); return members().some(o => o !== p && o.active && firstName(o.name) === f) ? p.name : f; }
 function cardsHtml() {
-  const names = members().filter(p => prepCards.has(p.id)).sort(byName).map(p => p.name).concat(Array(blanks()).fill(''));
+  const cards = members().filter(p => prepCards.has(p.id)).sort(byName).map(p => ({ name: cardName(p), r: sleeperRound(p.id) }))
+    .concat(Array.from({ length: blanks() }, () => ({ name: '', r: 0 })));
   const date = LONG[prepWeek].replace('maandag ', '').replace(' 2026', '');
-  return `<div class="cards">${names.map(name => `<div class="scard"><table><colgroup><col style="width:22%"><col style="width:46%"><col style="width:32%"></colgroup>
-      <tr class="club"><td colspan="2">"${esc(settings.club)}"</td><td class="nr-box" title="Het nummer schrijft de speler zelf in, na het trekken"></td></tr>
+  return `<div class="cards">${cards.map(({ name, r }) => `<div class="scard"><table><colgroup><col style="width:22%"><col style="width:46%"><col style="width:32%"></colgroup>
+      <tr class="club"><td colspan="2">"${esc(settings.club)}"</td>${r ? `<td class="nr-box slaper">Slaper ${r}</td>` : '<td class="nr-box" title="Het nummer schrijft de speler zelf in, na het trekken"></td>'}</tr>
       <tr class="naam${name.length > 16 ? ' lang' : ''}"><td colspan="3">${esc(name)}</td></tr>
       <tr><td class="lbl">Datum:</td><td colspan="2">${date}</td></tr>
       <tr><th class="ronde"><span>Ronde</span></th><th class="punten">Punten:</th><th class="pitten">Pitten</th></tr>
       ${[1, 2, 3].map(r => `<tr><td class="r">${r}</td><td></td><td></td></tr>`).join('')}
       <tr><td class="lbl"><b>Totaal:</b></td><td></td><td></td></tr></table></div>`).join('')}</div>`;
 }
-$('#prep-list').addEventListener('change', e => { const id = Number(e.target.dataset.card); if (!id) return; if (e.target.checked) prepCards.add(id); else prepCards.delete(id); updateCardCount(); });
+$('#prep-list').addEventListener('change', e => {
+  const id = Number(e.target.dataset.card); if (!id) return;
+  if (e.target.checked) prepCards.add(id);
+  else { prepCards.delete(id); prepSleep.slots = prepSleep.slots.map(r => r.map(x => (x === id ? null : x))); }
+  updateCardCount();
+  if (expectTouched) renderSleepers(); else setExpect(prepCards.size);
+});
 $('#prep-blank').addEventListener('input', updateCardCount);
+$('#prep-expect').addEventListener('change', e => { expectTouched = true; setExpect(Number(e.target.value)); });
+$('#prep-sleepers').addEventListener('change', e => { const r = Number(e.target.dataset.sr); if (!r) return; prepSleep.slots[r - 1][Number(e.target.dataset.si)] = Number(e.target.value) || null; renderSleepers(); });
+$('#btn-fair').addEventListener('click', fairProposal);
 $('#prep-n').addEventListener('change', renderPlan);
-$('#btn-print-cards').addEventListener('click', () => { savePrep(); modal('Kaartjes printen', `<p class="help">12 per A4, net als nu: met naam en datum, <b>zonder nummer</b>. Het nummer schrijft iedereen zelf in het vakje rechtsboven, na het trekken.</p>${cardsHtml()}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true); });
+$('#btn-print-cards').addEventListener('click', () => {
+  savePrep();
+  const open = prepSleep.slots.flat().filter(x => !x).length;
+  const warn = open ? `<div class="banner warn"><p>Er ${open === 1 ? 'is nog 1 slaper' : `zijn nog ${open} slapers`} niet gekozen. Dat mag: schrijf het dan zelf op een kaartje.</p></div>` : '';
+  modal('Kaartjes printen', `${warn}<p class="help">12 per A4, net als nu: met de voornaam en de datum, <b>zonder nummer</b>. Het nummer schrijft iedereen zelf in het vakje rechtsboven, na het trekken. Bij de slapers staat daar al <b>Slaper 1</b>, <b>2</b> of <b>3</b>.</p>${cardsHtml()}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true);
+});
 $('#btn-print-plan').addEventListener('click', () => { const n = Number($('#prep-n').value); const count = planFor(n).plan.reduce((a, r) => a + r.length, 0); modal(`Tafelindeling voor ${n} spelers`, `<p class="help">Dit wordt geprint: eerst het <b>overzicht</b> (1 A4, voor aan de muur), dan de <b>tafelbriefjes</b>: één per tafel per ronde, ${count} briefjes, 2 per A4 (${Math.ceil(count / 2)} A4): printen en dan doormidden knippen tot A5. Wie bij welk nummer hoort, blijkt pas bij het trekken.</p><h3>Overzicht</h3><div class="rounds">${planHtmlFor(n)}</div><h3 style="margin-top:1.25rem">Tafelbriefjes</h3>${tableSheetsHtml(n)}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true); fitPages(); });
 function fitPages() { const tp = document.querySelector('#modal-text .tpages'); if (!tp) return; const a4 = tp.querySelector('.a4'); tp.style.setProperty('--z', String(Math.min(1, (document.querySelector('#modal-text').clientWidth - 4) / a4.offsetWidth))); }
 window.addEventListener('resize', fitPages);
@@ -1018,10 +1107,12 @@ function openEntry(wk) {
   editWeek = wk;
   editIsNew = !isDone(wk);
   draft = {};
+  const slots = (evenings[wk] && evenings[wk].slots) || [];
+  const pickedRound = id => slots.findIndex(r => r.includes(id)) + 1; // the slapers Dad picked when printing the cards
   players.forEach(p => {
     const w = p.weeks[wk];
     if (w) draft[p.id] = { ...w };
-    else if (p.kind === 'lid' && p.active && !isDone(wk)) draft[p.id] = { status: 'speelt', round: 0, pts: '', pits: '' };
+    else if (p.kind === 'lid' && p.active && !isDone(wk)) { const r = pickedRound(p.id); draft[p.id] = { status: r ? 'slaper' : 'speelt', round: r, pts: '', pits: '' }; }
   });
   show('invoer');
 }
@@ -1049,7 +1140,7 @@ function renderEntry() {
 }
 function rowProblem(d) {
   if (d.status === 'afwezig') return { text: `Afwezig: krijgt ${settings.absent} punten`, kind: 'info' };
-  if (d.pts === '') return { text: d.status === 'slaper' ? 'Punten van 2 rondes invullen' : 'Punten nog invullen', kind: 'warn', field: 'pts' };
+  if (d.pts === '') return { text: 'Punten nog invullen', kind: 'warn', field: 'pts' };
   if (!/^\d+$/.test(d.pts)) return { text: 'Alleen cijfers, graag', kind: 'bad', field: 'pts' };
   const tot = scoreOf(d);
   if (tot < 2500) return { text: 'Klopt dit? Erg weinig punten', kind: 'warn', field: 'pts' };
@@ -1057,7 +1148,8 @@ function rowProblem(d) {
   if (d.pits === '') return { text: 'Pitten leeg (telt als 0)', kind: 'warn', field: 'pits' };
   if (!/^\d+$/.test(d.pits)) return { text: 'Alleen cijfers, graag', kind: 'bad', field: 'pits' };
   if (Number(d.pits) > 12) return { text: 'Klopt dit? Erg veel pitten', kind: 'warn', field: 'pits' };
-  if (d.status === 'slaper') return { text: `+ ${settings.sleep} (stil in ronde ${d.round}) = ${tot}`, kind: 'info' };
+  if (d.status === 'slaper') return { text: `Slaper in ronde ${d.round} (de 1600 staat al in het totaal)`, kind: 'info' };
+  if (tot === settings.absent) return { text: `Precies ${settings.absent} gespeeld: wordt niet groen`, kind: 'info' };
   return null;
 }
 function checkRow(tr) {
@@ -1160,7 +1252,6 @@ function renderPlayers() {
 function renderSettings() {
   $('#set-club').value = settings.club;
   $('#set-absent').value = settings.absent;
-  $('#set-sleep').value = settings.sleep;
   $('#set-day').value = settings.day;
   $('#set-sender').value = settings.sender;
   $('#set-reply').value = settings.reply;
@@ -1205,7 +1296,7 @@ function renderPhone() {
   const bar = '<div class="p-url">🔒 klaverjas.gemberkoekje.nl</div>';
   if (!phoneIn) {
     $('#phone').innerHTML = `${bar}<div class="p-head"><span aria-hidden="true">♣</span> ${esc(settings.club)}</div>
-      <div class="p-body"><h2>De stand bekijken</h2><p>Typ het wachtwoord van de club. Dat hoort u op de clubavond.</p>
+      <div class="p-body"><h2>De stand bekijken</h2><p>Typ het wachtwoord van de club. Dat staat op het briefje dat u op de clubavond kreeg.</p>
       <label for="p-pw" style="font-weight:700">Wachtwoord</label><input class="text" id="p-pw" type="password" value="${esc(settings.playerPw)}" style="margin:.3rem 0 1rem">
       <button type="button" class="btn big" data-phone-in style="width:100%">Bekijk de stand</button>
       <p class="muted" style="font-size:.9rem; margin-top:1rem">U blijft ingelogd op deze telefoon.</p></div>`;
@@ -1263,14 +1354,10 @@ document.addEventListener('click', e => {
   if (t.dataset.old) { modal('Alleen in het echt', '<p>In dit ontwerp zijn alleen de avonden van november te openen. In het echte programma kunt u elke avond wijzigen.</p>', ok); return; }
   if (t.dataset.st) {
     const tr = t.closest('tr'), id = tr.dataset.id, st = t.dataset.st;
-    if (t.closest('#s-voorbereiden')) {
-      prep.st[id] = { status: st, round: st === 'slaper' ? (prep.st[id].round || 1) : 0 }; prep.plan = null; renderPrep();
-    } else {
-      const d = draft[id]; d.status = st; d.round = st === 'slaper' ? (d.round || 1) : 0; if (st === 'afwezig') { d.pts = ''; d.pits = ''; }
-      tr.outerHTML = entryRow(byId(id));
-      const fresh = document.querySelector(`#s-invoer tr[data-id="${id}"]`); checkRow(fresh); updateFacts();
-      const inp = fresh.querySelector('input.pts:not(:disabled)'); if (inp) inp.focus();
-    }
+    const d = draft[id]; d.status = st; d.round = st === 'slaper' ? (d.round || 1) : 0; if (st === 'afwezig') { d.pts = ''; d.pits = ''; }
+    tr.outerHTML = entryRow(byId(id));
+    const fresh = document.querySelector(`#s-invoer tr[data-id="${id}"]`); checkRow(fresh); updateFacts();
+    const inp = fresh.querySelector('input.pts:not(:disabled)'); if (inp) inp.focus();
     return;
   }
   if (t.dataset.unhol !== undefined) { holidays.splice(Number(t.dataset.unhol), 1); renderSettings(); return; }
@@ -1285,10 +1372,11 @@ document.addEventListener('click', e => {
   }
 });
 document.addEventListener('change', e => {
+  // Gestopt takes a member out of the stand by default (Dad, Q4); "Blijft in de stand" can still be chosen.
+  if (e.target.id === 'ed-active' && $('#ed-stand')) { $('#ed-stand').value = e.target.value; return; }
   if (!e.target.classList.contains('round')) return;
-  const id = e.target.closest('tr').dataset.id, r = Number(e.target.value);
-  if (e.target.closest('#s-voorbereiden')) { prep.st[id].round = r; prep.plan = null; renderPrep(); }
-  else { draft[id].round = r; checkRow(e.target.closest('tr')); }
+  const id = e.target.closest('tr').dataset.id;
+  draft[id].round = Number(e.target.value); checkRow(e.target.closest('tr'));
 });
 
 $('#btn-prep').addEventListener('click', () => openPrep(nextWeek()));
@@ -1305,7 +1393,7 @@ $('#btn-add-sub').addEventListener('click', () => {
 $('#btn-mockfill').addEventListener('click', () => {
   Object.values(draft).forEach(d => {
     if (d.status === 'afwezig') return;
-    if (d.pts === '') d.pts = String(d.status === 'slaper' ? 2400 + Math.floor(rnd() * 1300) : 3600 + Math.floor(rnd() * 2000));
+    if (d.pts === '') d.pts = String(3600 + Math.floor(rnd() * 2000));
     if (d.pits === '') d.pits = String(Math.floor(rnd() * 4));
   });
   renderEntry();
@@ -1333,10 +1421,20 @@ $('#btn-print-members').addEventListener('click', () => modal('Ledenlijst printe
 $('#btn-add-player').addEventListener('click', () => {
   const name = $('#new-name').value.trim(); if (!name) { $('#new-name').focus(); return; }
   const kind = $('#new-kind').value;
-  players.push({ id: nextId++, name, kind, email: $('#new-email').value.trim(), active: true, sleeps: 0, base: 0, basePits: 0, weeks: {} });
+  const p = { id: nextId++, name, kind, email: $('#new-email').value.trim(), active: true, sleeps: 0, base: 0, basePits: 0, weeks: {} };
+  // A new member gets the absence score for every evening of the season so far (Dad, Q5).
+  if (kind === 'lid') { p.base = EARLIER_EVENINGS * settings.absent; doneWeeks().forEach(wk => { p.weeks[wk] = { status: 'afwezig', round: 0, pts: '', pits: '' }; }); }
+  players.push(p);
   $('#new-name').value = ''; $('#new-email').value = '';
-  $('#players-banner').innerHTML = `<div class="banner ok"><p><b>${esc(name)}</b> is toegevoegd als ${kind === 'lid' ? 'lid' : 'invaller'}.</p></div>`;
+  const past = EARLIER_EVENINGS + doneWeeks().length;
+  $('#players-banner').innerHTML = `<div class="banner ok"><p><b>${esc(name)}</b> is toegevoegd als ${kind === 'lid' ? `lid. Voor de ${past} avonden die dit seizoen al geweest zijn, krijgt ${esc(firstName(name))} ${settings.absent} punten per avond, net als bij afwezigheid` : 'invaller'}.</p></div>`;
   renderPlayers();
+});
+// The handout slip: how players learn the address and the password (Dad, Q13).
+$('#btn-print-slips').addEventListener('click', () => {
+  const pw = $('#set-ppw').value.trim() || settings.playerPw;
+  const slip = `<div class="slip"><div class="sc">♣ ${esc(settings.club)}</div>De stand staat online:<div class="url">${esc(settings.link)}</div>Wachtwoord: <b>${esc(pw)}</b><br><span class="muted" style="font-size:.85rem">Eén keer intypen, daarna onthoudt uw telefoon of computer het.</span></div>`;
+  modal('Briefjes printen', `<p class="help">10 per A4. Printen, langs de stippellijnen knippen en uitdelen op de avond.</p><div class="slips">${slip.repeat(10)}</div>`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true);
 });
 $('#btn-add-hol').addEventListener('click', () => { const d = $('#hol-date').value.trim(); if (!d) { $('#hol-date').focus(); return; } holidays.push([d, $('#hol-why').value.trim() || '–']); $('#hol-date').value = ''; $('#hol-why').value = ''; renderSettings(); });
 ['first', 'second', 'third', 'absent'].forEach(k => $('#col-' + k).addEventListener('input', e => { settings.colors[k] = e.target.value; applyColors(); }));
@@ -1345,7 +1443,6 @@ $('#btn-save-settings').addEventListener('click', () => {
   const num = (sel, cur) => { const v = parseInt($(sel).value, 10); return !Number.isNaN(v) && v > 0 ? v : cur; };
   settings.club = $('#set-club').value.trim() || settings.club;
   settings.absent = num('#set-absent', settings.absent);
-  settings.sleep = num('#set-sleep', settings.sleep);
   settings.day = $('#set-day').value;
   settings.sender = $('#set-sender').value.trim() || settings.sender;
   settings.reply = $('#set-reply').value.trim() || settings.reply;
