@@ -37,7 +37,7 @@ spec:
         # -U is required: UID 1000 has no entry in the image's /etc/passwd, and without a user
         # name pg_isready gives up with "no attempt" (see seerr.yaml).
         - name: wait-for-postgres
-          image: postgres:17-alpine
+          image: postgres:19-alpine
           command:
             - sh
             - -c

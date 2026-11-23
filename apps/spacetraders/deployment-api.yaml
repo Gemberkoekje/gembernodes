@@ -32,7 +32,7 @@ spec:
       # crash-loop until the database is back. Wait for it, like armabotcs and curatool.
       initContainers:
         - name: wait-for-postgres
-          image: postgres:17-alpine
+          image: postgres:19-alpine
           command:
             - sh
             - -c

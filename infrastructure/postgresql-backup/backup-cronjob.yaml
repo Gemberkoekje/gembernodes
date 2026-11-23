@@ -28,7 +28,7 @@ spec:
             # nightly dump aborted, the job still succeeded (no pipefail, so only gzip's exit status
             # counted), and the empty files rotated the real dumps away. A newer client is fine.
             - name: pg-dump
-              image: postgres:18-alpine
+              image: postgres:19-alpine
               securityContext:
                 allowPrivilegeEscalation: false
                 capabilities:

@@ -19,7 +19,7 @@ spec:
       # which after a node reboot meant a crash loop until the database was back. Wait for it.
       initContainers:
         - name: wait-for-postgres
-          image: postgres:17-alpine
+          image: postgres:19-alpine
           command:
             - sh
             - -c

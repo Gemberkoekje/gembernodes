@@ -35,7 +35,7 @@ spec:
         # /etc/passwd, and without a user name pg_isready gives up with "no attempt" instead of
         # connecting (the Servarr pods run their init step as root, so it never showed there).
         - name: wait-for-postgres
-          image: postgres:17-alpine
+          image: postgres:19-alpine
           command:
             - sh
             - -c

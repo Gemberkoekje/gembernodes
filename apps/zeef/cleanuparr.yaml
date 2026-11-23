@@ -24,7 +24,7 @@ spec:
       enableServiceLinks: false
       initContainers:
         - name: wait-for-postgres
-          image: postgres:17-alpine
+          image: postgres:19-alpine
           command:
             - sh
             - -c

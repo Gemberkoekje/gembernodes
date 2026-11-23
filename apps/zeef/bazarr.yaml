@@ -50,7 +50,7 @@ spec:
       initContainers:
         # Start only once PostgreSQL answers, instead of crash-looping through a reboot.
         - name: wait-for-postgres
-          image: postgres:17-alpine
+          image: postgres:19-alpine
           command:
             - sh
             - -c

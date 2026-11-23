@@ -35,7 +35,7 @@ spec:
         # After a node reboot PostgreSQL can be back later than this pod, and Home Assistant gives
         # up on its recorder after a few tries (no history until the next restart). Wait for it.
         - name: wait-for-postgres
-          image: postgres:18-alpine
+          image: postgres:19-alpine
           command:
             - sh
             - -c

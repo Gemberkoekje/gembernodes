@@ -19,7 +19,7 @@ spec:
       # PostgreSQL is unreachable, which after a node reboot meant a crash loop. Wait for it.
       initContainers:
         - name: wait-for-postgres
-          image: postgres:17-alpine
+          image: postgres:19-alpine
           command:
             - sh
             - -c
