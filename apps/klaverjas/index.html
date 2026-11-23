@@ -197,10 +197,17 @@
   .tsheet { flex: 1; min-width: 0; border: 1.5px solid #333; padding: .4rem .5rem; background: #fff; font-size: .78rem; display: flex; flex-direction: column; overflow: hidden; }
   .ts-head { display: flex; justify-content: space-between; gap: .2rem .6rem; flex-wrap: wrap; border-bottom: 1px solid #555; padding-bottom: .15rem; }
   .ts-head b { font-size: .98rem; }
-  .ts-pairs { display: flex; justify-content: space-around; font-size: .98rem; padding: .25rem 0; }
+  .ts-pairs { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; padding: .15rem 0 .3rem; }
+  .ts-pairs .who { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #444; padding-left: 1.2rem; }
+  .ts-pairs .pbody { display: flex; align-items: stretch; gap: .3rem; }
+  .ts-pairs .arr { width: .95rem; height: 2.5rem; color: #c00; flex: none; }
+  .ts-pairs .prows { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+  .ts-pairs .prow { display: flex; align-items: flex-end; gap: .35rem; height: 1.2rem; }
+  .ts-pairs .prow b { font-size: 1rem; min-width: 1.4rem; text-align: right; line-height: 1; }
+  .ts-pairs .nm-line { flex: 1; border-bottom: 1.5px solid #222; }
   .ts-body { display: grid; grid-template-columns: 6.4rem minmax(0, 1fr); gap: .35rem; align-items: start; min-height: 0; }
   .tsheet table { border-collapse: collapse; width: 100%; }
-  .tsheet th, .tsheet td { border: 1px solid #666; padding: 0 .2rem; height: 1.3rem; font-weight: 400; overflow: hidden; white-space: nowrap; }
+  .tsheet th, .tsheet td { border: 1px solid #666; padding: 0 .2rem; height: 1.25rem; font-weight: 400; overflow: hidden; white-space: nowrap; }
   .tsheet th { font-size: .66rem; height: 1.15rem; }
   .tsheet table.split th { font-size: .62rem; }
   .tsheet table.split td { font-size: .56rem; line-height: 1.22; height: auto; padding: 0 .15rem; border-color: #c4c4c4; text-align: center; }
@@ -959,6 +966,12 @@ function splitStrip() {
   for (let i = 0; i <= 40; i++) rows += `<tr><td>${i} – ${162 - i}</td><td>${i + 41} – ${121 - i}</td></tr>`;
   return `<table class="split"><tr><th colspan="2">Verdeling</th></tr>${rows}</table>`;
 }
+// One pair: the two seat numbers on their own rows with a line for the name, linked by a big arrow
+// (some players otherwise think they play with the person across the sheet).
+const ARROW = '<svg class="arr" viewBox="0 0 14 40" aria-hidden="true"><path d="M7 4 L7 36" stroke="currentColor" stroke-width="2.8"/><path d="M1.5 10.5 L7 3 L12.5 10.5 M1.5 29.5 L7 37 L12.5 29.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+function pairHtml(label, a, b) {
+  return `<div class="pair"><div class="who">${label}</div><div class="pbody">${ARROW}<div class="prows"><div class="prow"><b>${a}</b><span class="nm-line"></span></div><div class="prow"><b>${b}</b><span class="nm-line"></span></div></div></div></div>`;
+}
 function tableSheetsHtml(n) {
   const { plan } = planFor(n);
   const date = LONG[prepWeek].replace('maandag ', '').replace(' 2026', '');
@@ -971,7 +984,7 @@ function tableSheetsHtml(n) {
       if (h % 4 === 0) rows += `<tr class="chk" title="Subtotaal na ${h} spellen: wij + zij samen ${162 * h} punten (zonder roem)"><td></td><td></td><td></td><td></td><td></td><td colspan="3" class="ctrl">${162 * h}</td></tr>`;
     }
     sheets.push(`<div class="tsheet"><div class="ts-head"><b>Ronde ${r + 1}</b><span>"${esc(settings.club)}" · ${date} · week ${prepWeek} · ${tables.length} tafels</span></div>
-      <div class="ts-pairs"><span>Wij: <b>${g[0]} &amp; ${g[1]}</b></span><span>Zij: <b>${g[2]} &amp; ${g[3]}</b></span></div>
+      <div class="ts-pairs">${pairHtml('Wij', g[0], g[1])}${pairHtml('Zij', g[2], g[3])}</div>
       <div class="ts-body">${strip}<table class="hands"><colgroup><col style="width:11%"><col style="width:18%"><col style="width:14%"><col style="width:18%"><col style="width:14%"><col style="width:9%"><col style="width:9%"><col style="width:7%"></colgroup><tr><th rowspan="2">Spel</th><th colspan="2">Wij</th><th colspan="2">Zij</th><th rowspan="2" class="gs">Gever</th><th rowspan="2" class="gs">Speler</th><th rowspan="2"></th></tr>
       <tr><th>Punten</th><th>Roem</th><th>Punten</th><th>Roem</th></tr>${rows}
       <tr class="tot"><th rowspan="4" class="totcol">Totaal</th><td></td><td class="na"></td><td></td><td class="na"></td><td colspan="3" class="lbl2">Punten</td></tr><tr class="tot2"><td class="na"></td><td></td><td class="na"></td><td></td><td colspan="3" class="lbl2">Roem</td></tr><tr class="eind"><td colspan="2"></td><td colspan="2"></td><td colspan="3" class="lbl2"><b>Eindtotaal</b></td></tr><tr class="tot2"><td colspan="2"></td><td colspan="2"></td><td colspan="3" class="lbl2">Pitten</td></tr></table></div></div>`);
