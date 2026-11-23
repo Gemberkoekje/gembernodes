@@ -200,7 +200,7 @@
   .ts-pairs { display: flex; justify-content: space-around; font-size: .98rem; padding: .25rem 0; }
   .ts-body { display: grid; grid-template-columns: 6.4rem minmax(0, 1fr); gap: .35rem; align-items: start; min-height: 0; }
   .tsheet table { border-collapse: collapse; width: 100%; }
-  .tsheet th, .tsheet td { border: 1px solid #666; padding: 0 .2rem; height: 1.45rem; font-weight: 400; overflow: hidden; white-space: nowrap; }
+  .tsheet th, .tsheet td { border: 1px solid #666; padding: 0 .2rem; height: 1.3rem; font-weight: 400; overflow: hidden; white-space: nowrap; }
   .tsheet th { font-size: .66rem; height: 1.15rem; }
   .tsheet table.split th { font-size: .62rem; }
   .tsheet table.split td { font-size: .56rem; line-height: 1.22; height: auto; padding: 0 .15rem; border-color: #c4c4c4; text-align: center; }
@@ -212,6 +212,10 @@
   .tsheet tr.tot th, .tsheet tr.tot td { border-top: 2px solid #333; font-weight: 700; }
   .tsheet tr.tot th { font-size: .55rem; padding: 0 .05rem; }
   .tsheet td.nr { font-weight: 700; font-size: .85rem; }
+  .tsheet td.na { background: repeating-linear-gradient(135deg, #e6e6e6 0 3px, #fff 3px 6px); }
+  .tsheet td.lbl2 { font-size: .68rem; text-align: left; padding-left: .3rem; font-weight: 400; }
+  .tsheet th.totcol { background: #f3f3f3; }
+  .tsheet tr.eind td { border-top: 2px solid #333; }
   .scard .tag { background: var(--st-slaper); padding: 0 .35rem; font-size: .85rem; margin-top: .25rem; }
   .scard table { width: 100%; border-collapse: collapse; margin-top: .35rem; }
   .scard th, .scard td { border: 1px solid #555; padding: .15rem .35rem; text-align: left; height: 1.7rem; }
@@ -968,7 +972,7 @@ function tableSheetsHtml(n) {
       <div class="ts-pairs"><span>Wij: <b>${g[0]} &amp; ${g[1]}</b></span><span>Zij: <b>${g[2]} &amp; ${g[3]}</b></span></div>
       <div class="ts-body">${strip}<table class="hands"><colgroup><col style="width:12%"><col style="width:16%"><col style="width:12%"><col style="width:16%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:8%"></colgroup><tr><th rowspan="2">Spel</th><th colspan="2">Wij</th><th colspan="2">Zij</th><th rowspan="2">Gever</th><th rowspan="2">Speler</th><th rowspan="2"></th></tr>
       <tr><th>Punten</th><th>Roem</th><th>Punten</th><th>Roem</th></tr>${rows}
-      <tr class="tot"><th>Totaal</th><td></td><td></td><td></td><td></td><td colspan="3"></td></tr></table></div></div>`);
+      <tr class="tot"><th rowspan="4" class="totcol"></th><td></td><td class="na"></td><td></td><td class="na"></td><td colspan="3" class="lbl2">Totaal punten</td></tr><tr class="tot2"><td class="na"></td><td></td><td class="na"></td><td></td><td colspan="3" class="lbl2">Totaal roem</td></tr><tr class="eind"><td colspan="2"></td><td colspan="2"></td><td colspan="3" class="lbl2"><b>Eindtotaal</b></td></tr><tr class="tot2"><td colspan="2"></td><td colspan="2"></td><td colspan="3" class="lbl2">Pitten</td></tr></table></div></div>`);
   }));
   const pages = [];
   for (let i = 0; i < sheets.length; i += 2) pages.push(`<div class="a4"><div class="a5">${sheets[i]}</div><div class="a5">${sheets[i + 1] || ''}</div><div class="cut"><span>✂</span></div></div>`);
