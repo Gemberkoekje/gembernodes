@@ -200,7 +200,7 @@
   .ts-pairs { display: flex; justify-content: space-around; font-size: .98rem; padding: .25rem 0; }
   .ts-body { display: grid; grid-template-columns: 6.4rem minmax(0, 1fr); gap: .35rem; align-items: start; min-height: 0; }
   .tsheet table { border-collapse: collapse; width: 100%; }
-  .tsheet th, .tsheet td { border: 1px solid #666; padding: 0 .2rem; height: 1.62rem; font-weight: 400; overflow: hidden; white-space: nowrap; }
+  .tsheet th, .tsheet td { border: 1px solid #666; padding: 0 .2rem; height: 1.45rem; font-weight: 400; overflow: hidden; white-space: nowrap; }
   .tsheet th { font-size: .66rem; height: 1.15rem; }
   .tsheet table.split th { font-size: .62rem; }
   .tsheet table.split td { font-size: .56rem; line-height: 1.32; height: auto; padding: 0 .15rem; border-color: #c4c4c4; text-align: center; }
@@ -208,7 +208,7 @@
   .tsheet .c { text-align: center; }
   .tsheet .suit { font-size: .9rem; }
   .tsheet .suit.red { color: #c00; }
-  .tsheet tr.chk td { font-size: .58rem; background: #fff7cc; height: auto; text-align: right; white-space: normal; }
+  .tsheet tr.chk td { background: #fff7cc; border-top: 2px solid #333; border-bottom: 2px solid #333; }
   .tsheet tr.tot th, .tsheet tr.tot td { border-top: 2px solid #333; font-weight: 700; }
   .tsheet tr.tot th { font-size: .6rem; padding: 0 .1rem; }
   .scard .tag { background: var(--st-slaper); padding: 0 .35rem; font-size: .85rem; margin-top: .25rem; }
@@ -960,9 +960,9 @@ function tableSheetsHtml(n) {
     let rows = '';
     for (let h = 1; h <= 16; h++) {
       rows += `<tr><td class="c">${h}</td><td></td><td></td><td></td><td></td><td></td><td class="c suit${h % 2 ? ' red' : ''}">${SUITS[(h - 1) % 4]}</td></tr>`;
-      if (h % 4 === 0) rows += `<tr class="chk"><td colspan="7">spel ${h - 3}–${h}: wij + zij samen 648 punten (zonder roem)</td></tr>`;
+      if (h % 4 === 0) rows += '<tr class="chk" title="Subtotaal van deze 4 spellen"><td></td><td></td><td></td><td></td><td></td><td colspan="2"></td></tr>';
     }
-    sheets.push(`<div class="tsheet"><div class="ts-head"><b>Ronde ${r + 1} · Tafel ${t + 1}</b><span>"${esc(settings.club)}" · ${date} · week ${prepWeek} · ${tables.length} tafels</span></div>
+    sheets.push(`<div class="tsheet"><div class="ts-head"><b>Ronde ${r + 1}</b><span>"${esc(settings.club)}" · ${date} · week ${prepWeek} · ${tables.length} tafels</span></div>
       <div class="ts-pairs"><span>Wij: <b>${g[0]} &amp; ${g[1]}</b></span><span>Zij: <b>${g[2]} &amp; ${g[3]}</b></span></div>
       <div class="ts-body">${strip}<table class="hands"><colgroup><col style="width:14%"><col style="width:17%"><col style="width:13%"><col style="width:17%"><col style="width:13%"><col style="width:17%"><col style="width:9%"></colgroup><tr><th rowspan="2">Spel</th><th colspan="2">Wij</th><th colspan="2">Zij</th><th rowspan="2">Gever</th><th rowspan="2"></th></tr>
       <tr><th>Punten</th><th>Roem</th><th>Punten</th><th>Roem</th></tr>${rows}
