@@ -179,11 +179,19 @@
 
   /* Score cards (print preview) */
   .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; }
-  .scard { border: 1.5px solid #333; padding: .6rem .7rem; font-size: .95rem; background: #fff; }
-  .scard .club { font-weight: 700; font-size: 1.05rem; display: flex; justify-content: space-between; align-items: center; }
-  .scard .nr-box { border: 2px solid #333; min-width: 2.2rem; text-align: center; font-size: 1.2rem; }
-  .scard .nr-empty { min-width: 2.8rem; height: 2.1rem; position: relative; }
-  .scard .nr-empty::before { content: 'nr'; position: absolute; top: 0; left: .2rem; font-size: .6rem; font-weight: 400; color: #666; }
+  /* Dad's own card: the table is the card; 8 rows of equal height */
+  .scard { background: #fff; font-size: .9rem; }
+  .scard table { width: 100%; height: 100%; border-collapse: collapse; table-layout: fixed; border: 2.5px solid #111; }
+  .scard th, .scard td { border: 1.5px solid #111; height: 2.3rem; padding: 0 .3rem; font-weight: 400; text-align: center; white-space: nowrap; overflow: hidden; }
+  .scard tr.club td { font-weight: 700; font-size: 1.05rem; }
+  .scard tr.naam td { font-weight: 700; font-size: 1.45rem; white-space: normal; line-height: 1.1; }
+  .scard tr.naam.lang td { font-size: 1.1rem; }
+  .scard td.lbl { text-align: left; font-size: .85rem; padding: 0 .15rem; }
+  .scard th.ronde { padding: 0; }
+  .scard th.ronde span { display: inline-block; writing-mode: vertical-rl; transform: rotate(180deg); font-size: .68rem; }
+  .scard th.punten { font-size: 1.4rem; }
+  .scard th.pitten { font-size: 1.15rem; }
+  .scard td.r { font-weight: 700; font-size: 1.4rem; }
   .checklist { columns: 3 15rem; column-gap: 2rem; }
   .checklist label { display: flex; gap: .55rem; align-items: center; padding: .2rem 0; break-inside: avoid; cursor: pointer; }
   .checklist input { width: 1.4rem; height: 1.4rem; accent-color: var(--accent); }
@@ -195,8 +203,9 @@
   .a4 .cut span { position: absolute; top: 45%; left: -.7rem; background: #fff; font-size: 1.1rem; color: #666; line-height: 1; }
   .a5 { padding: 1.1rem 1.2rem; display: flex; min-width: 0; min-height: 0; }
   .tsheet { flex: 1; min-width: 0; border: 1.5px solid #333; padding: .4rem .5rem; background: #fff; font-size: .78rem; display: flex; flex-direction: column; overflow: hidden; }
-  .ts-head { display: flex; justify-content: space-between; gap: .2rem .6rem; flex-wrap: wrap; border-bottom: 1px solid #555; padding-bottom: .15rem; }
+  .ts-head { display: flex; justify-content: space-between; align-items: baseline; gap: .2rem .6rem; border-bottom: 1px solid #555; padding-bottom: .15rem; }
   .ts-head b { font-size: .98rem; }
+  .ts-head span { font-size: .72rem; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ts-pairs { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; padding: .15rem 0 .3rem; }
   .ts-pairs .who { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #444; padding-left: 1.2rem; }
   .ts-pairs .pbody { display: flex; align-items: stretch; gap: .3rem; }
@@ -213,26 +222,17 @@
   .tsheet table.split td { font-size: .56rem; line-height: 1.22; height: auto; padding: 0 .15rem; border-color: #c4c4c4; text-align: center; }
   .tsheet table.hands { table-layout: fixed; }
   .tsheet .c { text-align: center; }
-  .tsheet .suit { font-size: .9rem; }
-  .tsheet .suit.red { color: #c00; }
+  .tsheet th.spel { font-size: .58rem; padding: 0; }
   .tsheet tr.chk td { background: #fff7cc; border-top: 2px solid #333; border-bottom: 2px solid #333; }
   .tsheet tr.tot th, .tsheet tr.tot td { border-top: 2px solid #333; font-weight: 700; }
   .tsheet tr.tot th { font-size: .55rem; padding: 0 .05rem; }
   .tsheet td.nr { font-weight: 700; font-size: .8rem; padding: 0; }
   .tsheet th.gs { font-size: .52rem; padding: 0; }
   .tsheet td.lbl2 { font-size: .6rem; text-align: left; padding-left: .3rem; font-weight: 400; }
-  .tsheet th.totcol { background: #f3f3f3; font-size: .55rem; font-weight: 700; vertical-align: middle; }
+  .tsheet th.totcol { background: #f3f3f3; font-size: .62rem; font-weight: 700; vertical-align: middle; padding: 0; }
+  .tsheet th.totcol span { display: inline-block; writing-mode: vertical-rl; transform: rotate(180deg); }
   .tsheet tr.eind td { border-top: 2px solid #333; }
   .tsheet tr.chk td.ctrl { text-align: center; font-weight: 700; font-size: .8rem; color: #444; }
-  .scard .tag { background: var(--st-slaper); padding: 0 .35rem; font-size: .85rem; margin-top: .25rem; }
-  .scard table { width: 100%; border-collapse: collapse; margin-top: .35rem; }
-  .scard th, .scard td { border: 1px solid #555; padding: .15rem .35rem; text-align: left; height: 1.7rem; }
-  .scard th { font-weight: 400; text-align: center; }
-  .scard td.lbl { width: 4.2rem; border-right: none; }
-  .scard td.stil { background: #f2f2a6; font-size: .85rem; }
-  .scard .cfoot { display: flex; justify-content: space-between; align-items: center; gap: .4rem; margin-top: .35rem; font-size: .78rem; line-height: 1.3; }
-  .scard .qr { width: 3.3rem; height: 3.3rem; flex: none; }
-  .scard tr td:first-child:not(.lbl) { font-weight: 700; font-size: 1.15rem; text-align: center; }
 
   /* ---------- Standings (the sheet look; also used in the mail) ---------- */
   /* Stacked on screen and in the mail (no sideways scrolling); the PDF keeps the sheet's side-by-side layout */
@@ -314,7 +314,7 @@
 <div id="view-admin">
   <header class="top">
     <div class="wrap">
-      <div class="brand"><span class="suit" aria-hidden="true">♣</span> <span class="club-name">Klaverjasclub</span> <small>Beheer</small></div>
+      <div class="brand"><span class="suit" aria-hidden="true">♣</span> <span class="club-name">De Samenspelers</span> <small>Beheer</small></div>
       <button type="button" class="logout" data-view="login">Uitloggen</button>
     </div>
   </header>
@@ -591,7 +591,6 @@
           <label for="set-ppw">Wachtwoord voor de spelers</label>
           <input class="text" id="set-ppw" style="max-width:16rem">
         </div>
-        <label class="inline"><input type="checkbox" id="set-qr" checked style="width:1.4rem;height:1.4rem"> Adres en QR-code onderaan de kaartjes printen</label>
       </div>
       <div class="card">
         <h2>Wachtwoord</h2>
@@ -635,7 +634,7 @@
 <div id="view-login" hidden>
   <main class="wrap">
     <div class="card login">
-      <div class="brand"><span class="suit" aria-hidden="true">♣</span> <span class="club-name">Klaverjasclub</span> <small style="color:var(--ink-soft)">Beheer</small></div>
+      <div class="brand"><span class="suit" aria-hidden="true">♣</span> <span class="club-name">De Samenspelers</span> <small style="color:var(--ink-soft)">Beheer</small></div>
       <p class="help">klaverjas.gemberkoekje.nl/beheer, ook te vinden via het kleine woord "Beheer" onderaan de spelerspagina.</p>
       <div class="field"><label for="pw">Wachtwoord voor het beheer</label><input class="text" type="password" id="pw"></div>
       <button type="button" class="btn big" data-view="admin" style="width:100%">Inloggen</button>
@@ -689,9 +688,9 @@ const SUBS = [['Bert van Loon', { 45: 5292 }], ['Henny Dijkstra', {}], ['Gijs Me
 const NO_EMAIL = ['Dineke Prins', 'Bep Willems'];
 
 const settings = {
-  club: 'Klaverjasclub', absent: 4200, sleep: 1600, day: 'maandag',
+  club: 'De Samenspelers', absent: 4200, sleep: 1600, day: 'maandag',
   sender: 'Wedstrijdleiding klaverjassen', reply: 'pa@voorbeeld.nl', subject: 'Standen week',
-  link: 'klaverjas.gemberkoekje.nl', playerPw: 'klaverjas26', qr: true,
+  link: 'klaverjas.gemberkoekje.nl', playerPw: 'klaverjas26',
   colors: { first: '#ffff00', second: '#e9a3e4', third: '#5bb8ec', absent: '#92d88b' }
 };
 const holidays = [['maandag 6 april', 'Pasen'], ['maandag 4 mei', 'Dodenherdenking'], ['maandag 25 mei', 'Pinksteren']];
@@ -959,7 +958,6 @@ function renderPlan() {
 }
 
 // The table score sheet, like Dad's '16p4ta' sheets: one per table per round, hands 1-16.
-const SUITS = ['♥', '♣', '♦', '♠'];
 function splitStrip() {
   let rows = '';
   for (let i = 0; i <= 40; i++) rows += `<tr><td>${i} – ${162 - i}</td><td>${i + 41} – ${121 - i}</td></tr>`;
@@ -979,45 +977,35 @@ function tableSheetsHtml(n) {
     const order = [g[0], g[2], g[1], g[3]]; // clockwise round the table, partners opposite
     let rows = '';
     for (let h = 1; h <= 16; h++) {
-      rows += `<tr><td class="c">${h}</td><td></td><td></td><td></td><td></td><td class="c nr">${order[(h - 1) % 4]}</td><td class="c nr">${order[h % 4]}</td><td class="c suit${h % 2 ? ' red' : ''}">${SUITS[(h - 1) % 4]}</td></tr>`;
-      if (h % 4 === 0) rows += `<tr class="chk" title="Subtotaal na ${h} spellen: wij + zij samen ${162 * h} punten (zonder roem)"><td></td><td></td><td></td><td></td><td></td><td colspan="3" class="ctrl">${162 * h}</td></tr>`;
+      rows += `<tr><td class="c">${h}</td><td></td><td></td><td></td><td></td><td class="c nr">${order[(h - 1) % 4]}</td><td class="c nr">${order[h % 4]}</td></tr>`;
+      if (h % 4 === 0) rows += `<tr class="chk" title="Subtotaal na ${h} spellen: wij + zij samen ${162 * h} punten (zonder roem)"><td></td><td></td><td></td><td></td><td></td><td colspan="2" class="ctrl">${162 * h}</td></tr>`;
     }
     sheets.push(`<div class="tsheet"><div class="ts-head"><b>Ronde ${r + 1}</b><span>"${esc(settings.club)}" · ${date} · week ${prepWeek} · ${tables.length} tafels</span></div>
       <div class="ts-pairs">${pairHtml('Wij', g[0], g[1])}${pairHtml('Zij', g[2], g[3])}</div>
-      <div class="ts-body">${strip}<table class="hands"><colgroup><col style="width:11%"><col style="width:18%"><col style="width:14%"><col style="width:18%"><col style="width:14%"><col style="width:9%"><col style="width:9%"><col style="width:7%"></colgroup><tr><th rowspan="2">Spel</th><th colspan="2">Wij</th><th colspan="2">Zij</th><th rowspan="2" class="gs">Gever</th><th rowspan="2" class="gs">Speler</th><th rowspan="2"></th></tr>
+      <div class="ts-body">${strip}<table class="hands"><colgroup><col style="width:8%"><col style="width:23.5%"><col style="width:12%"><col style="width:23.5%"><col style="width:12%"><col style="width:10.5%"><col style="width:10.5%"></colgroup><tr><th rowspan="2" class="spel">Spel</th><th colspan="2">Wij</th><th colspan="2">Zij</th><th rowspan="2" class="gs">Gever</th><th rowspan="2" class="gs">Speler</th></tr>
       <tr><th>Punten</th><th>Roem</th><th>Punten</th><th>Roem</th></tr>${rows}
-      <tr class="tot"><th rowspan="4" class="totcol">Totaal</th><td colspan="2"></td><td colspan="2"></td><td colspan="3" class="lbl2">Punten</td></tr><tr class="tot2"><td colspan="2"></td><td colspan="2"></td><td colspan="3" class="lbl2">Roem</td></tr><tr class="eind"><td colspan="2"></td><td colspan="2"></td><td colspan="3" class="lbl2"><b>Eindtotaal</b></td></tr><tr class="tot2"><td colspan="2"></td><td colspan="2"></td><td colspan="3" class="lbl2">Pitten</td></tr></table></div></div>`);
+      <tr class="tot"><th rowspan="4" class="totcol"><span>Totaal</span></th><td colspan="2"></td><td colspan="2"></td><td colspan="2" class="lbl2">Punten</td></tr><tr class="tot2"><td colspan="2"></td><td colspan="2"></td><td colspan="2" class="lbl2">Roem</td></tr><tr class="eind"><td colspan="2"></td><td colspan="2"></td><td colspan="2" class="lbl2"><b>Eindtotaal</b></td></tr><tr class="tot2"><td colspan="2"></td><td colspan="2"></td><td colspan="2" class="lbl2">Pitten</td></tr></table></div></div>`);
   }));
   const pages = [];
   for (let i = 0; i < sheets.length; i += 2) pages.push(`<div class="a4"><div class="a5">${sheets[i]}</div><div class="a5">${sheets[i + 1] || ''}</div><div class="cut"><span>✂</span></div></div>`);
   return `<div class="tpages">${pages.join('')}</div>`;
 }
 
-// A QR-code look-alike for the mock (the real app makes a real one).
-function qrHtml() {
-  let cells = '';
-  for (let y = 0; y < 21; y++) for (let x = 0; x < 21; x++) {
-    const finder = (x < 7 && y < 7) || (x > 13 && y < 7) || (x < 7 && y > 13);
-    let on;
-    if (finder) { const cx = x < 7 ? x : x - 14, cy = y < 7 ? y : y - 14; on = cx === 0 || cx === 6 || cy === 0 || cy === 6 || (cx >= 2 && cx <= 4 && cy >= 2 && cy <= 4); }
-    else on = ((x * 7 + y * 13 + x * y) % 5) < 2;
-    if (on) cells += `<rect x="${x}" y="${y}" width="1" height="1"/>`;
-  }
-  return `<svg class="qr" viewBox="-1 -1 23 23" role="img" aria-label="QR-code (voorbeeld)"><rect x="-1" y="-1" width="23" height="23" fill="#fff"/><g fill="#000">${cells}</g></svg>`;
-}
 function cardsHtml() {
   const names = members().filter(p => prepCards.has(p.id)).sort(byName).map(p => p.name).concat(Array(blanks()).fill(''));
   const date = LONG[prepWeek].replace('maandag ', '').replace(' 2026', '');
-  return `<div class="cards">${names.map(name => `<div class="scard"><div class="club"><span>"${esc(settings.club)}"</span><span class="nr-box nr-empty" title="Het nummer schrijft de speler zelf in, na het trekken"></span></div>
-      <table><tr><td class="lbl">Naam:</td><td colspan="2"><b>${esc(name)}</b></td></tr>
+  return `<div class="cards">${names.map(name => `<div class="scard"><table><colgroup><col style="width:22%"><col style="width:46%"><col style="width:32%"></colgroup>
+      <tr class="club"><td colspan="2">"${esc(settings.club)}"</td><td class="nr-box" title="Het nummer schrijft de speler zelf in, na het trekken"></td></tr>
+      <tr class="naam${name.length > 16 ? ' lang' : ''}"><td colspan="3">${esc(name)}</td></tr>
       <tr><td class="lbl">Datum:</td><td colspan="2">${date}</td></tr>
-      <tr><th>Ronde</th><th>Punten</th><th>Pitten</th></tr>${[1, 2, 3].map(r => `<tr><td>${r}</td><td></td><td></td></tr>`).join('')}<tr><th>Totaal:</th><td></td><td></td></tr></table>
-      ${settings.qr ? `<div class="cfoot"><span>De stand staat online:<br><b>klaverjas.gemberkoekje.nl</b></span>${qrHtml()}</div>` : ''}</div>`).join('')}</div>`;
+      <tr><th class="ronde"><span>Ronde</span></th><th class="punten">Punten:</th><th class="pitten">Pitten</th></tr>
+      ${[1, 2, 3].map(r => `<tr><td class="r">${r}</td><td></td><td></td></tr>`).join('')}
+      <tr><td class="lbl"><b>Totaal:</b></td><td></td><td></td></tr></table></div>`).join('')}</div>`;
 }
 $('#prep-list').addEventListener('change', e => { const id = Number(e.target.dataset.card); if (!id) return; if (e.target.checked) prepCards.add(id); else prepCards.delete(id); updateCardCount(); });
 $('#prep-blank').addEventListener('input', updateCardCount);
 $('#prep-n').addEventListener('change', renderPlan);
-$('#btn-print-cards').addEventListener('click', () => { savePrep(); modal('Kaartjes printen', `<p class="help">12 per A4, net als nu: met naam en datum, <b>zonder nummer</b>. Het nummer schrijft iedereen zelf in het vakje rechtsboven, na het trekken. Onderaan staat waar de stand online staat.</p>${cardsHtml()}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true); });
+$('#btn-print-cards').addEventListener('click', () => { savePrep(); modal('Kaartjes printen', `<p class="help">12 per A4, net als nu: met naam en datum, <b>zonder nummer</b>. Het nummer schrijft iedereen zelf in het vakje rechtsboven, na het trekken.</p>${cardsHtml()}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true); });
 $('#btn-print-plan').addEventListener('click', () => { const n = Number($('#prep-n').value); const count = planFor(n).plan.reduce((a, r) => a + r.length, 0); modal(`Tafelindeling voor ${n} spelers`, `<p class="help">Dit wordt geprint: eerst het <b>overzicht</b> (1 A4, voor aan de muur), dan de <b>tafelbriefjes</b>: één per tafel per ronde, ${count} briefjes, 2 per A4 (${Math.ceil(count / 2)} A4): printen en dan doormidden knippen tot A5. Wie bij welk nummer hoort, blijkt pas bij het trekken.</p><h3>Overzicht</h3><div class="rounds">${planHtmlFor(n)}</div><h3 style="margin-top:1.25rem">Tafelbriefjes</h3>${tableSheetsHtml(n)}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true); fitPages(); });
 function fitPages() { const tp = document.querySelector('#modal-text .tpages'); if (!tp) return; const a4 = tp.querySelector('.a4'); tp.style.setProperty('--z', String(Math.min(1, (document.querySelector('#modal-text').clientWidth - 4) / a4.offsetWidth))); }
 window.addEventListener('resize', fitPages);
@@ -1179,7 +1167,6 @@ function renderSettings() {
   $('#set-subject').value = settings.subject;
   $('#subject-example').textContent = `${settings.subject} ${latestWeek()}`;
   $('#set-ppw').value = settings.playerPw;
-  $('#set-qr').checked = settings.qr;
   ['first', 'second', 'third', 'absent'].forEach(k => { $('#col-' + k).value = settings.colors[k]; });
   $('#holidays').innerHTML = holidays.map(([d, why], i) => `<tr><td>${esc(d)}</td><td>${esc(why)}</td><td style="text-align:right"><button type="button" class="btn danger small" data-unhol="${i}">Weghalen</button></td></tr>`).join('');
 }
@@ -1364,7 +1351,6 @@ $('#btn-save-settings').addEventListener('click', () => {
   settings.reply = $('#set-reply').value.trim() || settings.reply;
   settings.subject = $('#set-subject').value.trim() || settings.subject;
   settings.playerPw = $('#set-ppw').value.trim() || settings.playerPw;
-  settings.qr = $('#set-qr').checked;
   $('#settings-banner').innerHTML = '<div class="banner ok"><p><b>Opgeslagen.</b> De stand rekent vanaf nu met deze instellingen.</p></div>';
   show('instellingen');
 });
