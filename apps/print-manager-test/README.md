@@ -4,11 +4,13 @@ The Vortex print desk (vortexadventures/print-manager) with two fake HP LaserJet
 real ones, locked to the test void `test-void-api.the-vortex.nl`. Image, start-up and the local
 docker compose version are described in that repository's `deploy/README.md`.
 
-- Dashboard: http://192.168.1.233/ (LAN only; includes /admin with the void login).
+- Dashboard: https://print.lan.gemberkoekje.nl/ or http://192.168.1.233/ (LAN and Tailscale only;
+  includes /admin with the void login).
 - LAN printers: `http://192.168.1.233:631/printers/Vortex_White` (also Vortex_Special,
   Vortex_Extra_1, Vortex_Extra_2), added by URL.
-- Fake printer pages: http://192.168.1.233:8100/ (Printer B: Special tray, cards) and
-  http://192.168.1.233:8101/ (Printer A). LAN only, no login.
+- Fake printer pages: https://printer-b.lan.gemberkoekje.nl/ (Printer B: Special tray, cards) and
+  https://printer-a.lan.gemberkoekje.nl/ (Printer A), also on http://192.168.1.233:8100/ and :8101/.
+  LAN only, no login. The lan names come from the Caddy LAN proxy (infrastructure/lan-proxy).
 - State is on `print-manager-test-data-qnap` (`/data`): `config.yaml`, `env`, `outbox/`, `spool/`,
   `fake-printer-a/`, `fake-printer-b/`. Nothing prunes the fake-printer folders.
 
