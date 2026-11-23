@@ -211,10 +211,11 @@
   .tsheet tr.chk td { background: #fff7cc; border-top: 2px solid #333; border-bottom: 2px solid #333; }
   .tsheet tr.tot th, .tsheet tr.tot td { border-top: 2px solid #333; font-weight: 700; }
   .tsheet tr.tot th { font-size: .55rem; padding: 0 .05rem; }
-  .tsheet td.nr { font-weight: 700; font-size: .85rem; }
+  .tsheet td.nr { font-weight: 700; font-size: .8rem; padding: 0; }
+  .tsheet th.gs { font-size: .52rem; padding: 0; }
   .tsheet td.na { background: repeating-linear-gradient(135deg, #e6e6e6 0 3px, #fff 3px 6px); }
-  .tsheet td.lbl2 { font-size: .68rem; text-align: left; padding-left: .3rem; font-weight: 400; }
-  .tsheet th.totcol { background: #f3f3f3; }
+  .tsheet td.lbl2 { font-size: .6rem; text-align: left; padding-left: .3rem; font-weight: 400; }
+  .tsheet th.totcol { background: #f3f3f3; font-size: .55rem; font-weight: 700; vertical-align: middle; }
   .tsheet tr.eind td { border-top: 2px solid #333; }
   .tsheet tr.chk td.ctrl { text-align: center; font-weight: 700; font-size: .8rem; color: #444; }
   .scard .tag { background: var(--st-slaper); padding: 0 .35rem; font-size: .85rem; margin-top: .25rem; }
@@ -967,13 +968,13 @@ function tableSheetsHtml(n) {
     let rows = '';
     for (let h = 1; h <= 16; h++) {
       rows += `<tr><td class="c">${h}</td><td></td><td></td><td></td><td></td><td class="c nr">${order[(h - 1) % 4]}</td><td class="c nr">${order[h % 4]}</td><td class="c suit${h % 2 ? ' red' : ''}">${SUITS[(h - 1) % 4]}</td></tr>`;
-      if (h % 4 === 0) rows += `<tr class="chk" title="Subtotaal na ${h} spellen: wij + zij samen ${162 * h} punten (zonder roem)"><td></td><td></td><td></td><td></td><td></td><td colspan="2" class="ctrl">${162 * h}</td><td></td></tr>`;
+      if (h % 4 === 0) rows += `<tr class="chk" title="Subtotaal na ${h} spellen: wij + zij samen ${162 * h} punten (zonder roem)"><td></td><td></td><td></td><td></td><td></td><td colspan="3" class="ctrl">${162 * h}</td></tr>`;
     }
     sheets.push(`<div class="tsheet"><div class="ts-head"><b>Ronde ${r + 1}</b><span>"${esc(settings.club)}" · ${date} · week ${prepWeek} · ${tables.length} tafels</span></div>
       <div class="ts-pairs"><span>Wij: <b>${g[0]} &amp; ${g[1]}</b></span><span>Zij: <b>${g[2]} &amp; ${g[3]}</b></span></div>
-      <div class="ts-body">${strip}<table class="hands"><colgroup><col style="width:12%"><col style="width:16%"><col style="width:12%"><col style="width:16%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:8%"></colgroup><tr><th rowspan="2">Spel</th><th colspan="2">Wij</th><th colspan="2">Zij</th><th rowspan="2">Gever</th><th rowspan="2">Speler</th><th rowspan="2"></th></tr>
+      <div class="ts-body">${strip}<table class="hands"><colgroup><col style="width:11%"><col style="width:18%"><col style="width:14%"><col style="width:18%"><col style="width:14%"><col style="width:9%"><col style="width:9%"><col style="width:7%"></colgroup><tr><th rowspan="2">Spel</th><th colspan="2">Wij</th><th colspan="2">Zij</th><th rowspan="2" class="gs">Gever</th><th rowspan="2" class="gs">Speler</th><th rowspan="2"></th></tr>
       <tr><th>Punten</th><th>Roem</th><th>Punten</th><th>Roem</th></tr>${rows}
-      <tr class="tot"><th rowspan="4" class="totcol"></th><td></td><td class="na"></td><td></td><td class="na"></td><td colspan="3" class="lbl2">Totaal punten</td></tr><tr class="tot2"><td class="na"></td><td></td><td class="na"></td><td></td><td colspan="3" class="lbl2">Totaal roem</td></tr><tr class="eind"><td colspan="2"></td><td colspan="2"></td><td colspan="3" class="lbl2"><b>Eindtotaal</b></td></tr><tr class="tot2"><td colspan="2"></td><td colspan="2"></td><td colspan="3" class="lbl2">Pitten</td></tr></table></div></div>`);
+      <tr class="tot"><th rowspan="4" class="totcol">Totaal</th><td></td><td class="na"></td><td></td><td class="na"></td><td colspan="3" class="lbl2">Punten</td></tr><tr class="tot2"><td class="na"></td><td></td><td class="na"></td><td></td><td colspan="3" class="lbl2">Roem</td></tr><tr class="eind"><td colspan="2"></td><td colspan="2"></td><td colspan="3" class="lbl2"><b>Eindtotaal</b></td></tr><tr class="tot2"><td colspan="2"></td><td colspan="2"></td><td colspan="3" class="lbl2">Pitten</td></tr></table></div></div>`);
   }));
   const pages = [];
   for (let i = 0; i < sheets.length; i += 2) pages.push(`<div class="a4"><div class="a5">${sheets[i]}</div><div class="a5">${sheets[i + 1] || ''}</div><div class="cut"><span>✂</span></div></div>`);
