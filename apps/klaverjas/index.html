@@ -454,6 +454,7 @@
         </table>
         <p class="help" style="margin:1rem 0 0">Een naam verbeteren past hem overal aan, ook in oude weken.
           Stopt iemand? Zet die op <b>Gestopt</b>: de oude scores blijven staan, maar de naam komt niet meer op het invulscherm.
+          Moet iemand ook uit de stand (bijvoorbeeld als iemand is overleden)? Kies dan <b>Uit de stand halen</b>: de scores blijven bewaard, en u kunt het altijd terugzetten.
           Adres, telefoon en verjaardag staan onder <b>Wijzigen</b>.</p>
       </div>
       <div class="card">
@@ -711,8 +712,9 @@ function doneWeeks() { return MONTH.filter(isDone); }
 function latestWeek() { return Math.max(...doneWeeks()); }
 function placeClass(place) { return place === 1 ? 'c1' : place === 2 ? 'c2' : place === 3 ? 'c3' : ''; }
 
+const inStand = () => members().filter(p => p.inStand !== false);
 function compute() {
-  const rows = members().map(p => {
+  const rows = inStand().map(p => {
     let total = p.base, pits = p.basePits;
     doneWeeks().forEach(wk => { total += scoreOf(p.weeks[wk]); pits += pitsOf(p.weeks[wk]); });
     return { p, total, pits };
@@ -769,7 +771,7 @@ function standTables() {
     h += '</tr>';
   });
   h += '</tbody><tfoot><tr><td></td><td class="nm">Week totalen</td><td></td>';
-  MONTH.forEach(wk => { h += `<td>${isDone(wk) ? members().reduce((s, p) => s + pitsOf(p.weeks[wk]), 0) : ''}</td>`; });
+  MONTH.forEach(wk => { h += `<td>${isDone(wk) ? inStand().reduce((s, p) => s + pitsOf(p.weeks[wk]), 0) : ''}</td>`; });
   h += '</tr></tfoot></table></div></div>';
   return h;
 }
@@ -1104,10 +1106,11 @@ function renderPlayers() {
         <input class="text" placeholder="Adres" aria-label="Adres" style="max-width:16rem">
         <input class="text" placeholder="Verjaardag, bijv. 5 februari" aria-label="Verjaardag" style="max-width:15rem">
         <select id="ed-active" aria-label="Doet mee?" style="max-width:10rem"><option value="1" ${p.active ? 'selected' : ''}>Doet mee</option><option value="0" ${p.active ? '' : 'selected'}>Gestopt</option></select>
+        ${p.kind === 'lid' ? `<select id="ed-stand" aria-label="In de stand?" style="max-width:15rem"><option value="1" ${p.inStand !== false ? 'selected' : ''}>Blijft in de stand</option><option value="0" ${p.inStand === false ? 'selected' : ''}>Uit de stand halen</option></select>` : ''}
         <button type="button" class="btn small" data-psave="${p.id}">Opslaan</button> <button type="button" class="btn secondary small" data-pcancel="1">Annuleren</button></div></td></tr>`;
     }
     return `<tr><td><b>${esc(p.name)}</b></td><td>${kindLabel(p.kind)}</td><td>${p.email ? esc(p.email) : '<span class="muted">geen e-mail</span>'}</td>
-      <td>${p.active ? 'Doet mee' : '<span class="muted">Gestopt</span>'}</td><td style="text-align:right"><button type="button" class="btn secondary small" data-pedit="${p.id}">Wijzigen</button></td></tr>`;
+      <td>${p.active ? 'Doet mee' : '<span class="muted">Gestopt</span>'}${p.inStand === false ? '<br><span class="muted" style="font-size:1rem">uit de stand</span>' : ''}</td><td style="text-align:right"><button type="button" class="btn secondary small" data-pedit="${p.id}">Wijzigen</button></td></tr>`;
   }).join('');
 }
 
@@ -1235,9 +1238,9 @@ document.addEventListener('click', e => {
   if (t.dataset.pcancel) { editingPlayer = null; renderPlayers(); return; }
   if (t.dataset.psave) {
     const p = byId(t.dataset.psave), old = p.name;
-    p.name = $('#ed-name').value.trim() || p.name; p.email = $('#ed-email').value.trim(); p.kind = $('#ed-kind').value; p.active = $('#ed-active').value === '1';
+    p.name = $('#ed-name').value.trim() || p.name; p.email = $('#ed-email').value.trim(); p.kind = $('#ed-kind').value; p.active = $('#ed-active').value === '1'; if ($('#ed-stand')) p.inStand = $('#ed-stand').value === '1';
     editingPlayer = null;
-    $('#players-banner').innerHTML = `<div class="banner ok"><p>Opgeslagen.${old !== p.name ? ` Overal staat nu <b>${esc(p.name)}</b> in plaats van ${esc(old)}.` : ''}</p></div>`;
+    $('#players-banner').innerHTML = `<div class="banner ok"><p>Opgeslagen.${p.inStand === false ? ` <b>${esc(p.name)}</b> staat niet meer in de stand van dit seizoen. De scores blijven bewaard; u kunt dit altijd terugzetten.` : ''}${old !== p.name ? ` Overal staat nu <b>${esc(p.name)}</b> in plaats van ${esc(old)}.` : ''}</p></div>`;
     renderPlayers(); return;
   }
   if (t.id === 'btn-draw') { draw(); savePrep(); renderPlan(); $('#prep-plan-card').scrollIntoView({ behavior: 'smooth' }); return; }
