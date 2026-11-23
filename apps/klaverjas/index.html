@@ -195,7 +195,7 @@
   .scard th.punten { font-size: 1.4rem; }
   .scard th.pitten { font-size: 1.15rem; }
   .scard td.r { font-weight: 700; font-size: 1.4rem; }
-  .scard td.slaper { font-weight: 700; font-size: .95rem; padding: 0 .1rem; }
+  .scard td.sl { font-size: .8rem; padding: 0 .1rem; }
   .checklist { columns: 3 15rem; column-gap: 2rem; }
   .checklist label { display: flex; gap: .55rem; align-items: center; padding: .2rem 0; break-inside: avoid; cursor: pointer; }
   .checklist input { width: 1.4rem; height: 1.4rem; accent-color: var(--accent); }
@@ -383,7 +383,8 @@
         <p style="margin:0">De nummers worden <b>op de avond zelf getrokken</b>, zodat niemand kan denken dat er iets is voorgekookt.
           Daarom staat er op de kaartjes nog geen nummer: dat schrijft iedereen zelf in het vakje, na het trekken.
           Alleen de <b>slapers</b> trekken niet: zij krijgen van tevoren de nummers 1, 2, 3 … (zoveel als er die avond nodig zijn),
-          en op hun kaartje staat al <b>Slaper 1</b>, <b>Slaper 2</b> … De andere nummers worden uit de pot getrokken.</p>
+          Hun nummer staat al rechtsboven op het kaartje, en bij de ronde waarin ze stilzitten staat <b>Slaper 1</b>, <b>Slaper 2</b> … in het vakje voor de pitten.
+          De andere nummers worden uit de pot getrokken.</p>
       </div>
       <div class="card">
         <h2>Wie krijgt een kaartje?</h2>
@@ -1075,12 +1076,14 @@ function cardsHtml() {
   const cards = members().filter(p => prepCards.has(p.id)).sort(byName).map(p => ({ name: cardName(p), n: slaperNumber(p.id) }))
     .concat(Array.from({ length: blanks() }, () => ({ name: '', n: 0 })));
   const date = LONG[prepWeek].replace('maandag ', '').replace(' 2026', '');
+  // A slaper's card: the number printed top right, and "Slaper n" in the Pitten box of the round sat out (Dad's note).
+  const out = n => (n ? roundOfSlaper(n, perRound()) : 0);
   return `<div class="cards">${cards.map(({ name, n }) => `<div class="scard"><table><colgroup><col style="width:22%"><col style="width:46%"><col style="width:32%"></colgroup>
-      <tr class="club"><td colspan="2">"${esc(settings.club)}"</td>${n ? `<td class="nr-box slaper">Slaper ${n}</td>` : '<td class="nr-box" title="Het nummer schrijft de speler zelf in, na het trekken"></td>'}</tr>
+      <tr class="club"><td colspan="2">"${esc(settings.club)}"</td>${n ? `<td class="nr-box slaper">${n}</td>` : '<td class="nr-box" title="Het nummer schrijft de speler zelf in, na het trekken"></td>'}</tr>
       <tr class="naam${name.length > 16 ? ' lang' : ''}"><td colspan="3">${esc(name)}</td></tr>
       <tr><td class="lbl">Datum:</td><td colspan="2">${date}</td></tr>
       <tr><th class="ronde"><span>Ronde</span></th><th class="punten">Punten:</th><th class="pitten">Pitten</th></tr>
-      ${[1, 2, 3].map(r => `<tr><td class="r">${r}</td><td></td><td></td></tr>`).join('')}
+      ${[1, 2, 3].map(r => `<tr><td class="r">${r}</td><td></td>${r === out(n) ? `<td class="sl">Slaper ${n}</td>` : '<td></td>'}</tr>`).join('')}
       <tr><td class="lbl"><b>Totaal:</b></td><td></td><td></td></tr></table></div>`).join('')}</div>`;
 }
 $('#prep-list').addEventListener('change', e => {
@@ -1099,7 +1102,7 @@ $('#btn-print-cards').addEventListener('click', () => {
   savePrep();
   const open = prepSleep.picks.filter(x => !x).length;
   const warn = open ? `<div class="banner warn"><p>Er ${open === 1 ? 'is nog 1 slaper' : `zijn nog ${open} slapers`} niet gekozen. Dat mag: schrijf het dan zelf op een kaartje.</p></div>` : '';
-  modal('Kaartjes printen', `${warn}<p class="help">12 per A4, net als nu: met de voornaam en de datum, <b>zonder nummer</b>. Het nummer schrijft iedereen zelf in het vakje rechtsboven, na het trekken. Bij de slapers staat daar al hun nummer: <b>Slaper 1</b>, <b>Slaper 2</b> …</p>${cardsHtml()}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true);
+  modal('Kaartjes printen', `${warn}<p class="help">12 per A4, net als nu: met de voornaam en de datum, <b>zonder nummer</b>. Het nummer schrijft iedereen zelf in het vakje rechtsboven, na het trekken. Bij de slapers staat daar al hun nummer, en bij de ronde waarin ze stilzitten staat <b>Slaper 1</b>, <b>Slaper 2</b> … bij de pitten.</p>${cardsHtml()}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true);
 });
 $('#btn-print-plan').addEventListener('click', () => { const n = Number($('#prep-n').value); const count = planFor(n).plan.reduce((a, r) => a + r.length, 0); modal(`Tafelindeling voor ${n} spelers`, `<p class="help">Dit wordt geprint: eerst het <b>overzicht</b> (1 A4, voor aan de muur), dan de <b>tafelbriefjes</b>: één per tafel per ronde, ${count} briefjes, 2 per A4 (${Math.ceil(count / 2)} A4): printen en dan doormidden knippen tot A5. Wie bij welk nummer hoort, blijkt pas bij het trekken.</p><h3>Overzicht</h3><div class="rounds">${planHtmlFor(n)}</div><h3 style="margin-top:1.25rem">Tafelbriefjes</h3>${tableSheetsHtml(n)}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true); fitPages(); });
 function fitPages() { const tp = document.querySelector('#modal-text .tpages'); if (!tp) return; const a4 = tp.querySelector('.a4'); tp.style.setProperty('--z', String(Math.min(1, (document.querySelector('#modal-text').clientWidth - 4) / a4.offsetWidth))); }
