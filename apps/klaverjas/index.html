@@ -189,8 +189,8 @@
   .checklist input { width: 1.4rem; height: 1.4rem; accent-color: var(--accent); }
   .round td.nrs { font-size: 1.15rem; }
   /* Table score sheets: A4 landscape pages, two A5 forms side by side, cut down the middle */
-  .tpages { display: flex; flex-direction: column; gap: 1.6rem; align-items: center; }
-  .a4 { width: 60rem; max-width: 100%; aspect-ratio: 297 / 210; background: #fff; border: 1px solid #999; box-shadow: 0 2px 8px rgba(0,0,0,.15); display: grid; grid-template-columns: 1fr 1fr; position: relative; }
+  .tpages { display: flex; flex-direction: column; gap: 1.6rem; align-items: flex-start; zoom: var(--z, 1); }
+  .a4 { width: 60rem; flex: none; aspect-ratio: 297 / 210; background: #fff; border: 1px solid #999; box-shadow: 0 2px 8px rgba(0,0,0,.15); display: grid; grid-template-columns: 1fr 1fr; position: relative; }
   .a4 .cut { position: absolute; top: 0; bottom: 0; left: 50%; border-left: 2px dashed #9a9a9a; }
   .a4 .cut span { position: absolute; top: 45%; left: -.7rem; background: #fff; font-size: 1.1rem; color: #666; line-height: 1; }
   .a5 { padding: 1.1rem 1.2rem; display: flex; min-width: 0; min-height: 0; }
@@ -203,14 +203,15 @@
   .tsheet th, .tsheet td { border: 1px solid #666; padding: 0 .2rem; height: 1.45rem; font-weight: 400; overflow: hidden; white-space: nowrap; }
   .tsheet th { font-size: .66rem; height: 1.15rem; }
   .tsheet table.split th { font-size: .62rem; }
-  .tsheet table.split td { font-size: .56rem; line-height: 1.32; height: auto; padding: 0 .15rem; border-color: #c4c4c4; text-align: center; }
+  .tsheet table.split td { font-size: .56rem; line-height: 1.22; height: auto; padding: 0 .15rem; border-color: #c4c4c4; text-align: center; }
   .tsheet table.hands { table-layout: fixed; }
   .tsheet .c { text-align: center; }
   .tsheet .suit { font-size: .9rem; }
   .tsheet .suit.red { color: #c00; }
   .tsheet tr.chk td { background: #fff7cc; border-top: 2px solid #333; border-bottom: 2px solid #333; }
   .tsheet tr.tot th, .tsheet tr.tot td { border-top: 2px solid #333; font-weight: 700; }
-  .tsheet tr.tot th { font-size: .6rem; padding: 0 .1rem; }
+  .tsheet tr.tot th { font-size: .55rem; padding: 0 .05rem; }
+  .tsheet td.nr { font-weight: 700; font-size: .85rem; }
   .scard .tag { background: var(--st-slaper); padding: 0 .35rem; font-size: .85rem; margin-top: .25rem; }
   .scard table { width: 100%; border-collapse: collapse; margin-top: .35rem; }
   .scard th, .scard td { border: 1px solid #555; padding: .15rem .35rem; text-align: left; height: 1.7rem; }
@@ -957,16 +958,17 @@ function tableSheetsHtml(n) {
   const date = LONG[prepWeek].replace('maandag ', '').replace(' 2026', '');
   const strip = splitStrip(), sheets = [];
   plan.forEach((tables, r) => tables.forEach((g, t) => {
+    const order = [g[0], g[2], g[1], g[3]]; // clockwise round the table, partners opposite
     let rows = '';
     for (let h = 1; h <= 16; h++) {
-      rows += `<tr><td class="c">${h}</td><td></td><td></td><td></td><td></td><td></td><td class="c suit${h % 2 ? ' red' : ''}">${SUITS[(h - 1) % 4]}</td></tr>`;
-      if (h % 4 === 0) rows += '<tr class="chk" title="Subtotaal van deze 4 spellen"><td></td><td></td><td></td><td></td><td></td><td colspan="2"></td></tr>';
+      rows += `<tr><td class="c">${h}</td><td></td><td></td><td></td><td></td><td class="c nr">${order[(h - 1) % 4]}</td><td class="c nr">${order[h % 4]}</td><td class="c suit${h % 2 ? ' red' : ''}">${SUITS[(h - 1) % 4]}</td></tr>`;
+      if (h % 4 === 0) rows += '<tr class="chk" title="Subtotaal van deze 4 spellen"><td></td><td></td><td></td><td></td><td></td><td colspan="3"></td></tr>';
     }
     sheets.push(`<div class="tsheet"><div class="ts-head"><b>Ronde ${r + 1}</b><span>"${esc(settings.club)}" · ${date} · week ${prepWeek} · ${tables.length} tafels</span></div>
       <div class="ts-pairs"><span>Wij: <b>${g[0]} &amp; ${g[1]}</b></span><span>Zij: <b>${g[2]} &amp; ${g[3]}</b></span></div>
-      <div class="ts-body">${strip}<table class="hands"><colgroup><col style="width:14%"><col style="width:17%"><col style="width:13%"><col style="width:17%"><col style="width:13%"><col style="width:17%"><col style="width:9%"></colgroup><tr><th rowspan="2">Spel</th><th colspan="2">Wij</th><th colspan="2">Zij</th><th rowspan="2">Gever</th><th rowspan="2"></th></tr>
+      <div class="ts-body">${strip}<table class="hands"><colgroup><col style="width:12%"><col style="width:16%"><col style="width:12%"><col style="width:16%"><col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:8%"></colgroup><tr><th rowspan="2">Spel</th><th colspan="2">Wij</th><th colspan="2">Zij</th><th rowspan="2">Gever</th><th rowspan="2">Speler</th><th rowspan="2"></th></tr>
       <tr><th>Punten</th><th>Roem</th><th>Punten</th><th>Roem</th></tr>${rows}
-      <tr class="tot"><th>Totaal</th><td></td><td></td><td></td><td></td><td colspan="2"></td></tr></table></div></div>`);
+      <tr class="tot"><th>Totaal</th><td></td><td></td><td></td><td></td><td colspan="3"></td></tr></table></div></div>`);
   }));
   const pages = [];
   for (let i = 0; i < sheets.length; i += 2) pages.push(`<div class="a4"><div class="a5">${sheets[i]}</div><div class="a5">${sheets[i + 1] || ''}</div><div class="cut"><span>✂</span></div></div>`);
@@ -998,7 +1000,9 @@ $('#prep-list').addEventListener('change', e => { const id = Number(e.target.dat
 $('#prep-blank').addEventListener('input', updateCardCount);
 $('#prep-n').addEventListener('change', renderPlan);
 $('#btn-print-cards').addEventListener('click', () => { savePrep(); modal('Kaartjes printen', `<p class="help">12 per A4, net als nu: met naam en datum, <b>zonder nummer</b>. Het nummer schrijft iedereen zelf in het vakje rechtsboven, na het trekken. Onderaan staat waar de stand online staat.</p>${cardsHtml()}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true); });
-$('#btn-print-plan').addEventListener('click', () => { const n = Number($('#prep-n').value); const count = planFor(n).plan.reduce((a, r) => a + r.length, 0); modal(`Tafelindeling voor ${n} spelers`, `<p class="help">Dit wordt geprint: eerst het <b>overzicht</b> (1 A4, voor aan de muur), dan de <b>tafelbriefjes</b>: één per tafel per ronde, ${count} briefjes, 2 per A4 (${Math.ceil(count / 2)} A4): printen en dan doormidden knippen tot A5. Wie bij welk nummer hoort, blijkt pas bij het trekken.</p><h3>Overzicht</h3><div class="rounds">${planHtmlFor(n)}</div><h3 style="margin-top:1.25rem">Tafelbriefjes</h3>${tableSheetsHtml(n)}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true); });
+$('#btn-print-plan').addEventListener('click', () => { const n = Number($('#prep-n').value); const count = planFor(n).plan.reduce((a, r) => a + r.length, 0); modal(`Tafelindeling voor ${n} spelers`, `<p class="help">Dit wordt geprint: eerst het <b>overzicht</b> (1 A4, voor aan de muur), dan de <b>tafelbriefjes</b>: één per tafel per ronde, ${count} briefjes, 2 per A4 (${Math.ceil(count / 2)} A4): printen en dan doormidden knippen tot A5. Wie bij welk nummer hoort, blijkt pas bij het trekken.</p><h3>Overzicht</h3><div class="rounds">${planHtmlFor(n)}</div><h3 style="margin-top:1.25rem">Tafelbriefjes</h3>${tableSheetsHtml(n)}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true); fitPages(); });
+function fitPages() { const tp = document.querySelector('#modal-text .tpages'); if (!tp) return; const a4 = tp.querySelector('.a4'); tp.style.setProperty('--z', String(Math.min(1, (document.querySelector('#modal-text').clientWidth - 4) / a4.offsetWidth))); }
+window.addEventListener('resize', fitPages);
 $('#btn-print-all').addEventListener('click', () => modal('Alle tafelindelingen', '<p>In het echte programma komt hier een boekje met de tafelindeling voor elk aantal spelers, van 4 tot en met 28, één per A4. Dan heeft u op de avond altijd de goede bij de hand, hoeveel mensen er ook komen.</p>', [{ label: 'Oké', primary: true }]));
 $('#btn-prep-done').addEventListener('click', () => { savePrep(); show('avonden'); });
 
