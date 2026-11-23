@@ -216,6 +216,7 @@
   .tsheet td.lbl2 { font-size: .68rem; text-align: left; padding-left: .3rem; font-weight: 400; }
   .tsheet th.totcol { background: #f3f3f3; }
   .tsheet tr.eind td { border-top: 2px solid #333; }
+  .tsheet tr.chk td.ctrl { text-align: center; font-weight: 700; font-size: .8rem; color: #444; }
   .scard .tag { background: var(--st-slaper); padding: 0 .35rem; font-size: .85rem; margin-top: .25rem; }
   .scard table { width: 100%; border-collapse: collapse; margin-top: .35rem; }
   .scard th, .scard td { border: 1px solid #555; padding: .15rem .35rem; text-align: left; height: 1.7rem; }
@@ -966,7 +967,7 @@ function tableSheetsHtml(n) {
     let rows = '';
     for (let h = 1; h <= 16; h++) {
       rows += `<tr><td class="c">${h}</td><td></td><td></td><td></td><td></td><td class="c nr">${order[(h - 1) % 4]}</td><td class="c nr">${order[h % 4]}</td><td class="c suit${h % 2 ? ' red' : ''}">${SUITS[(h - 1) % 4]}</td></tr>`;
-      if (h % 4 === 0) rows += '<tr class="chk" title="Subtotaal van deze 4 spellen"><td></td><td></td><td></td><td></td><td></td><td colspan="3"></td></tr>';
+      if (h % 4 === 0) rows += `<tr class="chk" title="Subtotaal na ${h} spellen: wij + zij samen ${162 * h} punten (zonder roem)"><td></td><td></td><td></td><td></td><td></td><td colspan="2" class="ctrl">${162 * h}</td><td></td></tr>`;
     }
     sheets.push(`<div class="tsheet"><div class="ts-head"><b>Ronde ${r + 1}</b><span>"${esc(settings.club)}" · ${date} · week ${prepWeek} · ${tables.length} tafels</span></div>
       <div class="ts-pairs"><span>Wij: <b>${g[0]} &amp; ${g[1]}</b></span><span>Zij: <b>${g[2]} &amp; ${g[3]}</b></span></div>
