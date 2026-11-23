@@ -182,6 +182,12 @@
   .scard { border: 1.5px solid #333; padding: .6rem .7rem; font-size: .95rem; background: #fff; }
   .scard .club { font-weight: 700; font-size: 1.05rem; display: flex; justify-content: space-between; align-items: center; }
   .scard .nr-box { border: 2px solid #333; min-width: 2.2rem; text-align: center; font-size: 1.2rem; }
+  .scard .nr-empty { min-width: 2.8rem; height: 2.1rem; position: relative; }
+  .scard .nr-empty::before { content: 'nr'; position: absolute; top: 0; left: .2rem; font-size: .6rem; font-weight: 400; color: #666; }
+  .checklist { columns: 3 15rem; column-gap: 2rem; }
+  .checklist label { display: flex; gap: .55rem; align-items: center; padding: .2rem 0; break-inside: avoid; cursor: pointer; }
+  .checklist input { width: 1.4rem; height: 1.4rem; accent-color: var(--accent); }
+  .round td.nrs { font-size: 1.15rem; }
   .scard .tag { background: var(--st-slaper); padding: 0 .35rem; font-size: .85rem; margin-top: .25rem; }
   .scard table { width: 100%; border-collapse: collapse; margin-top: .35rem; }
   .scard th, .scard td { border: 1px solid #555; padding: .15rem .35rem; text-align: left; height: 1.7rem; }
@@ -290,7 +296,7 @@
     <!-- Avonden -->
     <section id="s-avonden">
       <h1>Avonden</h1>
-      <p class="lead">Vóór de avond: <b>Avond voorbereiden</b> (wie er is, loting, tafels, kaartjes). Na de avond: <b>Uitslag invullen</b>.</p>
+      <p class="lead">Vóór de avond: <b>kaartjes en tafelindeling printen</b> (de nummers worden op de avond zelf getrokken). Na de avond: <b>Uitslag invullen</b>.</p>
       <div class="card next">
         <div>
           <p class="muted" style="margin:0">Volgende speelavond</p>
@@ -298,7 +304,7 @@
           <p class="muted" id="next-state" style="margin:0; font-size:1rem"></p>
         </div>
         <div class="actions">
-          <button type="button" class="btn big" id="btn-prep">Avond voorbereiden</button>
+          <button type="button" class="btn big" id="btn-prep">Kaartjes en tafels printen</button>
           <button type="button" class="btn secondary" id="btn-result">Uitslag invullen</button>
         </div>
       </div>
@@ -320,44 +326,37 @@
         <li><span class="n">3</span> Controleren</li>
         <li><span class="n">4</span> Online zetten</li>
       </ol>
-      <h1>Avond voorbereiden</h1>
+      <h1>Kaartjes en tafelindeling</h1>
       <div class="dateline"><span class="date" id="prep-date"></span></div>
-
       <div class="card">
-        <h2>Wie speelt er mee?</h2>
-        <p class="help">Klik per lid op <b>Speelt</b>, <b>Slaper</b> (zit één ronde stil, krijgt daarvoor <span class="sleep-score">1600</span> punten) of <b>Afwezig</b>.
-          Het programma stelt de slapers voor: wie dit jaar het minst heeft stilgezeten. U mag dat altijd veranderen.</p>
-        <div class="scroll">
-          <table class="entry">
-            <thead><tr><th>Naam</th><th>Vanavond</th><th>Stil in</th><th>Dit jaar stilgezeten</th></tr></thead>
-            <tbody id="prep-rows"></tbody>
-          </table>
-        </div>
+        <p style="margin:0">De nummers worden <b>op de avond zelf getrokken</b>, zodat niemand kan denken dat er iets is voorgekookt.
+          Daarom staat er op de kaartjes nog geen nummer: dat schrijft iedereen zelf in het vakje, na het trekken.</p>
       </div>
-
       <div class="card">
-        <h2>Invallers</h2>
-        <p class="help">Komt er een invaller? Kies die uit de lijst (Spelers → soort Invaller), of maak een nieuwe aan.</p>
-        <div id="prep-subs"></div>
-        <div class="inline" style="margin-top:.6rem">
-          <select id="prep-sub-pick" style="max-width:16rem" aria-label="Kies een invaller"></select>
-          <button type="button" class="btn secondary small" id="btn-prep-add-sub">Toevoegen</button>
-          <button type="button" class="linkbtn" id="btn-prep-new-sub">Nieuwe invaller</button>
+        <h2>Wie krijgt een kaartje?</h2>
+        <p class="help">Alle leden staan aangevinkt. Weet u al dat iemand niet komt? Vink die dan uit. Een kaartje te veel is niet erg.</p>
+        <div id="prep-list" class="checklist"></div>
+        <div class="inline" style="margin-top:1rem">
+          <label for="prep-blank" style="font-weight:700">Lege kaartjes voor invallers:</label>
+          <input class="text short" id="prep-blank" inputmode="numeric" value="2" style="max-width:5rem">
         </div>
-      </div>
-
-      <div class="card" id="prep-count"></div>
-
-      <div class="card" id="prep-plan-card" hidden>
-        <div class="actions" style="justify-content:space-between; margin-bottom:.75rem">
-          <h2 style="margin:0">Tafelindeling</h2>
-          <button type="button" class="btn secondary small" id="btn-redraw">Opnieuw loten</button>
-        </div>
-        <p class="help">Iedereen heeft een nummer gekregen (de slapers de laagste, zoals nu). Niemand zit vanavond twee keer met dezelfde mensen aan tafel.</p>
-        <div class="rounds" id="prep-plan"></div>
         <div class="actions" style="margin-top:1.25rem">
-          <button type="button" class="btn" id="btn-print-cards">Kaartjes printen</button>
-          <button type="button" class="btn secondary" id="btn-print-plan">Tafelindeling printen</button>
+          <button type="button" class="btn big" id="btn-print-cards">Kaartjes printen</button>
+          <span class="muted" id="prep-card-count"></span>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Tafelindeling (op nummer)</h2>
+        <p class="help">Welk nummer in welke ronde aan welke tafel zit, en welke nummers stil zitten. Dat hangt alleen af van het aantal spelers, niet van wie er komt.</p>
+        <div class="inline">
+          <label for="prep-n" style="font-weight:700">Aantal spelers:</label>
+          <select id="prep-n" style="max-width:7rem"></select>
+          <span class="muted" id="prep-n-info"></span>
+        </div>
+        <div class="rounds" id="prep-plan" style="margin-top:1rem"></div>
+        <div class="actions" style="margin-top:1.25rem">
+          <button type="button" class="btn" id="btn-print-plan">Deze tafelindeling printen</button>
+          <button type="button" class="btn secondary" id="btn-print-all">Alle aantallen printen (4 t/m 28)</button>
           <button type="button" class="btn secondary" id="btn-prep-done">Klaar, terug naar Avonden</button>
         </div>
       </div>
@@ -813,8 +812,8 @@ function renderEvenings() {
   const next = nextWeek();
   $('#next-when').innerHTML = `${cap(LONG[next])} <span class="muted" style="font-weight:400">(week ${next})</span>`;
   const st = evenings[next];
-  $('#next-state').textContent = st && st.state === 'voorbereid' ? '✓ Voorbereid: tafels geloot, kaartjes klaar. Na de avond: Uitslag invullen.' : 'Nog niet voorbereid.';
-  $('#btn-prep').textContent = st ? 'Voorbereiding bekijken' : 'Avond voorbereiden';
+  $('#next-state').textContent = st && st.state === 'voorbereid' ? '✓ Kaartjes geprint. Na de avond: Uitslag invullen.' : 'Kaartjes nog niet geprint.';
+  $('#btn-prep').textContent = 'Kaartjes en tafels printen';
   $('#btn-prep').className = st ? 'btn secondary' : 'btn big';
   $('#btn-result').className = st ? 'btn big' : 'btn secondary';
   let h = '';
@@ -823,11 +822,11 @@ function renderEvenings() {
     const playing = ws.filter(w => w.status !== 'afwezig').length;
     const sleepers = ws.filter(w => w.status === 'slaper').length;
     let status;
-    if (!isDone(wk)) status = '<span class="status-open">Voorbereid, uitslag nog invullen</span>';
+    if (!isDone(wk)) status = '<span class="status-open">Kaartjes geprint, uitslag nog invullen</span>';
     else if (wk === sent.week) status = changedSinceSend ? '<span class="status-warn">Gewijzigd, nog niet opnieuw online</span>' : `<span class="status-ok">✓ Online</span><br><span class="muted" style="font-size:1rem">${esc(sent.at)}</span>`;
     else if (wk < sent.week) status = '<span class="status-ok">✓ Online</span>';
     else status = '<span class="status-open">Nog niet online</span>';
-    h += `<tr><td><b>${cap(SHORT[wk])}</b></td><td>${wk}</td><td>${playing}</td><td>${wk === 47 || wk > 47 ? sleepers : evenings[wk].sleepers}</td><td>${status}</td>
+    h += `<tr><td><b>${cap(SHORT[wk])}</b></td><td>${wk}</td><td>${isDone(wk) ? playing : '–'}</td><td>${!isDone(wk) ? '–' : wk >= 47 ? sleepers : evenings[wk].sleepers}</td><td>${status}</td>
       <td style="text-align:right; white-space:nowrap">${isDone(wk) ? `<button type="button" class="btn secondary small" data-edit="${wk}">Wijzigen</button>` : `<button type="button" class="btn small" data-edit="${wk}">Uitslag invullen</button>`}</td></tr>`;
   });
   h += '<tr><td><b>Ma 26 okt</b></td><td>44</td><td>19</td><td>9</td><td><span class="status-ok">✓ Online</span></td><td style="text-align:right"><button type="button" class="btn secondary small" data-old="1">Wijzigen</button></td></tr>';
@@ -835,116 +834,93 @@ function renderEvenings() {
   $('#evenings').innerHTML = h;
 }
 
-/* ---------------- Avond voorbereiden ---------------- */
-let prepWeek = null, prep = null;
+/* ---------------- Avond voorbereiden (kaartjes en tafelindeling; de nummers worden op de avond getrokken) ---------------- */
+let prepWeek = null, prepCards = null;
+const planCache = {};
 function openPrep(wk) {
   prepWeek = wk;
-  if (evenings[wk]) {
-    prep = { st: {}, subs: [], plan: evenings[wk].plan, numbers: evenings[wk].numbers };
-    players.forEach(p => { const w = p.weeks[wk]; if (!w) return; if (p.kind === 'invaller') prep.subs.push(p.id); prep.st[p.id] = { status: w.status, round: w.round }; });
-  } else {
-    prep = { st: {}, subs: [], plan: null, numbers: null };
-    members().filter(p => p.active).forEach(p => { prep.st[p.id] = { status: ['Dineke Prins', 'Marga Peters', 'Ria Bos'].includes(p.name) ? 'afwezig' : 'speelt', round: 0 }; });
-    autoSleepers();
-  }
+  prepCards = new Set(evenings[wk] && evenings[wk].cards ? evenings[wk].cards : members().filter(p => p.active).map(p => p.id));
   show('voorbereiden');
 }
-function prepPeople() { return Object.keys(prep.st).map(byId).filter(Boolean); }
-function sleepersPerRound(n) { return n % 4; }
-function autoSleepers() {
-  const ids = Object.keys(prep.st);
-  ids.forEach(id => { if (prep.st[id].status === 'slaper') prep.st[id] = { status: 'speelt', round: 0 }; });
-  const playing = ids.filter(id => prep.st[id].status !== 'afwezig');
-  const s = sleepersPerRound(playing.length);
-  const pick = playing.filter(id => byId(id).kind === 'lid').map(byId).sort((a, b) => a.sleeps - b.sleeps || byName(a, b)).slice(0, 3 * s);
-  pick.forEach((p, i) => { prep.st[p.id] = { status: 'slaper', round: (i % 3) + 1 }; });
-  prep.plan = null;
-}
+function blanks() { const v = parseInt($('#prep-blank').value, 10); return Number.isNaN(v) || v < 0 ? 0 : Math.min(v, 12); }
+function updateCardCount() { const n = prepCards.size + blanks(); $('#prep-card-count').textContent = `${n} kaartjes = ${Math.ceil(n / 12)} A4`; }
 function renderPrep() {
   $('#prep-date').textContent = `${cap(LONG[prepWeek])} (week ${prepWeek})`;
-  $('#prep-rows').innerHTML = members().filter(p => prep.st[p.id]).sort(byName).map(p => {
-    const s = prep.st[p.id];
-    return `<tr data-id="${p.id}" class="is-${s.status}"><td class="name">${esc(p.name)}</td><td>${segHtml(s.status)}</td>
-      <td>${s.status === 'slaper' ? roundSelect(s.round) : ''}</td><td class="muted">${p.sleeps}×</td></tr>`;
-  }).join('');
-  $('#prep-subs').innerHTML = prep.subs.length ? `<table class="entry"><tbody>${prep.subs.map(id => {
-    const p = byId(id), s = prep.st[id];
-    return `<tr data-id="${id}"><td class="name">${esc(p.name)}</td><td>${segHtml(s.status, false)}</td><td>${s.status === 'slaper' ? roundSelect(s.round) : ''}</td>
-      <td><button type="button" class="btn danger small" data-unsub="${id}">Weghalen</button></td></tr>`;
-  }).join('')}</tbody></table>` : '<p class="muted" style="margin:0">Vanavond geen invallers.</p>';
-  $('#prep-sub-pick').innerHTML = subsList().filter(s => !prep.subs.includes(s.id)).map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
-  renderPrepCount();
+  $('#prep-list').innerHTML = members().filter(p => p.active).sort(byName)
+    .map(p => `<label><input type="checkbox" data-card="${p.id}" ${prepCards.has(p.id) ? 'checked' : ''}> ${esc(p.name)}</label>`).join('');
+  updateCardCount();
+  const sel = $('#prep-n');
+  if (!sel.options.length) sel.innerHTML = Array.from({ length: 25 }, (_, i) => i + 4).map(n => `<option ${n === 17 ? 'selected' : ''}>${n}</option>`).join('');
   renderPlan();
 }
-function prepCheck() {
-  const ppl = prepPeople().filter(p => prep.st[p.id].status !== 'afwezig');
-  const n = ppl.length, s = sleepersPerRound(n);
-  const perRound = [1, 2, 3].map(r => ({ r, sleep: ppl.filter(p => prep.st[p.id].status === 'slaper' && prep.st[p.id].round === r).length }));
-  perRound.forEach(x => { x.play = n - x.sleep; x.ok = x.play % 4 === 0 && x.play > 0; });
-  return { n, s, perRound, ok: perRound.every(x => x.ok) };
-}
-function renderPrepCount() {
-  const c = prepCheck();
-  let h = `<p class="count-line" style="margin-bottom:.5rem"><b>${c.n}</b> spelers vanavond → <b>${Math.floor(c.n / 4)}</b> tafels, per ronde <b>${c.s}</b> ${c.s === 1 ? 'slaper' : 'slapers'} (${3 * c.s} in totaal).</p>`;
-  h += '<ul style="margin:0 0 1rem; padding-left:1.25rem">' + c.perRound.map(x => `<li>Ronde ${x.r}: ${x.play} spelen, ${x.sleep} stil ${x.ok ? '<span class="status-ok">✓</span>' : `<span class="status-warn">— ${x.play} gaat niet op in tafels van 4</span>`}</li>`).join('') + '</ul>';
-  h += `<div class="actions"><button type="button" class="btn big" id="btn-draw" ${c.ok ? '' : 'disabled style="opacity:.5;cursor:not-allowed"'}>Loten en tafels indelen</button>
-    <button type="button" class="btn secondary" id="btn-auto">Kies de slapers voor mij</button></div>`;
-  $('#prep-count').innerHTML = h;
-}
+function savePrep() { evenings[prepWeek] = { ...(evenings[prepWeek] || { state: 'voorbereid' }), cards: [...prepCards] }; }
 
-// Seeded random, so "Opnieuw loten" gives a new plan and the same plan comes back after a reload.
+// Seeded random, so the same number of players always gives the same plan (the real app uses Dad's own schemes).
 let seed = 47;
 function rnd() { seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 const pairKey = (a, b) => a < b ? a + '-' + b : b + '-' + a;
-function draw() {
-  const ppl = prepPeople().filter(p => prep.st[p.id].status !== 'afwezig');
-  const sleepers = [1, 2, 3].flatMap(r => ppl.filter(p => prep.st[p.id].status === 'slaper' && prep.st[p.id].round === r));
-  const rest = shuffle(ppl.filter(p => prep.st[p.id].status !== 'slaper'));
-  prep.numbers = {}; [...sleepers, ...rest].forEach((p, i) => { prep.numbers[p.id] = i + 1; });
-  const rounds = [1, 2, 3].map(r => ppl.filter(p => !(prep.st[p.id].status === 'slaper' && prep.st[p.id].round === r)).map(p => p.id));
-  for (let attempt = 0; attempt < 400; attempt++) {
-    const met = new Set(), plan = []; let ok = true;
-    for (const playing of rounds) {
-      let tables = null;
-      for (let t = 0; t < 400 && !tables; t++) {
-        const s = shuffle([...playing]), tb = []; let good = true;
-        for (let i = 0; i < s.length && good; i += 4) {
-          const g = s.slice(i, i + 4);
-          for (let x = 0; x < 4 && good; x++) for (let y = x + 1; y < 4; y++) if (met.has(pairKey(g[x], g[y]))) { good = false; break; }
-          tb.push(g);
+const fours = list => { const tb = []; for (let i = 0; i < list.length; i += 4) tb.push(list.slice(i, i + 4)); return tb; };
+// Numbers that sit out: the lowest, round by round (as in the workbook). With 4 or more tables nobody sits
+// with the same people twice; with fewer tables that can't be done, so then nobody gets the same partner twice.
+function buildRound(playing, met, partners, strict) {
+  for (let t = 0; t < 400; t++) {
+    const pool = shuffle([...playing]), tables = []; let ok = true;
+    while (pool.length && ok) {
+      const g = [pool.shift()];
+      while (g.length < 4) {
+        let best = -1, bestCost = 99;
+        const partnerOf = g.length === 1 ? g[0] : g.length === 3 ? g[2] : null;
+        for (let i = 0; i < pool.length; i++) {
+          const c = pool[i], cost = g.filter(x => met.has(pairKey(x, c))).length;
+          if ((strict && cost) || (partnerOf !== null && partners.has(pairKey(partnerOf, c)))) continue;
+          if (cost < bestCost) { bestCost = cost; best = i; if (!cost) break; }
         }
-        if (good) tables = tb;
+        if (best < 0) { ok = false; break; }
+        g.push(pool.splice(best, 1)[0]);
       }
-      if (!tables) { ok = false; break; }
-      tables.forEach(g => { for (let x = 0; x < 4; x++) for (let y = x + 1; y < 4; y++) met.add(pairKey(g[x], g[y])); });
-      plan.push(tables);
+      tables.push(g);
     }
-    if (ok) { prep.plan = plan; return; }
+    if (ok) return tables;
   }
-  prep.plan = rounds.map(playing => { const s = shuffle([...playing]), tb = []; for (let i = 0; i < s.length; i += 4) tb.push(s.slice(i, i + 4)); return tb; });
+  return null;
 }
-function nameNr(id) { const p = byId(id); return `${esc(p.name)} <span class="nr">(${prep.numbers[id]})</span>`; }
-function planHtml() {
-  return prep.plan.map((tables, i) => {
-    const r = i + 1;
-    const stil = prepPeople().filter(p => prep.st[p.id].status === 'slaper' && prep.st[p.id].round === r);
-    return `<div class="round"><h3>Ronde ${r}</h3><table>${tables.map((g, t) => `<tr><td class="t">Tafel ${t + 1}</td><td>${nameNr(g[0])} &amp; ${nameNr(g[1])}<br><span class="vs">tegen</span> ${nameNr(g[2])} &amp; ${nameNr(g[3])}</td></tr>`).join('')}
-      ${stil.length ? `<tr><td class="t stil">Stil</td><td class="stil">${stil.map(p => nameNr(p.id)).join(', ')}</td></tr>` : ''}</table></div>`;
-  }).join('');
+function planFor(n) {
+  if (planCache[n]) return planCache[n];
+  seed = n * 7919;
+  const s = n % 4, all = Array.from({ length: n }, (_, i) => i + 1);
+  const stil = [1, 2, 3].map(r => all.slice((r - 1) * s, r * s));
+  const rounds = stil.map(st => all.filter(x => !st.includes(x)));
+  let plan = null, strictOk = false;
+  for (const strict of Math.floor(n / 4) >= 4 ? [true, false] : [false]) {
+    for (let attempt = 0; attempt < 40 && !plan; attempt++) {
+      const met = new Set(), partners = new Set(), out = []; let ok = true;
+      for (const playing of rounds) {
+        const tb = buildRound(playing, met, partners, strict);
+        if (!tb) { ok = false; break; }
+        tb.forEach(g => { g.forEach((x, i) => g.forEach((y, j) => { if (j > i) met.add(pairKey(x, y)); })); partners.add(pairKey(g[0], g[1])); partners.add(pairKey(g[2], g[3])); });
+        out.push(tb);
+      }
+      if (ok) { plan = out; strictOk = strict; }
+    }
+    if (plan) break;
+  }
+  if (!plan) plan = rounds.map(playing => fours(shuffle([...playing])));
+  return (planCache[n] = { plan, stil, strictOk });
+}
+function planHtmlFor(n) {
+  const { plan, stil } = planFor(n);
+  return plan.map((tables, i) => `<div class="round"><h3>Ronde ${i + 1}</h3><table>${tables.map((g, t) =>
+    `<tr><td class="t">Tafel ${t + 1}</td><td class="nrs"><b>${g[0]}</b> &amp; <b>${g[1]}</b> <span class="vs">tegen</span> <b>${g[2]}</b> &amp; <b>${g[3]}</b></td></tr>`).join('')}
+    ${stil[i].length ? `<tr><td class="t stil">Stil</td><td class="stil nrs">nr ${stil[i].join(', ')}</td></tr>` : ''}</table></div>`).join('');
 }
 function renderPlan() {
-  $('#prep-plan-card').hidden = !prep.plan;
-  if (prep.plan) $('#prep-plan').innerHTML = planHtml();
+  const n = Number($('#prep-n').value), s = n % 4;
+  $('#prep-n-info').textContent = `${Math.floor(n / 4)} tafels` + (s ? `, per ronde ${s} stil (de laagste nummers, zoals nu)` : ', niemand zit stil') +
+    (planFor(n).strictOk ? '. Niemand zit twee keer met dezelfde mensen aan tafel.' : '. Met zo weinig tafels zit iedereen wel eens twee keer met iemand aan tafel, maar nooit twee keer met dezelfde maat.');
+  $('#prep-plan').innerHTML = planHtmlFor(n);
 }
-function savePrep() {
-  Object.entries(prep.st).forEach(([id, s]) => {
-    const p = byId(id), old = p.weeks[prepWeek];
-    p.weeks[prepWeek] = { status: s.status, round: s.round, pts: old ? old.pts : '', pits: old ? old.pits : '' };
-  });
-  players.forEach(p => { if (p.kind === 'invaller' && p.weeks[prepWeek] && !prep.st[p.id]) delete p.weeks[prepWeek]; });
-  evenings[prepWeek] = { ...(evenings[prepWeek] || { state: 'voorbereid' }), plan: prep.plan, numbers: prep.numbers };
-}
+
 // A QR-code look-alike for the mock (the real app makes a real one).
 function qrHtml() {
   let cells = '';
@@ -958,17 +934,21 @@ function qrHtml() {
   return `<svg class="qr" viewBox="-1 -1 23 23" role="img" aria-label="QR-code (voorbeeld)"><rect x="-1" y="-1" width="23" height="23" fill="#fff"/><g fill="#000">${cells}</g></svg>`;
 }
 function cardsHtml() {
-  const ppl = prepPeople().filter(p => prep.st[p.id].status !== 'afwezig').sort((a, b) => prep.numbers[a.id] - prep.numbers[b.id]);
-  return `<div class="cards">${ppl.map(p => {
-    const s = prep.st[p.id];
-    const rows = [1, 2, 3].map(r => s.status === 'slaper' && s.round === r ? `<tr><td>${r}</td><td class="stil" colspan="2">stil: ${settings.sleep}</td></tr>` : `<tr><td>${r}</td><td></td><td></td></tr>`).join('');
-    return `<div class="scard"><div class="club"><span>"${esc(settings.club)}"</span><span class="nr-box">${prep.numbers[p.id]}</span></div>
-      ${s.status === 'slaper' ? `<div class="tag">slaper ${s.round}: zit ronde ${s.round} stil</div>` : ''}
-      <table><tr><td class="lbl">Naam:</td><td colspan="2"><b>${esc(p.name)}</b></td></tr>
-      <tr><td class="lbl">Datum:</td><td colspan="2">${LONG[prepWeek].replace('maandag ', '').replace(' 2026', '')}</td></tr>
-      <tr><th>Ronde</th><th>Punten</th><th>Pitten</th></tr>${rows}<tr><th>Totaal:</th><td></td><td></td></tr></table>${settings.qr ? `<div class="cfoot"><span>De stand staat online:<br><b>klaverjas.gemberkoekje.nl</b></span>${qrHtml()}</div>` : ''}</div>`;
-  }).join('')}</div>`;
+  const names = members().filter(p => prepCards.has(p.id)).sort(byName).map(p => p.name).concat(Array(blanks()).fill(''));
+  const date = LONG[prepWeek].replace('maandag ', '').replace(' 2026', '');
+  return `<div class="cards">${names.map(name => `<div class="scard"><div class="club"><span>"${esc(settings.club)}"</span><span class="nr-box nr-empty" title="Het nummer schrijft de speler zelf in, na het trekken"></span></div>
+      <table><tr><td class="lbl">Naam:</td><td colspan="2"><b>${esc(name)}</b></td></tr>
+      <tr><td class="lbl">Datum:</td><td colspan="2">${date}</td></tr>
+      <tr><th>Ronde</th><th>Punten</th><th>Pitten</th></tr>${[1, 2, 3].map(r => `<tr><td>${r}</td><td></td><td></td></tr>`).join('')}<tr><th>Totaal:</th><td></td><td></td></tr></table>
+      ${settings.qr ? `<div class="cfoot"><span>De stand staat online:<br><b>klaverjas.gemberkoekje.nl</b></span>${qrHtml()}</div>` : ''}</div>`).join('')}</div>`;
 }
+$('#prep-list').addEventListener('change', e => { const id = Number(e.target.dataset.card); if (!id) return; if (e.target.checked) prepCards.add(id); else prepCards.delete(id); updateCardCount(); });
+$('#prep-blank').addEventListener('input', updateCardCount);
+$('#prep-n').addEventListener('change', renderPlan);
+$('#btn-print-cards').addEventListener('click', () => { savePrep(); modal('Kaartjes printen', `<p class="help">12 per A4, net als nu: met naam en datum, <b>zonder nummer</b>. Het nummer schrijft iedereen zelf in het vakje rechtsboven, na het trekken. Onderaan staat waar de stand online staat.</p>${cardsHtml()}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true); });
+$('#btn-print-plan').addEventListener('click', () => { const n = Number($('#prep-n').value); modal(`Tafelindeling voor ${n} spelers`, `<p class="help">Eén A4 voor aan de muur of op de tafels.</p><div class="rounds">${planHtmlFor(n)}</div>`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true); });
+$('#btn-print-all').addEventListener('click', () => modal('Alle tafelindelingen', '<p>In het echte programma komt hier een boekje met de tafelindeling voor elk aantal spelers, van 4 tot en met 28, één per A4. Dan heeft u op de avond altijd de goede bij de hand, hoeveel mensen er ook komen.</p>', [{ label: 'Oké', primary: true }]));
+$('#btn-prep-done').addEventListener('click', () => { savePrep(); show('avonden'); });
 
 /* ---------------- Uitslag invullen ---------------- */
 let editWeek = null, draft = null, editIsNew = false;
@@ -979,7 +959,7 @@ function openEntry(wk) {
   players.forEach(p => {
     const w = p.weeks[wk];
     if (w) draft[p.id] = { ...w };
-    else if (p.kind === 'lid' && p.active && !evenings[wk]) draft[p.id] = { status: 'speelt', round: 0, pts: '', pits: '' };
+    else if (p.kind === 'lid' && p.active && !isDone(wk)) draft[p.id] = { status: 'speelt', round: 0, pts: '', pits: '' };
   });
   show('invoer');
 }
@@ -1232,7 +1212,6 @@ document.addEventListener('click', e => {
     }
     return;
   }
-  if (t.dataset.unsub) { const id = Number(t.dataset.unsub); prep.subs = prep.subs.filter(x => x !== id); delete prep.st[id]; prep.plan = null; renderPrep(); return; }
   if (t.dataset.unhol !== undefined) { holidays.splice(Number(t.dataset.unhol), 1); renderSettings(); return; }
   if (t.dataset.pedit) { editingPlayer = Number(t.dataset.pedit); renderPlayers(); $('#ed-name').focus(); return; }
   if (t.dataset.pcancel) { editingPlayer = null; renderPlayers(); return; }
@@ -1243,8 +1222,6 @@ document.addEventListener('click', e => {
     $('#players-banner').innerHTML = `<div class="banner ok"><p>Opgeslagen.${p.inStand === false ? ` <b>${esc(p.name)}</b> staat niet meer in de stand van dit seizoen. De scores blijven bewaard; u kunt dit altijd terugzetten.` : ''}${old !== p.name ? ` Overal staat nu <b>${esc(p.name)}</b> in plaats van ${esc(old)}.` : ''}</p></div>`;
     renderPlayers(); return;
   }
-  if (t.id === 'btn-draw') { draw(); savePrep(); renderPlan(); $('#prep-plan-card').scrollIntoView({ behavior: 'smooth' }); return; }
-  if (t.id === 'btn-auto') { autoSleepers(); renderPrep(); return; }
 });
 document.addEventListener('change', e => {
   if (!e.target.classList.contains('round')) return;
@@ -1256,12 +1233,6 @@ document.addEventListener('change', e => {
 $('#btn-prep').addEventListener('click', () => openPrep(nextWeek()));
 $('#btn-result').addEventListener('click', () => openEntry(nextWeek()));
 $('#btn-older').addEventListener('click', () => modal('Oudere avonden', '<p>Hier komen alle avonden vanaf januari, uit de Excel van Pa.</p>', ok));
-$('#btn-prep-add-sub').addEventListener('click', () => { const id = Number($('#prep-sub-pick').value); if (!id) return; prep.subs.push(id); prep.st[id] = { status: 'speelt', round: 0 }; prep.plan = null; renderPrep(); });
-$('#btn-prep-new-sub').addEventListener('click', () => modal('Nieuwe invaller', '<p>Hier typt u de naam (en eventueel het e-mailadres) van de invaller. Die komt dan in de lijst bij Spelers, zodat u hem een volgende keer kunt kiezen.</p>', ok));
-$('#btn-redraw').addEventListener('click', () => { draw(); savePrep(); renderPlan(); });
-$('#btn-print-cards').addEventListener('click', () => modal('Kaartjes printen', `<p class="help">Zo komen de kaartjes op papier: 12 per A4, net als nu, met naam, nummer en datum al ingevuld. Onderaan staat waar de stand online staat, met een QR-code. De slapers krijgen hun stille ronde al ingevuld.</p>${cardsHtml()}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true));
-$('#btn-print-plan').addEventListener('click', () => modal('Tafelindeling printen', `<p class="help">Eén A4 voor aan de muur of op de tafels.</p><div class="rounds">${planHtml()}</div>`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true));
-$('#btn-prep-done').addEventListener('click', () => { savePrep(); show('avonden'); });
 $('#btn-cancel').addEventListener('click', () => modal('Annuleren?', '<p>Wat u net hebt ingetypt, wordt niet bewaard.</p>', [{ label: 'Nee, verder met invullen', primary: true }, { label: 'Ja, niet bewaren', run: () => show('avonden') }]));
 $('#btn-save').addEventListener('click', trySave);
 $('#btn-add-sub').addEventListener('click', () => {
