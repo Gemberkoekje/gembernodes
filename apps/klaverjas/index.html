@@ -188,22 +188,29 @@
   .checklist label { display: flex; gap: .55rem; align-items: center; padding: .2rem 0; break-inside: avoid; cursor: pointer; }
   .checklist input { width: 1.4rem; height: 1.4rem; accent-color: var(--accent); }
   .round td.nrs { font-size: 1.15rem; }
-  .tsheets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
-  .tsheet { border: 1.5px solid #333; padding: .5rem .6rem; background: #fff; font-size: .85rem; }
-  .ts-head { display: flex; justify-content: space-between; gap: .3rem .8rem; flex-wrap: wrap; border-bottom: 1px solid #555; padding-bottom: .2rem; }
-  .ts-head b { font-size: 1.05rem; }
-  .ts-pairs { display: flex; justify-content: space-around; font-size: 1.05rem; padding: .3rem 0; }
-  .ts-body { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .5rem; align-items: start; }
-  .tsheet table { border-collapse: collapse; }
-  .tsheet th, .tsheet td { border: 1px solid #666; padding: 0 .3rem; height: 1.45rem; font-weight: 400; }
-  .tsheet table.split th { font-size: .7rem; height: auto; }
-  .tsheet table.split td { font-size: .62rem; line-height: 1.2; height: auto; padding: 0 .25rem; white-space: nowrap; border-color: #c4c4c4; }
-  .tsheet table.hands { width: 100%; }
+  /* Table score sheets: A4 landscape pages, two A5 forms side by side, cut down the middle */
+  .tpages { display: flex; flex-direction: column; gap: 1.6rem; align-items: center; }
+  .a4 { width: 60rem; max-width: 100%; aspect-ratio: 297 / 210; background: #fff; border: 1px solid #999; box-shadow: 0 2px 8px rgba(0,0,0,.15); display: grid; grid-template-columns: 1fr 1fr; position: relative; }
+  .a4 .cut { position: absolute; top: 0; bottom: 0; left: 50%; border-left: 2px dashed #9a9a9a; }
+  .a4 .cut span { position: absolute; top: 45%; left: -.7rem; background: #fff; font-size: 1.1rem; color: #666; line-height: 1; }
+  .a5 { padding: 1.1rem 1.2rem; display: flex; min-width: 0; min-height: 0; }
+  .tsheet { flex: 1; min-width: 0; border: 1.5px solid #333; padding: .4rem .5rem; background: #fff; font-size: .78rem; display: flex; flex-direction: column; overflow: hidden; }
+  .ts-head { display: flex; justify-content: space-between; gap: .2rem .6rem; flex-wrap: wrap; border-bottom: 1px solid #555; padding-bottom: .15rem; }
+  .ts-head b { font-size: .98rem; }
+  .ts-pairs { display: flex; justify-content: space-around; font-size: .98rem; padding: .25rem 0; }
+  .ts-body { display: grid; grid-template-columns: 6.4rem minmax(0, 1fr); gap: .35rem; align-items: start; min-height: 0; }
+  .tsheet table { border-collapse: collapse; width: 100%; }
+  .tsheet th, .tsheet td { border: 1px solid #666; padding: 0 .2rem; height: 1.62rem; font-weight: 400; overflow: hidden; white-space: nowrap; }
+  .tsheet th { font-size: .66rem; height: 1.15rem; }
+  .tsheet table.split th { font-size: .62rem; }
+  .tsheet table.split td { font-size: .56rem; line-height: 1.32; height: auto; padding: 0 .15rem; border-color: #c4c4c4; text-align: center; }
+  .tsheet table.hands { table-layout: fixed; }
   .tsheet .c { text-align: center; }
-  .tsheet .suit { font-size: 1rem; }
+  .tsheet .suit { font-size: .9rem; }
   .tsheet .suit.red { color: #c00; }
-  .tsheet tr.chk td { font-size: .68rem; background: #fff7cc; height: auto; text-align: right; }
+  .tsheet tr.chk td { font-size: .58rem; background: #fff7cc; height: auto; text-align: right; white-space: normal; }
   .tsheet tr.tot th, .tsheet tr.tot td { border-top: 2px solid #333; font-weight: 700; }
+  .tsheet tr.tot th { font-size: .6rem; padding: 0 .1rem; }
   .scard .tag { background: var(--st-slaper); padding: 0 .35rem; font-size: .85rem; margin-top: .25rem; }
   .scard table { width: 100%; border-collapse: collapse; margin-top: .35rem; }
   .scard th, .scard td { border: 1px solid #555; padding: .15rem .35rem; text-align: left; height: 1.7rem; }
@@ -957,11 +964,13 @@ function tableSheetsHtml(n) {
     }
     sheets.push(`<div class="tsheet"><div class="ts-head"><b>Ronde ${r + 1} · Tafel ${t + 1}</b><span>"${esc(settings.club)}" · ${date} · week ${prepWeek} · ${tables.length} tafels</span></div>
       <div class="ts-pairs"><span>Wij: <b>${g[0]} &amp; ${g[1]}</b></span><span>Zij: <b>${g[2]} &amp; ${g[3]}</b></span></div>
-      <div class="ts-body">${strip}<table class="hands"><tr><th rowspan="2">Spel</th><th colspan="2">Wij</th><th colspan="2">Zij</th><th rowspan="2">Gever</th><th rowspan="2"></th></tr>
+      <div class="ts-body">${strip}<table class="hands"><colgroup><col style="width:14%"><col style="width:17%"><col style="width:13%"><col style="width:17%"><col style="width:13%"><col style="width:17%"><col style="width:9%"></colgroup><tr><th rowspan="2">Spel</th><th colspan="2">Wij</th><th colspan="2">Zij</th><th rowspan="2">Gever</th><th rowspan="2"></th></tr>
       <tr><th>Punten</th><th>Roem</th><th>Punten</th><th>Roem</th></tr>${rows}
       <tr class="tot"><th>Totaal</th><td></td><td></td><td></td><td></td><td colspan="2"></td></tr></table></div></div>`);
   }));
-  return `<div class="tsheets">${sheets.join('')}</div>`;
+  const pages = [];
+  for (let i = 0; i < sheets.length; i += 2) pages.push(`<div class="a4"><div class="a5">${sheets[i]}</div><div class="a5">${sheets[i + 1] || ''}</div><div class="cut"><span>✂</span></div></div>`);
+  return `<div class="tpages">${pages.join('')}</div>`;
 }
 
 // A QR-code look-alike for the mock (the real app makes a real one).
@@ -989,7 +998,7 @@ $('#prep-list').addEventListener('change', e => { const id = Number(e.target.dat
 $('#prep-blank').addEventListener('input', updateCardCount);
 $('#prep-n').addEventListener('change', renderPlan);
 $('#btn-print-cards').addEventListener('click', () => { savePrep(); modal('Kaartjes printen', `<p class="help">12 per A4, net als nu: met naam en datum, <b>zonder nummer</b>. Het nummer schrijft iedereen zelf in het vakje rechtsboven, na het trekken. Onderaan staat waar de stand online staat.</p>${cardsHtml()}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true); });
-$('#btn-print-plan').addEventListener('click', () => { const n = Number($('#prep-n').value); const count = planFor(n).plan.reduce((a, r) => a + r.length, 0); modal(`Tafelindeling voor ${n} spelers`, `<p class="help">Dit wordt geprint: eerst het <b>overzicht</b> (1 A4, voor aan de muur), dan de <b>tafelbriefjes</b>: één per tafel per ronde, ${count} briefjes, 2 per A4 (${Math.ceil(count / 2)} A4). Wie bij welk nummer hoort, blijkt pas bij het trekken.</p><h3>Overzicht</h3><div class="rounds">${planHtmlFor(n)}</div><h3 style="margin-top:1.25rem">Tafelbriefjes</h3>${tableSheetsHtml(n)}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true); });
+$('#btn-print-plan').addEventListener('click', () => { const n = Number($('#prep-n').value); const count = planFor(n).plan.reduce((a, r) => a + r.length, 0); modal(`Tafelindeling voor ${n} spelers`, `<p class="help">Dit wordt geprint: eerst het <b>overzicht</b> (1 A4, voor aan de muur), dan de <b>tafelbriefjes</b>: één per tafel per ronde, ${count} briefjes, 2 per A4 (${Math.ceil(count / 2)} A4): printen en dan doormidden knippen tot A5. Wie bij welk nummer hoort, blijkt pas bij het trekken.</p><h3>Overzicht</h3><div class="rounds">${planHtmlFor(n)}</div><h3 style="margin-top:1.25rem">Tafelbriefjes</h3>${tableSheetsHtml(n)}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true); });
 $('#btn-print-all').addEventListener('click', () => modal('Alle tafelindelingen', '<p>In het echte programma komt hier een boekje met de tafelindeling voor elk aantal spelers, van 4 tot en met 28, één per A4. Dan heeft u op de avond altijd de goede bij de hand, hoeveel mensen er ook komen.</p>', [{ label: 'Oké', primary: true }]));
 $('#btn-prep-done').addEventListener('click', () => { savePrep(); show('avonden'); });
 
