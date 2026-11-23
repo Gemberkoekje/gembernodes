@@ -10,7 +10,8 @@
   Member names are invented; the numbers are the week-47 standings', so the rules can be checked.
   Version 2 follows Dad's workbooks: Speler / Slaper / Afwezig, the table plan, substitutes kept in
   the member list, evenings without play. Since Dad's answers (2026-11-23): he picks the slapers
-  beforehand ("Slaper 1/2/3" on their card), the 1600 is already in the card total, first names on
+  beforehand (numbers 1, 2, 3 …, "Slaper n" on their card; the rest draw from the pot), the 1600 is
+  already in the card total, the weekly total counts every evening (as the sheet), first names on
   the cards, a handout slip with the address and password.
   Screens are switched in script (the Claude browser pane opens local files as data: URLs,
   where hash routing does nothing).
@@ -202,9 +203,8 @@
   /* Wie slaapt er: one row per round with a name picker per slaper */
   .sleepers { display: grid; gap: .6rem; margin: 1rem 0 .4rem; }
   .sleepers .srow { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; padding: .55rem .8rem; border: 2px solid var(--line); border-radius: 10px; background: #fbfcfb; }
-  .sleepers .srow b { min-width: 9rem; }
-  .sleepers .srow .tag { background: var(--st-slaper); border: 1.5px solid #b9b94a; padding: .05rem .45rem; font-weight: 700; font-size: .95rem; }
-  .sleepers select { width: 22rem; max-width: 100%; }
+  .sleepers .srow .tag { background: var(--st-slaper); border: 1.5px solid #b9b94a; padding: .1rem .5rem; font-weight: 700; min-width: 6.5rem; text-align: center; }
+  .sleepers select { width: 25rem; max-width: 100%; }
   .print-row { margin-top: 1.25rem; padding-top: 1.1rem; border-top: 2px solid var(--line); }
   /* Briefjes met adres en wachtwoord, 10 per A4 */
   .slips { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; border: 1px dashed #888; background: #fff; max-width: 42rem; }
@@ -382,7 +382,8 @@
       <div class="card">
         <p style="margin:0">De nummers worden <b>op de avond zelf getrokken</b>, zodat niemand kan denken dat er iets is voorgekookt.
           Daarom staat er op de kaartjes nog geen nummer: dat schrijft iedereen zelf in het vakje, na het trekken.
-          Alleen de <b>slapers</b> weten het van tevoren: op hun kaartje staat <b>Slaper 1</b>, <b>2</b> of <b>3</b>, de ronde waarin ze stilzitten.</p>
+          Alleen de <b>slapers</b> trekken niet: zij krijgen van tevoren de nummers 1, 2, 3 … (zoveel als er die avond nodig zijn),
+          en op hun kaartje staat al <b>Slaper 1</b>, <b>Slaper 2</b> … De andere nummers worden uit de pot getrokken.</p>
       </div>
       <div class="card">
         <h2>Wie krijgt een kaartje?</h2>
@@ -396,7 +397,8 @@
       <div class="card">
         <h2>Wie slaapt er?</h2>
         <p class="help">Komen er niet precies 4, 8, 12 … spelers, dan zit er elke ronde iemand stil. U kiest zelf wie, om de beurt:
-          achter elke naam staat hoe vaak die dit jaar al heeft geslapen. De 1600 punten zet de slaper zelf op het kaartje, zoals nu.</p>
+          achter elke naam staat hoe vaak die dit jaar al heeft geslapen. Slaper 1 krijgt nummer 1, Slaper 2 nummer 2, enzovoort;
+          de tafelindeling zegt in welke ronde elk nummer stilzit. De 1600 punten zet de slaper zelf op het kaartje, zoals nu.</p>
         <div class="inline">
           <label for="prep-expect" style="font-weight:700">Aantal spelers (verwacht):</label>
           <select id="prep-expect" style="max-width:7rem"></select>
@@ -906,7 +908,7 @@ function renderEvenings() {
 }
 
 /* ---------------- Avond voorbereiden (kaartjes en tafelindeling; de nummers worden op de avond getrokken) ---------------- */
-// prepSleep.slots[round - 1] = the member ids Dad picked to sit out that round ("Slaper 1/2/3" on their card).
+// prepSleep.picks[n - 1] = the member Dad picked as "Slaper n": seat number n, printed on the card.
 let prepWeek = null, prepCards = null, prepSleep = null, expectTouched = false;
 const planCache = {};
 const MOCK_AWAY = ['Dineke Prins', 'Marga Peters', 'Ria Bos']; // mock only: unticked, so the example has 17 players
@@ -915,7 +917,7 @@ function openPrep(wk) {
   const ev = evenings[wk] || {};
   prepCards = new Set(ev.cards ? ev.cards : members().filter(p => p.active && !MOCK_AWAY.includes(p.name)).map(p => p.id));
   expectTouched = Boolean(ev.expect);
-  prepSleep = { expect: ev.expect || clampPlayers(prepCards.size), slots: ev.slots ? ev.slots.map(r => [...r]) : [[], [], []] };
+  prepSleep = { expect: ev.expect || clampPlayers(prepCards.size), picks: ev.picks ? [...ev.picks] : [] };
   show('voorbereiden');
 }
 const clampPlayers = n => Math.min(28, Math.max(4, n));
@@ -934,30 +936,34 @@ function renderPrep() {
   renderSleepers();
   renderPlan();
 }
-function savePrep() { evenings[prepWeek] = { ...(evenings[prepWeek] || { state: 'voorbereid' }), cards: [...prepCards], expect: prepSleep.expect, slots: prepSleep.slots.map(r => [...r]) }; }
+function savePrep() { evenings[prepWeek] = { ...(evenings[prepWeek] || { state: 'voorbereid' }), cards: [...prepCards], expect: prepSleep.expect, picks: [...prepSleep.picks] }; }
 
-/* Wie slaapt er: Dad picks them, by turns (Q10); players % 4 per round, so 0 to 3 per round. */
+/* Wie slaapt er: Dad picks them, by turns (Q10). players % 4 sit out each round, so 3, 6 or 9 slapers.
+   They get the numbers 1, 2, 3 … and the others draw theirs from the pot (Dad, Q18). */
 const perRound = () => prepSleep.expect % 4;
-const chosenIds = () => prepSleep.slots.flat().filter(Boolean);
-function sleeperRound(id) { return prepSleep.slots.findIndex(r => r.includes(id)) + 1; }
-function fitSlots() { const s = perRound(); prepSleep.slots = prepSleep.slots.map(r => { const a = r.slice(0, s); while (a.length < s) a.push(null); return a; }); }
+const slaperCount = () => 3 * perRound();
+// In the mock's plan numbers 1..s sit out round 1, s+1..2s round 2, and so on (the real app reads Dad's schemes).
+const roundOfSlaper = (n, s) => Math.ceil(n / s);
+const chosenIds = () => prepSleep.picks.filter(Boolean);
+function slaperNumber(id) { return prepSleep.picks.indexOf(id) + 1; }
+function fitSlots() { const k = slaperCount(), a = prepSleep.picks.slice(0, k); while (a.length < k) a.push(null); prepSleep.picks = a; }
 // Fewest times sat out first; the real app breaks ties by who sat out longest ago.
 const sleepPool = () => members().filter(p => prepCards.has(p.id)).sort((a, b) => a.sleeps - b.sleeps || byName(a, b));
 function renderSleepers() {
   fitSlots();
   const s = perRound(), tables = Math.floor(prepSleep.expect / 4);
-  $('#prep-expect-info').textContent = `${tables} tafels, ` + (s ? `per ronde slaapt er ${s}` : 'niemand slaapt');
+  $('#prep-expect-info').textContent = `${tables} tafels, ` + (s ? `${slaperCount()} slapers (${s} per ronde)` : 'niemand slaapt');
   $('#prep-fair-row').hidden = !s;
   if (!s) { $('#prep-sleepers').innerHTML = '<p class="muted" style="margin:0">Bij dit aantal spelers hoeft niemand te slapen.</p>'; return; }
   const pool = sleepPool(), taken = chosenIds();
-  $('#prep-sleepers').innerHTML = [1, 2, 3].map(r => `<div class="srow"><b>Ronde ${r}</b>${prepSleep.slots[r - 1].map((id, i) =>
-    `<select data-sr="${r}" data-si="${i}" aria-label="Slaper ${i + 1} in ronde ${r}"><option value="">— kies een naam —</option>${pool.filter(p => p.id === id || !taken.includes(p.id))
-      .map(p => `<option value="${p.id}" ${p.id === id ? 'selected' : ''}>${esc(p.name)} (${p.sleeps}× geslapen)</option>`).join('')}</select>`).join('')}
-    <span class="muted">op het kaartje:</span> <span class="tag">Slaper ${r}</span></div>`).join('');
+  $('#prep-sleepers').innerHTML = prepSleep.picks.map((id, i) => `<div class="srow"><span class="tag">Slaper ${i + 1}</span>
+    <select data-si="${i}" aria-label="Slaper ${i + 1}"><option value="">— kies een naam —</option>${pool.filter(p => p.id === id || !taken.includes(p.id))
+      .map(p => `<option value="${p.id}" ${p.id === id ? 'selected' : ''}>${esc(p.name)} (${p.sleeps}× geslapen)</option>`).join('')}</select>
+    <span class="muted">nummer ${i + 1}, zit stil in ronde ${roundOfSlaper(i + 1, s)}</span></div>`).join('');
 }
 function fairProposal() {
   const taken = new Set(chosenIds()), free = sleepPool().filter(p => !taken.has(p.id));
-  prepSleep.slots = prepSleep.slots.map(r => r.map(id => id || (free.length ? free.shift().id : null)));
+  prepSleep.picks = prepSleep.picks.map(id => id || (free.length ? free.shift().id : null));
   renderSleepers();
 }
 function setExpect(n) { prepSleep.expect = clampPlayers(n); $('#prep-expect').value = String(prepSleep.expect); $('#prep-n').value = String(prepSleep.expect); renderSleepers(); renderPlan(); }
@@ -1019,7 +1025,7 @@ function planHtmlFor(n) {
   const { plan, stil } = planFor(n);
   return plan.map((tables, i) => `<div class="round"><h3>Ronde ${i + 1}</h3><table>${tables.map((g, t) =>
     `<tr><td class="t">Tafel ${t + 1}</td><td class="nrs"><b>${g[0]}</b> &amp; <b>${g[1]}</b> <span class="vs">tegen</span> <b>${g[2]}</b> &amp; <b>${g[3]}</b></td></tr>`).join('')}
-    ${stil[i].length ? `<tr><td class="t stil">Stil</td><td class="stil nrs">nr ${andList(stil[i])} <span class="vs">(kaartje Slaper ${i + 1})</span></td></tr>` : ''}</table></div>`).join('');
+    ${stil[i].length ? `<tr><td class="t stil">Stil</td><td class="stil nrs">nr ${andList(stil[i])} <span class="vs">(Slaper ${andList(stil[i])})</span></td></tr>` : ''}</table></div>`).join('');
 }
 const andList = a => a.length > 1 ? a.slice(0, -1).join(', ') + ' en ' + a[a.length - 1] : String(a[0]);
 function renderPlan() {
@@ -1066,11 +1072,11 @@ function tableSheetsHtml(n) {
 // First name only on the card (Dad, Q16); the full name when two active members share a first name.
 function cardName(p) { const f = firstName(p.name); return members().some(o => o !== p && o.active && firstName(o.name) === f) ? p.name : f; }
 function cardsHtml() {
-  const cards = members().filter(p => prepCards.has(p.id)).sort(byName).map(p => ({ name: cardName(p), r: sleeperRound(p.id) }))
-    .concat(Array.from({ length: blanks() }, () => ({ name: '', r: 0 })));
+  const cards = members().filter(p => prepCards.has(p.id)).sort(byName).map(p => ({ name: cardName(p), n: slaperNumber(p.id) }))
+    .concat(Array.from({ length: blanks() }, () => ({ name: '', n: 0 })));
   const date = LONG[prepWeek].replace('maandag ', '').replace(' 2026', '');
-  return `<div class="cards">${cards.map(({ name, r }) => `<div class="scard"><table><colgroup><col style="width:22%"><col style="width:46%"><col style="width:32%"></colgroup>
-      <tr class="club"><td colspan="2">"${esc(settings.club)}"</td>${r ? `<td class="nr-box slaper">Slaper ${r}</td>` : '<td class="nr-box" title="Het nummer schrijft de speler zelf in, na het trekken"></td>'}</tr>
+  return `<div class="cards">${cards.map(({ name, n }) => `<div class="scard"><table><colgroup><col style="width:22%"><col style="width:46%"><col style="width:32%"></colgroup>
+      <tr class="club"><td colspan="2">"${esc(settings.club)}"</td>${n ? `<td class="nr-box slaper">Slaper ${n}</td>` : '<td class="nr-box" title="Het nummer schrijft de speler zelf in, na het trekken"></td>'}</tr>
       <tr class="naam${name.length > 16 ? ' lang' : ''}"><td colspan="3">${esc(name)}</td></tr>
       <tr><td class="lbl">Datum:</td><td colspan="2">${date}</td></tr>
       <tr><th class="ronde"><span>Ronde</span></th><th class="punten">Punten:</th><th class="pitten">Pitten</th></tr>
@@ -1080,20 +1086,20 @@ function cardsHtml() {
 $('#prep-list').addEventListener('change', e => {
   const id = Number(e.target.dataset.card); if (!id) return;
   if (e.target.checked) prepCards.add(id);
-  else { prepCards.delete(id); prepSleep.slots = prepSleep.slots.map(r => r.map(x => (x === id ? null : x))); }
+  else { prepCards.delete(id); prepSleep.picks = prepSleep.picks.map(x => (x === id ? null : x)); }
   updateCardCount();
   if (expectTouched) renderSleepers(); else setExpect(prepCards.size);
 });
 $('#prep-blank').addEventListener('input', updateCardCount);
 $('#prep-expect').addEventListener('change', e => { expectTouched = true; setExpect(Number(e.target.value)); });
-$('#prep-sleepers').addEventListener('change', e => { const r = Number(e.target.dataset.sr); if (!r) return; prepSleep.slots[r - 1][Number(e.target.dataset.si)] = Number(e.target.value) || null; renderSleepers(); });
+$('#prep-sleepers').addEventListener('change', e => { const i = e.target.dataset.si; if (i === undefined) return; prepSleep.picks[Number(i)] = Number(e.target.value) || null; renderSleepers(); });
 $('#btn-fair').addEventListener('click', fairProposal);
 $('#prep-n').addEventListener('change', renderPlan);
 $('#btn-print-cards').addEventListener('click', () => {
   savePrep();
-  const open = prepSleep.slots.flat().filter(x => !x).length;
+  const open = prepSleep.picks.filter(x => !x).length;
   const warn = open ? `<div class="banner warn"><p>Er ${open === 1 ? 'is nog 1 slaper' : `zijn nog ${open} slapers`} niet gekozen. Dat mag: schrijf het dan zelf op een kaartje.</p></div>` : '';
-  modal('Kaartjes printen', `${warn}<p class="help">12 per A4, net als nu: met de voornaam en de datum, <b>zonder nummer</b>. Het nummer schrijft iedereen zelf in het vakje rechtsboven, na het trekken. Bij de slapers staat daar al <b>Slaper 1</b>, <b>2</b> of <b>3</b>.</p>${cardsHtml()}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true);
+  modal('Kaartjes printen', `${warn}<p class="help">12 per A4, net als nu: met de voornaam en de datum, <b>zonder nummer</b>. Het nummer schrijft iedereen zelf in het vakje rechtsboven, na het trekken. Bij de slapers staat daar al hun nummer: <b>Slaper 1</b>, <b>Slaper 2</b> …</p>${cardsHtml()}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true);
 });
 $('#btn-print-plan').addEventListener('click', () => { const n = Number($('#prep-n').value); const count = planFor(n).plan.reduce((a, r) => a + r.length, 0); modal(`Tafelindeling voor ${n} spelers`, `<p class="help">Dit wordt geprint: eerst het <b>overzicht</b> (1 A4, voor aan de muur), dan de <b>tafelbriefjes</b>: één per tafel per ronde, ${count} briefjes, 2 per A4 (${Math.ceil(count / 2)} A4): printen en dan doormidden knippen tot A5. Wie bij welk nummer hoort, blijkt pas bij het trekken.</p><h3>Overzicht</h3><div class="rounds">${planHtmlFor(n)}</div><h3 style="margin-top:1.25rem">Tafelbriefjes</h3>${tableSheetsHtml(n)}`, [{ label: 'Printen', primary: true }, { label: 'Sluiten' }], true); fitPages(); });
 function fitPages() { const tp = document.querySelector('#modal-text .tpages'); if (!tp) return; const a4 = tp.querySelector('.a4'); tp.style.setProperty('--z', String(Math.min(1, (document.querySelector('#modal-text').clientWidth - 4) / a4.offsetWidth))); }
@@ -1107,8 +1113,9 @@ function openEntry(wk) {
   editWeek = wk;
   editIsNew = !isDone(wk);
   draft = {};
-  const slots = (evenings[wk] && evenings[wk].slots) || [];
-  const pickedRound = id => slots.findIndex(r => r.includes(id)) + 1; // the slapers Dad picked when printing the cards
+  // The slapers Dad picked when printing the cards: Slaper n sits out the round the plan gives number n.
+  const ev = evenings[wk] || {}, picks = ev.picks || [], perR = (ev.expect || 0) % 4;
+  const pickedRound = id => { const n = picks.indexOf(id) + 1; return n && perR ? roundOfSlaper(n, perR) : 0; };
   players.forEach(p => {
     const w = p.weeks[wk];
     if (w) draft[p.id] = { ...w };
