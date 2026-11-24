@@ -1,12 +1,8 @@
-# A design mock of the Klaverjas app: the weekly scoring and standings mail for a klaverjas
-# competition, run by a 70-year-old. One self-contained, clickable HTML page with invented member
-# names, served by Caddy. Set up like geneaducatie. Version 2 follows the workbooks the club uses
-# today: the evening preparation (draw, table plan, score cards) and slapers.
-#
-# The page is in Git: index.html in this folder, about 80 KB, well under a ConfigMap's 1 MiB.
-# kustomization.yaml turns it and the Caddyfile into the ConfigMap klaverjas-site, whose name gets
-# a hash of its content, so a changed page rolls the pod by itself. Its source is
-# Klaverjas/mock/ in Gemberkoekje/projects. The real app will take over this hostname later.
+# The Klaverjas app: the weekly scoring of a klaverjas club, run by a 70-year-old. At / the players
+# see the standings behind the club's password; Dad keeps the scores at /beheer with his own. It
+# can mail the standings with a PDF (optional). Source: Gemberkoekje/projects `Klaverjas/`
+# (image `ghcr.io/gemberkoekje/klaverjas:<commit sha>`, built by "Build and Push Klaverjas" on
+# main). Before the first deploy: README.md (database and 1Password item).
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -16,6 +12,16 @@ metadata:
     app: klaverjas
 spec:
   replicas: 1
+  # One pod on purpose: Marten's first-start schema creation assumes a single writer, and a club of
+  # twenty needs no second replica. With one replica, maxSurge 0 stops the old pod before the new
+  # one starts, as Recreate would. (This Deployment existed as the mock with RollingUpdate; switching
+  # an existing Deployment to Recreate fails under server-side apply on the kept rollingUpdate
+  # defaults, NOTES.md 2026-11-24.)
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
   selector:
     matchLabels:
       app: klaverjas
@@ -24,56 +30,77 @@ spec:
       labels:
         app: klaverjas
     spec:
+      imagePullSecrets:
+        - name: ghcr-login
       containers:
-        - name: caddy
-          image: caddy:2.11.9-alpine
-          command:
-            - caddy
-          args:
-            - run
-            - --config
-            - /etc/caddy/Caddyfile
+        - name: klaverjas
+          # A sha "Build and Push Klaverjas" has pushed from projects main (README, Deploying).
+          image: ghcr.io/gemberkoekje/klaverjas:06f5e0ff29d259042fa8d72265860636cbc04c4a
+          imagePullPolicy: IfNotPresent
           securityContext:
+            runAsNonRoot: true
             allowPrivilegeEscalation: false
-          resources:
-            requests:
-              cpu: "10m"
-              memory: "24Mi"
-            limits:
-              cpu: "100m"
-              memory: "64Mi"
+            capabilities:
+              drop: ["ALL"]
           ports:
-            - containerPort: 8080
-          readinessProbe:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Production
+            - name: ASPNETCORE_HTTP_PORTS
+              value: "8080"
+            - name: ConnectionStrings__Postgres
+              valueFrom:
+                secretKeyRef:
+                  name: klaverjas-secrets
+                  key: ConnectionStrings__Postgres
+            # Dad's first password for /beheer. Once he chooses his own in Instellingen, this one
+            # stays the site keeper's way back in.
+            - name: Auth__Password
+              valueFrom:
+                secretKeyRef:
+                  name: klaverjas-secrets
+                  key: Auth__Password
+            # Optional: mailing the standings. The host (smtp.gmail.com:587, STARTTLS) is the
+            # app's default; without the account and its app password mailing stays off, and the
+            # screens say so. The sender address is the account itself.
+            - name: Mail__User
+              valueFrom:
+                secretKeyRef:
+                  name: klaverjas-secrets
+                  key: Mail__User
+                  optional: true
+            - name: Mail__Password
+              valueFrom:
+                secretKeyRef:
+                  name: mail-secret
+                  key: SMTP_PASSWORD
+                  optional: true
+          # /healthz is anonymous and touches nothing. The first start also creates the Marten
+          # schema, hence the generous startup window.
+          startupProbe:
             httpGet:
-              path: /ready
-              port: 8080
-            initialDelaySeconds: 3
-            periodSeconds: 10
+              path: /healthz
+              port: http
+            periodSeconds: 3
+            failureThreshold: 40
           livenessProbe:
             httpGet:
-              path: /ready
-              port: 8080
-            initialDelaySeconds: 10
+              path: /healthz
+              port: http
             periodSeconds: 30
-          volumeMounts:
-            - name: site
-              mountPath: /srv
-              readOnly: true
-            - name: caddy-config
-              mountPath: /etc/caddy
-              readOnly: true
-      # Both from the one ConfigMap, each mounted on its own, so the Caddyfile isn't served as a page.
-      volumes:
-        - name: site
-          configMap:
-            name: klaverjas-site
-            items:
-              - key: index.html
-                path: index.html
-        - name: caddy-config
-          configMap:
-            name: klaverjas-site
-            items:
-              - key: Caddyfile
-                path: Caddyfile
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+          # Reading Dad's Excel workbook (ClosedXML) and making the PDF (QuestPDF) take more memory
+          # than a plain page; the limit leaves room for both.
+          resources:
+            requests:
+              cpu: 25m
+              memory: 160Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

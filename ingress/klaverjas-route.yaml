@@ -1,6 +1,6 @@
 # klaverjas.gemberkoekje.nl through the public Gateway (infrastructure/traefik/gateway.yaml),
-# set up like every public route (CLAUDE.md, "Public routes"): the Klaverjas app's design mock.
-# Also on gemberkoekje.nl/klaverjas.
+# set up like every public route (CLAUDE.md, "Public routes"): the Klaverjas app.
+# gemberkoekje.nl/klaverjas is a short link to it (the app doesn't run under a path).
 #
 # Port 80: redirect to HTTPS (308, so a POST stays a POST). cert-manager's ACME challenge routes on
 # the same listener match an exact path, so they take precedence over this catch-all.
@@ -23,7 +23,7 @@ spec:
             scheme: https
             statusCode: 308
 ---
-# Port 443: the page. TLS ends at the Gateway; HSTS comes from Traefik's websecure entrypoint.
+# Port 443: the app. TLS ends at the Gateway; HSTS comes from Traefik's websecure entrypoint.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -41,8 +41,9 @@ spec:
         - name: klaverjas
           port: 80
 ---
-# gemberkoekje.nl/klaverjas, on the shared https-gemberkoekje-nl listener.
-# The pod gets the path as is; its Caddyfile strips the prefix.
+# gemberkoekje.nl/klaverjas: the short link (it used to show the mock). It redirects to the
+# hostname and keeps whatever follows the prefix, so /klaverjas/beheer lands on /beheer. On port 80
+# as well, so it goes there in one step.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -50,6 +51,9 @@ metadata:
   namespace: klaverjas
 spec:
   parentRefs:
+    - name: public
+      namespace: traefik
+      sectionName: http
     - name: public
       namespace: traefik
       sectionName: https-gemberkoekje-nl
@@ -60,6 +64,12 @@ spec:
         - path:
             type: PathPrefix
             value: /klaverjas
-      backendRefs:
-        - name: klaverjas
-          port: 80
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            hostname: klaverjas.gemberkoekje.nl
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+            statusCode: 301
