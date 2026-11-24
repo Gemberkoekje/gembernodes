@@ -4,12 +4,7 @@ kind: Kustomization
 namespace: klaverjas
 
 resources:
+  - klaverjas-secrets.yaml
+  - mail-secret.yaml
   - deployment.yaml
   - service.yaml
-
-# The page and Caddy's config (deployment.yaml says why the page is in Git).
-configMapGenerator:
-  - name: klaverjas-site
-    files:
-      - Caddyfile
-      - index.html

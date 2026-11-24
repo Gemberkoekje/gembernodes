@@ -3379,3 +3379,32 @@ To understand this, read the `image:` lines of
   `IX_market_price_samples_AgentId_WaypointSymbol_ObservedAt` and not the `..._GoodSymbol_Obse~` one, the Error lines
   `@i=627a98df` (the 30-second timeout) stop, and no ship repeats a refused sale. No Grafana restart is needed for this
   one.
+
+## 2026-11-24 — klaverjas: the app replaces the mock
+
+To understand this, read [apps/klaverjas/README.md](apps/klaverjas/README.md), then
+[apps/klaverjas/deployment.yaml](apps/klaverjas/deployment.yaml). The app's plan and per-slice notes are
+`Klaverjas/PLAN.md` and `Klaverjas/NOTES.md` in the projects repo (slices 1–5, projects#276–#281).
+
+- **What:** the Klaverjas app takes over `klaverjas.gemberkoekje.nl` from the Caddy mock: one pod
+  on the image `06f5e0ff` (the merge of projects#281), its own database `klaverjas` on the shared PostgreSQL,
+  and the item `klaverjas-secrets`. Set up like datumprikker. The Caddyfile and the page are gone; the Service
+  keeps its name, so the routes still point at it.
+- **Gotcha, the strategy:** datumprikker uses `Recreate`, but this Deployment already existed (the mock, with
+  the default RollingUpdate). Switching it to `Recreate` fails under server-side apply: the API keeps the
+  defaulted `rollingUpdate` block, and `rollingUpdate: null` doesn't survive kustomize, so Flux's apply would
+  fail with "spec.strategy.rollingUpdate: Forbidden". It stays RollingUpdate with `maxSurge: 0` and
+  `maxUnavailable: 1`, which for one replica also stops the old pod before the new one starts. Found with
+  `kubectl apply --server-side --dry-run=server --field-manager=kustomize-controller -k apps/klaverjas`,
+  which also showed the Caddy container and the page volumes dropping out as they should.
+- **gemberkoekje.nl/klaverjas** now redirects (301) to the hostname, like plotboek's short link: the app has
+  no path base. `klaverjas` stays in `https-gemberkoekje-nl`'s allowedRoutes for that redirect.
+- **Mail (optional):** the standings mail goes through the shared Gmail account: a second `OnePasswordItem`
+  for the existing `mail-secret` item (field `SMTP_PASSWORD`), as cov-website has. The account's address
+  comes from `klaverjas-secrets` (`Mail__User`), so it isn't written in this public repository. Without
+  either, the app runs and its screens say mailing is off.
+- **Before the merge (README, steps 1–2):** the database and login (`create-database.sql`), and the item
+  `klaverjas-secrets` with `ConnectionStrings__Postgres`, `Auth__Password` and, for mail, `Mail__User`.
+- **After the merge:** the pod is 1/1 Running, `/healthz` says ok, and `curl -I https://gemberkoekje.nl/klaverjas`
+  shows the redirect. Then the live check in the README: sign in at `/beheer`, set the players' password and
+  Dad's reply address, put a week online, send the test mail.
