@@ -64,6 +64,15 @@ spec:
                   name: kasboek-secrets
                   key: EnableBanking__PrivateKey
                   optional: true
+            # The token Prometheus must send to /metrics, the burndown figures behind Grafana's
+            # Kasboek alert (infrastructure/monitoring). Optional: without it /metrics answers 404.
+            # See README.md, "Monitoring".
+            - name: Metrics__Token
+              valueFrom:
+                secretKeyRef:
+                  name: kasboek-monitoring
+                  key: KASBOEK_METRICS_TOKEN
+                  optional: true
           # /healthz is anonymous and touches nothing. The first start also creates the Marten
           # schema, hence the generous startup window.
           startupProbe:

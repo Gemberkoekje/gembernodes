@@ -42,6 +42,13 @@ spec:
           secretName: homeassistant-monitoring
           readOnly: true
           optional: true
+        # Kasboek's token, for the kasboek job below (kasboek-monitoring-secrets.yaml). Optional too.
+        - name: kasboek-monitoring
+          mountPath: /etc/secrets/kasboek
+          subPath: ""
+          secretName: kasboek-monitoring
+          readOnly: true
+          optional: true
     # Home Assistant's entities (its Prometheus integration, apps/home-assistant/configuration.yaml),
     # through its Service. The token is read from the file at every scrape, so a new one needs no
     # restart. A wrong one counts as a failed login there: five in a row ban this address (README).
@@ -52,6 +59,16 @@ spec:
           credentials_file: /etc/secrets/homeassistant/HOMEASSISTANT_TOKEN
         static_configs:
           - targets: ["homeassistant.home-automation.svc.cluster.local:8123"]
+      # Kasboek's salary-month burndown (apps/kasboek), for the Kasboek alert in
+      # grafana-alerting-provisioning.yaml. Kasboek answers /metrics only with this token, and Caddy
+      # doesn't pass /metrics on, so only the cluster reaches it. Every five minutes: each scrape
+      # works out the burndown from all of Kasboek's lines, and the figures change about once a day.
+      - job_name: kasboek
+        scrape_interval: 5m
+        authorization:
+          credentials_file: /etc/secrets/kasboek/KASBOEK_METRICS_TOKEN
+        static_configs:
+          - targets: ["kasboek.kasboek.svc.cluster.local:80"]
     # Export the Ready state of Flux objects as gotk_resource_info, used by the Flux dashboard
     # and the "Flux resource not ready" alert. Adapted from fluxcd/flux2-monitoring-example.
     # The API versions must be ones the installed Flux serves; bump them with Flux.

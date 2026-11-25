@@ -3428,3 +3428,43 @@ To understand this, read [ingress/klaverjas-route.yaml](ingress/klaverjas-route.
 - **After the merge:** `curl -s https://samenspelers.gemberkoekje.nl/healthz` says ok once the certificate is issued (a
   minute or two), and `curl -sI https://klaverjas.gemberkoekje.nl/beheer` shows `location:
   https://samenspelers.gemberkoekje.nl/beheer`.
+
+## 2026-11-25 — kasboek: a daily warning below the burndown line
+
+To understand this, read the `kasboek` group at the end of
+[infrastructure/monitoring/grafana-alerting-provisioning.yaml](infrastructure/monitoring/grafana-alerting-provisioning.yaml)
+(its header and the route in `policies.yaml`), then [apps/kasboek/README.md](apps/kasboek/README.md), step 4.
+
+- **What:** Grafana warns while Kasboek's balance is below the dashboard's salary-month burndown line (the line to
+  € 0 on the day the next salary is due): by email and through Home Assistant on the phone, like every alert. It
+  repeats once a day while it lasts, and says so once when the balance is back above the line.
+- **How:** Kasboek serves the dashboard's own figures at `/metrics` (Kasboek repo, `Kasboek.WebApp/Metrieken.cs`):
+  the difference, the balance, the target, how old the newest balance is and the days to the next salary, only
+  while a salary month is running. Prometheus reads them every five minutes (job `kasboek`) with a bearer token
+  from a new 1Password item, `kasboek-monitoring` (field `KASBOEK_METRICS_TOKEN`), copied into `kasboek` and
+  `monitoring`. A separate item so `monitoring` never holds `kasboek-secrets` (database password, bank key).
+  Caddy answers `/metrics` on the LAN name with a 404, so only the cluster reaches it.
+- **The rule:** evaluated every 5 minutes; fires when the shortfall (the difference turned round) is above 0.
+  Every query is `last_over_time(…[1h])`, so a Kasboek restart or a kured reboot (no figures for a few minutes)
+  doesn't resolve the alert and fire it again with a second mail and push in the night. The figures change when
+  Kasboek's bank pull runs at 06:00 Amsterdam, so the first warning normally comes just after six.
+- **Once a day, at the same time:** a child route (matched on the rule's title) with `repeat_interval: 23h55m`.
+  Grafana's Alertmanager repeats at the first `group_interval` tick (5 minutes) after `repeat_interval` has
+  passed, and the notification log's timestamp is a moment after its tick, so `24h` lands one tick late and the
+  mail would move 5 minutes later every day. A Grafana restart moves the ticks, so the time can shift then.
+- **Why not SQL or Infinity:** the target follows the shape of earlier salary months, worked out in Kasboek's C#
+  from Marten's JSON documents; a query can't repeat that. Prometheus with a token file is what Home Assistant
+  already does, and keeps the history.
+- **Tested:** Kasboek's tests (216, 19 new for `/metrics`), and the endpoint run locally against PostgreSQL 16:
+  401 without or with a wrong token (not redirected to the sign-in page), 200 in Prometheus's text format with
+  it. The format parsed with `prometheus_client`. The rule's summary and description rendered with Go's
+  `text/template` for four cases. `validate.py`'s syntax and Grafana checks pass; its flux, kubeconform and helm
+  steps couldn't run here (CI runs them). Not run: Caddy's matcher, and Grafana itself.
+- **Gotcha:** in the annotations, compare `$values.X.Value` with `0.0` and `1.0`: it is a float, and Go's
+  templates refuse to compare a float with an int.
+- **Before the merge:** the 1Password item `kasboek-monitoring` with `KASBOEK_METRICS_TOKEN` (`openssl rand -hex 32`).
+- **After the merge:** the Kasboek image with `/metrics` comes from its own pull request; until its tag is bumped
+  in `apps/kasboek/deployment.yaml`, the `kasboek` target is down (the old image sends `/metrics` to its sign-in
+  page) and the rule sees no data, which is OK. Then: the target is up, `kasboek_burndown_difference_euros` in
+  Grafana's Explore matches the dashboard's "€ x boven/onder de lijn", and
+  `curl -sI https://kasboek.lan.gemberkoekje.nl/metrics` is a 404.

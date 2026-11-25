@@ -35,6 +35,15 @@ data:
         group_wait: 1m
         group_interval: 5m
         repeat_interval: 12h
+        routes:
+          # The Kasboek warning (group kasboek below) repeats once a day while it lasts, at the same
+          # time of day. Grafana repeats at the first group_interval tick after repeat_interval has
+          # passed, so 24h would land on the tick after the 24-hour one and come 5 minutes later every
+          # day; 23h55m lands on the 24-hour tick itself. Matched on the rule's title: keep both in step.
+          - receiver: Email
+            object_matchers:
+              - ['alertname', '=', 'Kasboek below the burndown line']
+            repeat_interval: 23h55m
   rules.yaml: |
     apiVersion: 1
     groups:
@@ -689,3 +698,91 @@ data:
               summary: 'Prometheus has not read Home Assistant for 15 minutes: Home Assistant is down, or its token is missing or wrong'
               __dashboardUid__: home-assistant
               __panelId__: "1"
+      # Kasboek (apps/kasboek): the salary-month burndown on its dashboard, the salary account's
+      # balance against a line that reaches € 0 on the day the next salary is due. This warns while
+      # the balance is below that line, once a day: the route for it (policies.yaml) repeats it every
+      # 24 hours while it lasts, and a mail and phone notification say when it's back above.
+      # Kasboek serves the dashboard's own figures at /metrics (prometheus-release.yaml, job kasboek;
+      # A is the shortfall, the difference turned round). They change when its bank pull runs (06:00
+      # Amsterdam) or something is imported or filed, so the warning usually comes just after six.
+      # Each query takes the newest value of the past hour, so a Kasboek restart or a node reboot (no
+      # figures for a while) doesn't end the alert and start it again with a second mail. Without a
+      # running salary month Kasboek leaves the figures out: NoData, OK.
+      - orgId: 1
+        name: kasboek
+        folder: Alerts
+        interval: 5m
+        rules:
+          - uid: kasboek-below-burndown-line
+            title: Kasboek below the burndown line
+            condition: F
+            data:
+              - refId: A
+                relativeTimeRange:
+                  from: 3600
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  refId: A
+                  expr: '-max(last_over_time(kasboek_burndown_difference_euros[1h]))'
+                  instant: true
+              - refId: B
+                relativeTimeRange:
+                  from: 3600
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  refId: B
+                  expr: 'max(last_over_time(kasboek_burndown_balance_euros[1h]))'
+                  instant: true
+              - refId: C
+                relativeTimeRange:
+                  from: 3600
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  refId: C
+                  expr: 'max(last_over_time(kasboek_burndown_target_euros[1h]))'
+                  instant: true
+              - refId: D
+                relativeTimeRange:
+                  from: 3600
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  refId: D
+                  expr: 'max(last_over_time(kasboek_burndown_last_known_age_days[1h]))'
+                  instant: true
+              - refId: E
+                relativeTimeRange:
+                  from: 3600
+                  to: 0
+                datasourceUid: prometheus
+                model:
+                  refId: E
+                  expr: 'max(last_over_time(kasboek_burndown_days_to_salary[1h]))'
+                  instant: true
+              - refId: F
+                datasourceUid: "__expr__"
+                model:
+                  refId: F
+                  type: threshold
+                  expression: A
+                  conditions:
+                    - evaluator:
+                        type: gt
+                        params:
+                          - 0
+            noDataState: OK
+            execErrState: Error
+            for: 0s
+            labels:
+              namespace: kasboek
+            # D is how old the newest balance is: 0 after the morning pull. From 2 days on the pull
+            # has stopped, and the figures say so. Compare with 0.0 and 1.0, not 0 and 1: the
+            # values are floats, and Go's templates refuse to compare a float with an int.
+            annotations:
+              summary: 'Kasboek: € {{ printf "%.2f" $values.A.Value }} below the line to € 0 on payday'
+              description: |-
+                Balance € {{ printf "%.2f" $values.B.Value }}, line € {{ printf "%.2f" $values.C.Value }}{{ if gt $values.D.Value 1.0 }} (from {{ printf "%.0f" $values.D.Value }} days ago: has Kasboek's bank pull stopped?){{ end }}. {{ if gt $values.E.Value 0.0 }}Next salary in {{ printf "%.0f" $values.E.Value }} {{ if eq $values.E.Value 1.0 }}day{{ else }}days{{ end }}.{{ else }}The next salary is due.{{ end }}
+                https://kasboek.lan.gemberkoekje.nl

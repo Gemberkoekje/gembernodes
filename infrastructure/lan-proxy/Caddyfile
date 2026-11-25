@@ -104,8 +104,12 @@ https://homeassistant.lan.gemberkoekje.nl {
 }
 
 # Kasboek (apps/kasboek): bank data, so this is its only way in; it has its own sign-in.
+# /metrics (the burndown's figures) is for Prometheus in the cluster only, so it stops here; Kasboek
+# also wants a token of its own for it.
 https://kasboek.lan.gemberkoekje.nl {
 	import lan_tls
+	@metrics path /metrics /metrics/*
+	respond @metrics 404
 	reverse_proxy kasboek.kasboek.svc.cluster.local:80
 }
 

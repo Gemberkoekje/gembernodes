@@ -60,6 +60,29 @@ back, if it was down at six): the lines (page by page) and the balance per accou
 only. The app's dashboard warns from 14 days before ASN's consent ends; Koppelen on the Bank page
 renews it.
 
+### 4. Monitoring: the daily warning below the burndown line (optional)
+
+Grafana warns once a day while the balance is below the dashboard's burndown line (the line to
+€ 0 on the day the next salary is due), by email and on the phone through Home Assistant, like
+every other alert. Kasboek serves the dashboard's own figures at `/metrics`; Prometheus reads them
+every five minutes (`infrastructure/monitoring/prometheus-release.yaml`, job `kasboek`) and the rule
+`Kasboek below the burndown line` is in `infrastructure/monitoring/grafana-alerting-provisioning.yaml`.
+
+`/metrics` carries amounts, so it is closed twice: Caddy answers it with a 404 on the LAN name, and
+Kasboek only answers Prometheus's bearer token. That token is a separate item, **`kasboek-monitoring`**
+in the Gembercluster vault, with one field:
+
+- `KASBOEK_METRICS_TOKEN`: a random token, e.g. `openssl rand -hex 32`.
+
+The item is copied into both `kasboek` (`kasboek-monitoring-secrets.yaml`, as `Metrics__Token`) and
+`monitoring`; a separate item keeps the database password and the bank key out of `monitoring`.
+Without it the pod runs as before and `/metrics` answers 404. A new token needs a pod restart
+(`kubectl -n kasboek rollout restart deploy/kasboek`); Prometheus reads its copy at every scrape.
+
+To check: Prometheus's Targets page shows `kasboek` up, and in Grafana's Explore
+`kasboek_burndown_difference_euros` is the dashboard's "€ x boven/onder de lijn" (negative below).
+Without a running salary month (no marked salary) Kasboek leaves the figures out and nothing fires.
+
 ## Deploying
 
 Bump the image tag in `deployment.yaml` to a sha that the workflow has already pushed, and merge.

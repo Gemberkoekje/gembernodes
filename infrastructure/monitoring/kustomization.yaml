@@ -6,6 +6,7 @@ resources:
   - grafana-smtp-secret.yaml
   - spacetraders-secrets.yaml
   - homeassistant-monitoring-secrets.yaml
+  - kasboek-monitoring-secrets.yaml
   - grafana-alerting-provisioning.yaml
   - grafana-release.yaml
   - loki-release.yaml
