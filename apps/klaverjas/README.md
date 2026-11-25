@@ -1,15 +1,17 @@
 # Klaverjas
 
 The weekly scoring of a klaverjas club (De Samenspelers), kept by a 70-year-old. Players see the
-standings at https://klaverjas.gemberkoekje.nl behind the club's password; Dad keeps the scores at
+standings at https://samenspelers.gemberkoekje.nl behind the club's password; Dad keeps the scores at
 `/beheer` with his own password, puts the standings online with one button, and can mail them with a
 PDF. Source: Gemberkoekje/projects `Klaverjas/` (image `ghcr.io/gemberkoekje/klaverjas:<commit sha>`,
 built by the "Build and Push Klaverjas" workflow on `main`). The plan and every decision are in
 `Klaverjas/PLAN.md` there; the per-slice notes in `Klaverjas/NOTES.md`.
 
-This app took over the hostname from the design mock (NOTES.md, 2026-11-20), so DNS, the Gateway
-listener `https-klaverjas` and its certificate are already in place. `gemberkoekje.nl/klaverjas`
-now redirects to the hostname: the app doesn't run under a path.
+It runs under the club's name: the Gateway listener `https-samenspelers` and its certificate
+(NOTES.md, 2026-11-25). Its first address, `klaverjas.gemberkoekje.nl` (listener `https-klaverjas`,
+kept for this), and the short link `gemberkoekje.nl/klaverjas` redirect there with the path kept,
+so slips with the old address still work. The app doesn't run under a path. DNS is the
+`*.gemberkoekje.nl` wildcard.
 
 ## Before the first deploy
 
@@ -47,8 +49,9 @@ The PR's "Images exist" check waits up to 20 minutes for an image that's still b
 ```bash
 flux reconcile kustomization flux-system --with-source
 kubectl -n klaverjas get pods                          # klaverjas-… 1/1 Running
-curl -s https://klaverjas.gemberkoekje.nl/healthz      # ok
-curl -sI https://gemberkoekje.nl/klaverjas | grep -i location   # https://klaverjas.gemberkoekje.nl/
+curl -s https://samenspelers.gemberkoekje.nl/healthz   # ok
+curl -sI https://klaverjas.gemberkoekje.nl/beheer | grep -i location   # https://samenspelers.gemberkoekje.nl/beheer
+curl -sI https://gemberkoekje.nl/klaverjas | grep -i location          # https://samenspelers.gemberkoekje.nl/
 ```
 
 Marten updates the schema on start, and the key ring is in the database, so an image bump signs
@@ -56,7 +59,7 @@ nobody out.
 
 ## After the first deploy
 
-1. Sign in at https://klaverjas.gemberkoekje.nl/beheer with `Auth__Password`.
+1. Sign in at https://samenspelers.gemberkoekje.nl/beheer with `Auth__Password`.
 2. **Instellingen:** choose the players' password (the players' page stays closed until then), and
    fill in "Antwoorden gaan naar" with Dad's own address: replies and the test mail go there.
 3. **The live mail check:** put a week online (Stand → "Zet de stand online"), then "Proefmail naar

@@ -1,9 +1,12 @@
-# klaverjas.gemberkoekje.nl through the public Gateway (infrastructure/traefik/gateway.yaml),
-# set up like every public route (CLAUDE.md, "Public routes"): the Klaverjas app.
-# gemberkoekje.nl/klaverjas is a short link to it (the app doesn't run under a path).
+# samenspelers.gemberkoekje.nl through the public Gateway (infrastructure/traefik/gateway.yaml),
+# set up like every public route (CLAUDE.md, "Public routes"): the Klaverjas app, under the club's
+# name (De Samenspelers). Its first address, klaverjas.gemberkoekje.nl, and the short link
+# gemberkoekje.nl/klaverjas redirect to it, keeping the path: the slips handed out with the old
+# address keep working, and /beheer stays /beheer.
 #
-# Port 80: redirect to HTTPS (308, so a POST stays a POST). cert-manager's ACME challenge routes on
-# the same listener match an exact path, so they take precedence over this catch-all.
+# Port 80: one step to HTTPS on the new name (308, so a POST stays a POST). cert-manager's ACME
+# challenge routes on the same listener match an exact path, so they take precedence over this
+# catch-all.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -15,12 +18,14 @@ spec:
       namespace: traefik
       sectionName: http
   hostnames:
+    - samenspelers.gemberkoekje.nl
     - klaverjas.gemberkoekje.nl
   rules:
     - filters:
         - type: RequestRedirect
           requestRedirect:
             scheme: https
+            hostname: samenspelers.gemberkoekje.nl
             statusCode: 308
 ---
 # Port 443: the app. TLS ends at the Gateway; HSTS comes from Traefik's websecure entrypoint.
@@ -33,17 +38,39 @@ spec:
   parentRefs:
     - name: public
       namespace: traefik
-      sectionName: https-klaverjas
+      sectionName: https-samenspelers
   hostnames:
-    - klaverjas.gemberkoekje.nl
+    - samenspelers.gemberkoekje.nl
   rules:
     - backendRefs:
         - name: klaverjas
           port: 80
 ---
-# gemberkoekje.nl/klaverjas: the short link (it used to show the mock). It redirects to the
-# hostname and keeps whatever follows the prefix, so /klaverjas/beheer lands on /beheer. On port 80
-# as well, so it goes there in one step.
+# https://klaverjas.gemberkoekje.nl: the old name, on its own listener (it keeps its certificate),
+# redirects to the new one.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: klaverjas-oude-naam
+  namespace: klaverjas
+spec:
+  parentRefs:
+    - name: public
+      namespace: traefik
+      sectionName: https-klaverjas
+  hostnames:
+    - klaverjas.gemberkoekje.nl
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            hostname: samenspelers.gemberkoekje.nl
+            statusCode: 308
+---
+# gemberkoekje.nl/klaverjas: the short link (it once showed the mock). It redirects to the new name
+# and keeps whatever follows the prefix, so /klaverjas/beheer lands on /beheer. On port 80 as well,
+# so it goes there in one step.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -68,7 +95,7 @@ spec:
         - type: RequestRedirect
           requestRedirect:
             scheme: https
-            hostname: klaverjas.gemberkoekje.nl
+            hostname: samenspelers.gemberkoekje.nl
             path:
               type: ReplacePrefixMatch
               replacePrefixMatch: /
