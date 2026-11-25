@@ -55,7 +55,7 @@ spec:
         # definitions (tuya-local/) into Tuya Local's folder (prepare-config.py). Same image as
         # the app, for its Python. HACS needs no install: it is built in as the Marketplace.
         - name: prepare-config
-          image: ghcr.io/home-assistant/home-assistant:2026.11.1
+          image: ghcr.io/home-assistant/home-assistant:2026.11.2
           command: ["python3", "/scripts/prepare-config.py", "/config", "/tuya-local-devices"]
           volumeMounts:
             - name: config
@@ -76,7 +76,7 @@ spec:
       containers:
         - name: homeassistant
           # A release tag, never stable or latest: bumps go through Git.
-          image: ghcr.io/home-assistant/home-assistant:2026.11.1
+          image: ghcr.io/home-assistant/home-assistant:2026.11.2
           imagePullPolicy: IfNotPresent
           env:
             - name: TZ
