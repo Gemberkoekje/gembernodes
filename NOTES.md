@@ -3409,7 +3409,7 @@ To understand this, read [apps/klaverjas/README.md](apps/klaverjas/README.md), t
   shows the redirect. Then the live check in the README: sign in at `/beheer`, set the players' password and
   Dad's reply address, put a week online, send the test mail.
 
-## 2026-11-25 — klaverjas: under the club's name, samenspelers.gemberkoekje.nl
+## 2026-11-25 — klaverjas: under the club's name, samenspelers.gemberkoekje.nl, and Dad's first feedback
 
 To understand this, read [ingress/klaverjas-route.yaml](ingress/klaverjas-route.yaml) (its header).
 
@@ -3419,6 +3419,9 @@ To understand this, read [ingress/klaverjas-route.yaml](ingress/klaverjas-route.
   the first sync; DNS is the wildcard). The app's route moves to it. `klaverjas.gemberkoekje.nl` keeps its listener and
   certificate only to redirect: on port 80 and 443 straight to `https://samenspelers.gemberkoekje.nl` with the path kept,
   308 so a form post stays a post. `gemberkoekje.nl/klaverjas` redirects there too (301, as before).
+- **The image, in the same change:** `c74b8abc` → `32684dcf`, the merge of projects#285: Dad's first feedback (his own table
+  plans from his workbook, the writer first on the score sheets, a print button for the players, substitutes only on
+  evenings played and "Weghalen" for them, the mail without the place line and with a colour legend).
 - **What players notice:** the sign-in cookie belongs to a hostname, so everyone who signed in at the old address types
   the club's password once more at the new one (Dad his own). The slips with the old address keep working through the
   redirect. The app takes the address for its links, slips and mails from the request, so nothing in the app changes.
