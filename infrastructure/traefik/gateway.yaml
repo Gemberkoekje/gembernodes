@@ -298,6 +298,22 @@ spec:
           selector:
             matchLabels:
               kubernetes.io/metadata.name: plotboek-generator
+    # The Klaverjas app (namespace klaverjas) under the club's name. https-klaverjas above stays for
+    # the redirect from the old name (ingress/klaverjas-route.yaml).
+    - name: https-samenspelers
+      protocol: HTTPS
+      port: 8443
+      hostname: samenspelers.gemberkoekje.nl
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: samenspelers-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: klaverjas
     - name: https-vortexplotboek
       protocol: HTTPS
       port: 8443
