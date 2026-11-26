@@ -35,7 +35,7 @@ spec:
       containers:
         - name: klaverjas
           # A sha "Build and Push Klaverjas" has pushed from projects main (README, Deploying).
-          image: ghcr.io/gemberkoekje/klaverjas:32684dcf571c18f4eacff92b9cc0523dd44aaed6
+          image: ghcr.io/gemberkoekje/klaverjas:de0a3120f401864b5a5ae1d7582eb437ba55e6ea
           imagePullPolicy: IfNotPresent
           securityContext:
             runAsNonRoot: true

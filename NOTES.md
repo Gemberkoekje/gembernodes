@@ -3428,3 +3428,11 @@ To understand this, read [ingress/klaverjas-route.yaml](ingress/klaverjas-route.
 - **After the merge:** `curl -s https://samenspelers.gemberkoekje.nl/healthz` says ok once the certificate is issued (a
   minute or two), and `curl -sI https://klaverjas.gemberkoekje.nl/beheer` shows `location:
   https://samenspelers.gemberkoekje.nl/beheer`.
+
+## 2026-11-26 — klaverjas: Dad's second feedback (image bump)
+
+- **The image:** `32684dcf` → `de0a3120`, the merge of projects#286. The slips keep the address on one line; the card
+  list ("Wie krijgt een kaartje?") follows today's players (it showed 19 of 20 members after a member became a
+  substitute), and lists the substitutes unticked, with the same card as a member when ticked.
+- **After the merge:** the pod rolls (the old one stops first); `curl -s https://samenspelers.gemberkoekje.nl/healthz`
+  says ok. Nothing else changes: no new settings, no schema step beyond Marten's own.
