@@ -3436,3 +3436,9 @@ To understand this, read [ingress/klaverjas-route.yaml](ingress/klaverjas-route.
   substitute), and lists the substitutes unticked, with the same card as a member when ticked.
 - **After the merge:** the pod rolls (the old one stops first); `curl -s https://samenspelers.gemberkoekje.nl/healthz`
   says ok. Nothing else changes: no new settings, no schema step beyond Marten's own.
+
+## 2026-11-26 — klaverjas: phone numbers in Dad's player list (image bump)
+
+- **The image:** `de0a3120` → `48ab8d06`, the merge of projects#288. Dad's Spelers page (`/beheer/spelers`) shows each
+  player's phone number next to the name, as a link that calls when tapped on a phone. Only Dad's pages show it.
+- **After the merge:** the pod rolls; `curl -s https://samenspelers.gemberkoekje.nl/healthz` says ok. No new settings.
