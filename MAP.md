@@ -117,6 +117,7 @@ every node.
 | kasboek ([README](apps/kasboek/README.md)) | `apps/kasboek` | `kasboek.lan.gemberkoekje.nl` (LAN and Tailscale only, through Caddy; no public route on purpose: bank data) | PostgreSQL. Enable Banking (outbound only, reads the ASN account; the bank sends the browser back to the LAN name). Image from the private repo Gemberkoekje/Kasboek |
 | klaverjas | `apps/klaverjas` | `samenspelers.gemberkoekje.nl` (`klaverjas.gemberkoekje.nl` and `gemberkoekje.nl/klaverjas` redirect there) | PostgreSQL, Mail (SMTP, optional: the shared `mail-secret`) |
 | kluskat | `apps/kluskat` | `kluskat.gemberkoekje.nl` | PostgreSQL |
+| kris | `apps/kris` | `kris.gemberkoekje.nl`, `gemberkoekje.nl/kris` | Nothing: a design mock for Kristoffer Zegers' photography site, static files kept in Git (`apps/kris/`, from `Kris/mock/` in projects) and served by Caddy from three generated ConfigMaps: the page, and the stand-in pictures in two halves (a ConfigMap holds at most 1 MiB) |
 | ltr-hud | `apps/ltr-hud` | `ltr-hud.gemberkoekje.nl`, `gemberkoekje.nl/ltr-hud` | NFS volume: static HUD mock pages for Limit Theory Redux, served by Caddy and copied in with `kubectl cp` (not in Git) |
 | plotboek-generator | `apps/plotboek-generator` | `plotboek.gemberkoekje.nl` | PostgreSQL. A CronJob resets the demo at 04:00 (Amsterdam) |
 | print-manager-test | `apps/print-manager-test` | 192.168.1.233 | NFS volume |

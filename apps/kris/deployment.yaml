@@ -1,0 +1,90 @@
+# A design mock of a photography site for Kristoffer Zegers, in the look of the Guggenheim's site.
+# Static files only, served by Caddy, set up like geneaducatie. Its source is Kris/mock/ in
+# Gemberkoekje/projects; index.html and img/ here are copies of it.
+#
+# Every picture is a generated grey stand-in: Kristoffer's own photos stay out of Git (both repos are
+# public) until he says otherwise. The page and the Caddyfile come from the ConfigMap kris-site, the
+# pictures from kris-img-a and kris-img-b (kustomization.yaml: a ConfigMap holds at most 1 MiB).
+# The pictures are one projected volume on /img, beside the page on /srv, because a ConfigMap
+# volume can't hold another volume's mount point; the Caddyfile serves /img/* from there.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kris
+  namespace: kris
+  labels:
+    app: kris
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kris
+  template:
+    metadata:
+      labels:
+        app: kris
+    spec:
+      containers:
+        - name: caddy
+          image: caddy:2.11.9-alpine
+          command:
+            - caddy
+          args:
+            - run
+            - --config
+            - /etc/caddy/Caddyfile
+          securityContext:
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "24Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          volumeMounts:
+            - name: site
+              mountPath: /srv
+              readOnly: true
+            - name: img
+              mountPath: /img
+              readOnly: true
+            - name: caddy-config
+              mountPath: /etc/caddy
+              readOnly: true
+      # The page and the Caddyfile from the one ConfigMap, each mounted on its own, so the Caddyfile
+      # isn't served as a page.
+      volumes:
+        - name: site
+          configMap:
+            name: kris-site
+            items:
+              - key: index.html
+                path: index.html
+        - name: caddy-config
+          configMap:
+            name: kris-site
+            items:
+              - key: Caddyfile
+                path: Caddyfile
+        - name: img
+          projected:
+            sources:
+              - configMap:
+                  name: kris-img-a
+              - configMap:
+                  name: kris-img-b

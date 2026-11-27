@@ -1,0 +1,37 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: kris
+
+resources:
+  - deployment.yaml
+  - service.yaml
+
+# The page and Caddy's config in one ConfigMap, the stand-in pictures in two more: a ConfigMap holds
+# at most 1 MiB, and the sixteen JPEGs are about 1.4 MB, about 0.67 MB per half. Each name gets a hash
+# of its content, so a changed page or picture rolls the pod by itself.
+configMapGenerator:
+  - name: kris-site
+    files:
+      - Caddyfile
+      - index.html
+  - name: kris-img-a
+    files:
+      - img/stand-in-01.jpg
+      - img/stand-in-02.jpg
+      - img/stand-in-03.jpg
+      - img/stand-in-04.jpg
+      - img/stand-in-05.jpg
+      - img/stand-in-06.jpg
+      - img/stand-in-07.jpg
+      - img/stand-in-08.jpg
+  - name: kris-img-b
+    files:
+      - img/stand-in-09.jpg
+      - img/stand-in-10.jpg
+      - img/stand-in-11.jpg
+      - img/stand-in-12.jpg
+      - img/stand-in-13.jpg
+      - img/stand-in-14.jpg
+      - img/stand-in-15.jpg
+      - img/stand-in-16.jpg

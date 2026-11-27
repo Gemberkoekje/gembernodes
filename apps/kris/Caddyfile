@@ -1,0 +1,34 @@
+# gemberkoekje.nl/kris reaches the pod with its path as is (ingress/kris-route.yaml): handle_path
+# strips the prefix, and a bare /kris gets its slash, as for geneaducatie.
+# The page is in /srv, the stand-in pictures in /img (deployment.yaml says why they are apart).
+# no-cache: browsers revalidate (ETag), so a new version shows on the next load.
+# noindex: a design mock with invented texts under a real person's name; it stays out of search results.
+(site) {
+	handle_path /img/* {
+		root * /img
+		file_server
+	}
+	handle {
+		root * /srv
+		file_server
+	}
+}
+
+:8080 {
+	header Cache-Control "no-cache"
+	header X-Robots-Tag "noindex, nofollow"
+
+	handle /ready {
+		respond "ok" 200
+	}
+
+	redir /kris /kris/ 308
+
+	handle_path /kris/* {
+		import site
+	}
+
+	handle {
+		import site
+	}
+}

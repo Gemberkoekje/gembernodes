@@ -3442,3 +3442,34 @@ To understand this, read [ingress/klaverjas-route.yaml](ingress/klaverjas-route.
 - **The image:** `de0a3120` → `48ab8d06`, the merge of projects#288. Dad's Spelers page (`/beheer/spelers`) shows each
   player's phone number next to the name, as a link that calls when tapped on a phone. Only Dad's pages show it.
 - **After the merge:** the pod rolls; `curl -s https://samenspelers.gemberkoekje.nl/healthz` says ok. No new settings.
+
+## 2026-11-27 — kris: a photography-site mock on kris.gemberkoekje.nl
+
+To understand this, read [apps/kris/deployment.yaml](apps/kris/deployment.yaml) (its header),
+[apps/kris/kustomization.yaml](apps/kris/kustomization.yaml) and the [Caddyfile](apps/kris/Caddyfile),
+then [ingress/kris-route.yaml](ingress/kris-route.yaml).
+
+- **Why:** a clickable mock of a portfolio site for Kristoffer Zegers' photographs, in the look of the
+  Guggenheim's site plus what he liked in his own AI draft (matted print, gallery caption, filmstrip).
+  Dutch. Public, like the other mocks: `kris.gemberkoekje.nl` and `gemberkoekje.nl/kris`. Its source is
+  `Kris/mock/` in Gemberkoekje/projects; `apps/kris/index.html` and `apps/kris/img/` are copies.
+- **No real photos:** every picture is a generated grey stand-in. Kristoffer's own photos stay out of Git
+  (this repo is public) and off the site until he agrees. The titles, texts and exhibitions in the mock are
+  invented examples, and its top bar says so; `noindex` in the page and as an `X-Robots-Tag` header, since
+  the texts sit under a real person's name.
+- **How:** set up like geneaducatie (Caddy, the same image and probes, the `/kris` prefix stripped in the
+  Caddyfile), with one difference: the sixteen JPEGs are about 1.4 MB, and a ConfigMap holds at most 1 MiB.
+  So `configMapGenerator` makes three: `kris-site` (page and Caddyfile, 56 KB), `kris-img-a` and
+  `kris-img-b` (eight pictures each, about 685 KB, as `binaryData`). The pictures are one projected volume
+  on `/img`, beside the page on `/srv` (a ConfigMap volume can't hold another volume's mount point), and the
+  Caddyfile serves `/img/*` from there under both hostnames. Hashed names, so a change rolls the pod. If the
+  site ever gets his full-size photos, they outgrow this: an image of its own, or an NFS volume as ltr-hud.
+- **New listener:** `https-kris` on the public Gateway, and `kris` in `https-gemberkoekje-nl`'s
+  allowedRoutes. cert-manager issues `kris-tls` by itself; the name already resolves (the wildcard).
+- **Checked:** `scripts/validate.py` with the CI's flux, kubeconform and helm versions: 0 errors, 0
+  warnings. The built ConfigMaps' sizes as above. Caddy 2.11.9 run locally on the built Caddyfile and
+  ConfigMap contents: `/` and `/kris/` serve the page, `/kris` redirects (308) to `/kris/`,
+  `/img/...` and `/kris/img/...` serve the JPEGs, `/Caddyfile` is a 404, and both headers are set; a
+  headless browser on `/kris/` loaded every picture of the Index screen without a 404 or script error.
+- **After the merge:** `https://kris.gemberkoekje.nl` and `https://gemberkoekje.nl/kris` show the mock (the
+  certificate can take a minute or two), and `curl -I` shows `X-Robots-Tag: noindex, nofollow`.

@@ -17,6 +17,7 @@ resources:
   - hackerminigames-route.yaml
   - healthcheck-route.yaml
   - klaverjas-route.yaml
+  - kris-route.yaml
   - kluskat-route.yaml
   - ltr-hud-route.yaml
   - plotboek-generator-route.yaml
