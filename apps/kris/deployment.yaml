@@ -2,11 +2,11 @@
 # Static files only, served by Caddy, set up like geneaducatie. Its source is Kris/mock/ in
 # Gemberkoekje/projects; index.html and img/ here are copies of it.
 #
-# Every picture is a generated grey stand-in: Kristoffer's own photos stay out of Git (both repos are
-# public) until he says otherwise. The page and the Caddyfile come from the ConfigMap kris-site, the
-# pictures from kris-img-a and kris-img-b (kustomization.yaml: a ConfigMap holds at most 1 MiB).
-# The pictures are one projected volume on /img, beside the page on /srv, because a ConfigMap
-# volume can't hold another volume's mount point; the Caddyfile serves /img/* from there.
+# Every picture is a generated grey stand-in, in WebP (kustomization.yaml says why not JPEG):
+# Kristoffer's own photos stay out of Git (both repos are public) until he says otherwise. The page and
+# the Caddyfile come from the ConfigMap kris-site, the pictures from kris-img. The pictures are their
+# own volume on /img, beside the page on /srv, because a ConfigMap volume can't hold another volume's
+# mount point; the Caddyfile serves /img/* from there.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -82,9 +82,5 @@ spec:
               - key: Caddyfile
                 path: Caddyfile
         - name: img
-          projected:
-            sources:
-              - configMap:
-                  name: kris-img-a
-              - configMap:
-                  name: kris-img-b
+          configMap:
+            name: kris-img

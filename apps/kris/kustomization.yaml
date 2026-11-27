@@ -7,31 +7,31 @@ resources:
   - deployment.yaml
   - service.yaml
 
-# The page and Caddy's config in one ConfigMap, the stand-in pictures in two more: a ConfigMap holds
-# at most 1 MiB, and the sixteen JPEGs are about 1.4 MB, about 0.67 MB per half. Each name gets a hash
-# of its content, so a changed page or picture rolls the pod by itself.
+# The page and Caddy's config in one ConfigMap, the stand-in pictures in another (about 0.6 MB; a
+# ConfigMap holds at most 1 MiB). The pictures are WebP because Flux's source-controller leaves *.jpg,
+# *.jpeg, *.gif and *.png out of what it fetches from Git: the JPEGs this started with never reached the
+# cluster, and the build failed (NOTES.md, 2026-11-27). Each name gets a hash of its content, so a
+# changed page or picture rolls the pod by itself.
 configMapGenerator:
   - name: kris-site
     files:
       - Caddyfile
       - index.html
-  - name: kris-img-a
+  - name: kris-img
     files:
-      - img/stand-in-01.jpg
-      - img/stand-in-02.jpg
-      - img/stand-in-03.jpg
-      - img/stand-in-04.jpg
-      - img/stand-in-05.jpg
-      - img/stand-in-06.jpg
-      - img/stand-in-07.jpg
-      - img/stand-in-08.jpg
-  - name: kris-img-b
-    files:
-      - img/stand-in-09.jpg
-      - img/stand-in-10.jpg
-      - img/stand-in-11.jpg
-      - img/stand-in-12.jpg
-      - img/stand-in-13.jpg
-      - img/stand-in-14.jpg
-      - img/stand-in-15.jpg
-      - img/stand-in-16.jpg
+      - img/stand-in-01.webp
+      - img/stand-in-02.webp
+      - img/stand-in-03.webp
+      - img/stand-in-04.webp
+      - img/stand-in-05.webp
+      - img/stand-in-06.webp
+      - img/stand-in-07.webp
+      - img/stand-in-08.webp
+      - img/stand-in-09.webp
+      - img/stand-in-10.webp
+      - img/stand-in-11.webp
+      - img/stand-in-12.webp
+      - img/stand-in-13.webp
+      - img/stand-in-14.webp
+      - img/stand-in-15.webp
+      - img/stand-in-16.webp
