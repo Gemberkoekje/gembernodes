@@ -1,6 +1,8 @@
 # Grafana Alloy: ships every container log to Loki. It replaced Promtail (end of life since
 # 2026-03-02). The config below rebuilds Promtail's kubernetes-pods job, so the streams kept exactly
 # the same labels, which the alerts and dashboards rely on.
+# It also ships the Kubernetes events (pulls, mounts, back-offs, scheduling...) as the stream
+# {job="kubernetes-events"}, for the "Kubernetes status" dashboard: see the end of the config.
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -29,6 +31,10 @@ spec:
         - apiGroups: [""]
           resources: ["pods"]
           verbs: ["get", "list", "watch"]
+        # loki.source.kubernetes_events watches core/v1 Events in every namespace.
+        - apiGroups: [""]
+          resources: ["events"]
+          verbs: ["get", "list", "watch"]
     controller:
       type: daemonset
       # The same tolerations Promtail had, so logs keep flowing if the control-plane taint comes back.
@@ -52,6 +58,11 @@ spec:
           - name: tmp
             emptyDir: {}
     alloy:
+      # The three pods form one Alloy cluster (the chart adds a headless Service for it), so that
+      # only one of them collects the Kubernetes events. Nothing else here uses clustering: each pod
+      # still tails its own node's log files.
+      clustering:
+        enabled: true
       storagePath: /var/lib/alloy/data
       enableReporting: false
       mounts:
@@ -207,6 +218,39 @@ spec:
             stage.replace {
               expression = `(?i)(?:password|pwd)=([^;&\s"]+)`
               replace    = "(removed)"
+            }
+          }
+
+          // Kubernetes events, the "why" behind a pod that doesn't start. Clustered and with no
+          // namespace list, so exactly one pod in the Alloy cluster watches every namespace. The
+          // positions file in storagePath (on the node's disk) remembers the last event sent; when
+          // the watching pod changes, the new one may send up to an hour of events again (Kubernetes
+          // keeps events for an hour), so some can show twice.
+          // Each line is logfmt: name, kind, ..., reason, type, count, msg.
+          loki.source.kubernetes_events "events" {
+            job_name   = "kubernetes-events"
+            log_format = "logfmt"
+            forward_to = [loki.relabel.events.receiver]
+
+            clustering {
+              enabled = true
+            }
+          }
+
+          // The component labels each event with the involved object's namespace. Renamed to
+          // object_namespace, so the events stay out of every query that selects pod logs by
+          // namespace: the "Error logs detected" and SpaceTraders alerts, and the log dashboards.
+          loki.relabel "events" {
+            forward_to = [loki.write.loki.receiver]
+
+            rule {
+              source_labels = ["namespace"]
+              target_label  = "object_namespace"
+            }
+
+            rule {
+              action = "labeldrop"
+              regex  = "namespace"
             }
           }
 

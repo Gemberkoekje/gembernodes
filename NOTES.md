@@ -3473,3 +3473,52 @@ then [ingress/kris-route.yaml](ingress/kris-route.yaml).
   headless browser on `/kris/` loaded every picture of the Index screen without a 404 or script error.
 - **After the merge:** `https://kris.gemberkoekje.nl` and `https://gemberkoekje.nl/kris` show the mock (the
   certificate can take a minute or two), and `curl -I` shows `X-Robots-Tag: noindex, nofollow`.
+
+## 2026-11-27 — monitoring: Kubernetes status in Grafana (pods, workloads, events), and why Flux isn't ready
+
+To understand this, read [dashboards/kubernetes-status-dashboard.json](infrastructure/monitoring/dashboards/kubernetes-status-dashboard.json)
+(each panel's description), the end of the Alloy config in
+[alloy-release.yaml](infrastructure/monitoring/alloy-release.yaml), and the `kube-state-metrics` block of
+[prometheus-release.yaml](infrastructure/monitoring/prometheus-release.yaml).
+
+- **Why:** to check the cluster from a phone, away from home (Grafana over Tailscale at
+  `http://192.168.1.231/grafana`), without Lens or kubectl. Prompted by the kris deploy (2026-11-27,
+  above): the Gateway listener and its certificate came up, but the routes didn't, and nothing outside the
+  cluster could say why.
+- **New dashboard "Kubernetes status"** (`k8s-status`, folder Gembercluster): counters (pods not ready,
+  containers stuck in CrashLoopBackOff/ImagePullBackOff/..., workloads short of pods, restarts and Warning
+  events in the last hour, Flux objects not ready); a Workloads table (every Deployment, StatefulSet and
+  DaemonSet, pods wanted against ready); a Pods table (phase, containers not ready, restarts, why a container
+  waits, node, age; finished Job pods left out); the Kubernetes events; and the pod logs. A namespace picker
+  for all of it, a pod picker and a search box for the logs. All from kube-state-metrics and Loki, which were
+  already there; the dashboards tagged `kubernetes` link to each other.
+- **Kubernetes events into Loki:** `loki.source.kubernetes_events` in Alloy, plus RBAC to list and watch
+  core/v1 Events. Alloy is a DaemonSet, and every pod would collect every event, so Alloy now runs clustered
+  (`alloy.clustering.enabled`, the chart's headless Service `alloy-cluster`) and the component's
+  `clustering` block, with no namespace list, makes exactly one pod watch all namespaces (the hash of the
+  single key "" picks it). Log tailing doesn't use clustering: each pod still reads its own node's files.
+  When the watching pod changes, the new one may resend up to an hour of events (Kubernetes keeps them an
+  hour), so a few can show twice.
+- **Their labels:** `job="kubernetes-events"`, `instance` (the component ID, the same on every pod) and the
+  involved object's namespace, **renamed to `object_namespace`** with `loki.relabel`: the "Error logs
+  detected" and SpaceTraders alerts, and the log dashboards, select pod logs by `namespace`, and an event
+  message containing "error" must not mail. Lines are logfmt, in this order (Alloy's `parseEvent`):
+  name, kind, action, objectAPIversion, objectRV, eventRV, reportinginstance, reportingcontroller,
+  sourcecomponent, sourcehost, reason, type, count, msg (quoted). Read them with `| logfmt`.
+- **Flux's reason and message:** `gotk_resource_info` now also carries the Ready condition's `reason` and
+  `message`, and the Flux dashboard's "not ready" table shows them: the apply error, or which dependency
+  isn't ready. The "Flux resource not ready" alert groups by kind, namespace and name, so the new labels
+  don't split it. A new message makes a new series (one per change), which is little.
+- **Checked:** `scripts/validate.py` with the CI's tool versions: 0 errors, 0 warnings (10 dashboards).
+  `alloy validate` (v1.22.0, the chart 1.16.0 app) on the new config at stability generally-available; the
+  chart rendered with these values has `--cluster.enabled=true`, `--cluster.join-addresses=alloy-cluster` and
+  `events` in its ClusterRole. Every PromQL query of the dashboard ran on Prometheus 3.5 against synthetic
+  kube-state-metrics series (a pod in ImagePullBackOff, a healthy pod, a finished Job pod, the three workload
+  kinds, a not-ready Kustomization): each counter and table gave the expected rows. The events panel's LogQL
+  ran in logcli 3.5.3 (stdin mode) on lines in Alloy's format: logfmt reads the quoted msg, and the
+  type filter, search and line format work. The "Warning events" counter (a metric query) only had a
+  syntax read: logcli's stdin mode can't run metric queries.
+- **After the merge:** no restarts needed. kube-state-metrics and the Alloy pods roll by themselves (their
+  arguments change); dashboards reload. The Warning-events counter and the events panel fill from the
+  merge on: events from before it aren't collected. Check: the "Kubernetes status" dashboard shows every
+  namespace's pods, and its events panel shows lines within a few minutes (any rollout makes some).
