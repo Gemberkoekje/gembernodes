@@ -7,7 +7,7 @@ resources:
   - deployment.yaml
   - service.yaml
 
-# The page and Caddy's config in one ConfigMap, the stand-in pictures in another (about 0.6 MB; a
+# The page and Caddy's config in one ConfigMap, the stand-in pictures in another (about 0.5 MB; a
 # ConfigMap holds at most 1 MiB). The pictures are WebP because Flux's source-controller leaves *.jpg,
 # *.jpeg, *.gif and *.png out of what it fetches from Git: the JPEGs this started with never reached the
 # cluster, and the build failed (NOTES.md, 2026-11-27). Each name gets a hash of its content, so a

@@ -3,17 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Kristoffer Zegers Fotografie</title>
+<title>Kristoffer Zegers</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="robots" content="noindex, nofollow">
 <!--
-  Clickable mock for Kristoffer Zegers' photography site (see ../README.md). Nothing is saved or sent.
+  Clickable mock for Kristoffer Zegers' site (see ../README.md): all his pictures in one place, his
+  photos and his AI images, in albums or all together with a filter. Nothing is saved or sent.
   Direction: the Guggenheim site's grammar (two-line wordmark, capital nav, hairlines between bands,
-  big pictures, "← 1 / 3 →" counters, dark footer) plus what Kristoffer liked in his own AI draft:
-  the matted print with a gallery caption line, the exhibition specs and the black filmstrip.
-  Every picture is a generated grey stand-in (img/stand-in-*.webp, made by ../tools/stand_ins.py):
-  his own photos stay out of Git and off the site until he says otherwise. Titles, texts and
-  exhibitions are invented examples. Dutch site text.
+  big pictures, "← 1 / 3 →" counters, dark footer) plus what Kristoffer liked in his own AI draft: the
+  picture in a white border with a caption line, and the black filmstrip under it.
+  Every picture is a generated stand-in (img/stand-in-*.webp, made by ../tools/stand_ins.py): grey for
+  photos, coloured for AI images. His own pictures stay out of Git and off the site until he says
+  otherwise. Titles and texts are invented examples. Dutch site text.
   Screens are switched in script as well as by #hash (the Claude browser pane opens local files as
   data: URLs, where hash routing does nothing).
 -->
@@ -22,9 +23,9 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap">
 <style>
   /* Layout: museum grammar (wordmark, capital nav, full-width hairlines between bands, large
-     pictures, counters) applied to one photographer; the photo page is a matted print on a pale
-     concrete stage with a gallery caption and a black filmstrip. One light theme on purpose:
-     the site looks the same for every visitor. */
+     pictures, counters) for one person's pictures; a picture is shown in a white border on a pale
+     stage with a caption line and a black filmstrip. One light theme on purpose: the site looks the
+     same for every visitor. */
   :root {
     color-scheme: light;
     --paper: #fdfdfb;
@@ -93,6 +94,14 @@
   .more:hover { text-decoration: underline; text-underline-offset: .22em; }
   .ph { font-style: italic; color: var(--ink-soft); }
 
+  /* The AI mark: every AI image carries it, on its thumbnail and in its caption */
+  .thumb { position: relative; display: block; }
+  .tag {
+    position: absolute; top: .5rem; left: .5rem; background: var(--ink); color: var(--paper);
+    font-size: .6875rem; font-weight: 640; font-stretch: 112%; letter-spacing: .08em;
+    padding: .15rem .4rem; line-height: 1.3;
+  }
+
   /* ---------- Reviewer bar (not part of the site) ---------- */
   .mockbar { background: var(--night); color: var(--night-ink); font-size: .8125rem; line-height: 1.45; }
   .mockbar .wrap { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; align-items: center; padding-block: .55rem; }
@@ -122,7 +131,6 @@
   .util { display: flex; gap: 1.75rem; font-size: .9375rem; padding-top: .2rem; }
   .util a { text-decoration: none; }
   .util a:hover { text-decoration: underline; text-underline-offset: .22em; }
-  .lang b { font-weight: 640; }
   .primary { display: flex; flex-wrap: wrap; gap: .25rem 2.25rem; padding-bottom: .9rem; }
   .primary a {
     font-size: 1.125rem; font-stretch: 108%; letter-spacing: .045em; text-transform: uppercase;
@@ -152,40 +160,33 @@
     font-size: 2rem; font-weight: 660; font-stretch: 110%; text-transform: uppercase;
     text-decoration: none; padding-block: .4rem; border-bottom: 1px solid var(--rule);
   }
-  .menu .small { display: flex; gap: 1.5rem; margin-top: 1.25rem; font-size: 1rem; }
 
-  /* ---------- Home: the wall ---------- */
+  /* ---------- Home: the opening picture ---------- */
   .hero {
     background: radial-gradient(120% 95% at 55% -12%, var(--wall-hi) 0%, var(--wall-lo) 64%);
     color: var(--night-ink); border-bottom: 1px solid var(--ink);
   }
   .hero-grid {
-    display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    gap: clamp(1.5rem, 4vw, 4.5rem); align-items: end;
+    display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(1.5rem, 4vw, 4.5rem); align-items: center;
     padding-block: clamp(2.5rem, 6vw, 5.5rem);
   }
-  .hero-text { align-self: center; display: grid; gap: 1.1rem; max-width: 27rem; }
+  .hero-text { display: grid; gap: 1.1rem; max-width: 27rem; }
   .hero-text .label { color: var(--night-soft); }
   .hero-text p { color: var(--night-soft); font-size: 1.125rem; }
   .hero-text .links { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; margin-top: .4rem; }
-  .print { margin: 0; justify-self: center; max-width: 100%; }
+  .print { margin: 0; justify-self: center; max-width: 100%; display: grid; gap: .75rem; }
+  .print figcaption { font-size: .8125rem; color: var(--night-soft); }
   .mat {
     display: inline-block; max-width: 100%; background: var(--mat);
     padding: clamp(10px, 1.7vw, 26px);
     box-shadow: 0 1px 2px var(--shadow), 0 34px 60px -32px var(--shadow-deep);
   }
   .hero .mat img { max-height: min(66vh, 620px); width: auto; }
-  .wall-label {
-    justify-self: start; width: 15rem; max-width: 100%; background: var(--mat); color: var(--ink);
-    padding: .85rem 1rem; font-size: .8125rem; line-height: 1.5;
-    box-shadow: 0 1px 2px var(--shadow-deep);
-  }
-  .wall-label b { display: block; font-weight: 660; }
   @media (max-width: 900px) {
-    .hero-grid { grid-template-columns: 1fr; align-items: start; }
+    .hero-grid { grid-template-columns: 1fr; }
     .print { order: -1; }
     .hero .mat img { max-height: 70vh; }
-    .wall-label { justify-self: center; }
     .hero-text { max-width: 36rem; }
   }
 
@@ -217,23 +218,19 @@
   }
   .arrow:disabled { opacity: .28; cursor: default; }
 
-  /* Cards in a row, as the museum's events */
-  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: clamp(1.5rem, 2.5vw, 2.25rem); }
-  .card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--stage); }
-  .card .label { margin-top: 1rem; display: block; color: var(--ink-soft); }
-  .card h3 { margin-top: .35rem; }
-  .card .when { margin-top: .3rem; font-size: .9375rem; }
-  .card p { margin-top: .6rem; font-size: .9375rem; color: var(--ink-soft); }
+  /* The newest pictures, photos and AI images mixed */
+  .latest { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(.5rem, 1.2vw, 1rem); }
+  .latest img { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--stage); transition: opacity .2s; }
+  .latest a:hover img { opacity: .85; }
+  @media (max-width: 760px) { .latest { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
-  /* Feature rows: picture beside text, and a pair */
-  .feature { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(1.5rem, 4vw, 4rem); align-items: start; }
-  .feature > img { width: 100%; aspect-ratio: 16 / 11; object-fit: cover; }
-  .feature .txt { display: grid; gap: 1rem; max-width: 34rem; align-content: start; }
-  .feature .txt p { font-size: 1.125rem; }
+  /* Photos and AI images, side by side */
   .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(1.5rem, 4vw, 4rem); }
-  .pair > div { display: grid; gap: 1rem; align-content: start; }
-  .pair img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
-  @media (max-width: 760px) { .feature, .pair { grid-template-columns: 1fr; } }
+  .pair a { display: grid; gap: 1rem; align-content: start; text-decoration: none; }
+  .pair img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+  .pair p { color: var(--ink-soft); }
+  .pair a:hover h2 { text-decoration: underline; text-underline-offset: .15em; text-decoration-thickness: 2px; }
+  @media (max-width: 760px) { .pair { grid-template-columns: 1fr; } }
 
   /* ---------- Footer ---------- */
   .foot { background: var(--night); color: var(--night-ink); }
@@ -242,49 +239,36 @@
   .foot-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 2rem; padding-block: 2.25rem; border-bottom: 1px solid var(--night-rule); }
   .foot h4 { font-size: .9375rem; font-weight: 660; margin: 0 0 .6rem; }
   .foot p { font-size: .9375rem; color: var(--night-soft); }
+  .foot .ph { color: var(--night-soft); }
+  .foot ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .3rem; font-size: .9375rem; }
+  .foot ul a { text-decoration: none; }
+  .foot ul a:hover, .foot .more:hover { text-decoration: underline; text-underline-offset: .22em; }
   .foot .more { display: inline-block; margin-top: .6rem; color: var(--night-ink); }
-  .foot form { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .8rem; }
-  .foot input {
-    flex: 1 1 10rem; min-width: 0; font: inherit; font-size: .9375rem; padding: .65rem .75rem;
-    background: transparent; color: var(--night-ink); border: 1px solid var(--night-soft); border-radius: 0;
-  }
-  .foot input::placeholder { color: var(--night-soft); }
-  .btn-ghost {
-    background: transparent; color: var(--night-ink); border: 1px solid var(--night-ink);
-    padding: .65rem 1.1rem; font-weight: 640; font-size: .9375rem; cursor: pointer;
-  }
-  .btn-ghost:hover { background: var(--night-ink); color: var(--night); }
-  .foot .done { margin-top: .6rem; color: var(--night-ink); }
   .foot-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1.5rem; padding-block: 1.5rem calc(env(safe-area-inset-bottom, 0px) + 1.5rem); font-size: .8125rem; color: var(--night-soft); }
-  .foot-bottom nav { display: flex; gap: 1.5rem; }
-  .foot-bottom a { text-decoration: none; }
 
   /* ---------- Page heads ---------- */
   .page-head { padding-block: clamp(2rem, 5vw, 3.5rem) clamp(1.25rem, 3vw, 2rem); border-bottom: 1px solid var(--rule); }
   .page-head .wrap { display: grid; gap: .8rem; }
   .page-head .lead { font-size: 1.1875rem; color: var(--ink-soft); max-width: 40rem; }
-  .tabs { display: flex; gap: 1.75rem; margin-top: .6rem; }
-  .tabs a { text-decoration: none; padding-bottom: .3rem; border-bottom: 2px solid transparent; }
-  .tabs a[aria-current="page"] { border-bottom-color: var(--ink); }
 
-  /* ---------- Work: series rows ---------- */
-  .series-row {
+  /* ---------- Albums ---------- */
+  .album-row {
     display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
     gap: clamp(1.5rem, 4vw, 4rem); padding-block: clamp(2rem, 4vw, 3.5rem); border-bottom: 1px solid var(--rule);
   }
-  .series-row .cover img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; background: var(--stage); }
-  .series-row .txt { display: grid; gap: 1rem; align-content: start; }
-  .series-row .meta { font-weight: 560; font-size: .9375rem; }
-  .series-row .txt > p { font-size: 1.125rem; color: var(--ink-soft); max-width: 34rem; }
+  .album-row .thumb img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; background: var(--stage); }
+  .album-row .txt { display: grid; gap: 1rem; align-content: start; }
+  .album-row .meta { font-weight: 560; font-size: .9375rem; }
+  .album-row .txt > p { font-size: 1.125rem; color: var(--ink-soft); max-width: 34rem; }
   .minis { display: flex; flex-wrap: wrap; gap: .5rem; }
   .minis img { height: 58px; width: auto; }
-  @media (max-width: 760px) { .series-row { grid-template-columns: 1fr; } }
+  @media (max-width: 760px) { .album-row { grid-template-columns: 1fr; } }
 
-  /* ---------- Index: every photograph ---------- */
+  /* ---------- All pictures ---------- */
   .chips { display: flex; flex-wrap: wrap; gap: .5rem; padding-block: 1.5rem 1rem; }
   .chip {
     font-size: .875rem; border: 1px solid var(--ink); background: transparent;
-    padding: .35rem .85rem; cursor: pointer;
+    padding: .35rem .85rem; cursor: pointer; font-variant-numeric: tabular-nums;
   }
   .chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
   .masonry { columns: 4 14rem; column-gap: 1.25rem; padding-block: .5rem 3.5rem; }
@@ -295,7 +279,7 @@
   .masonry figcaption { font-size: .8125rem; margin-top: .5rem; color: var(--ink-soft); }
   .masonry figcaption b { color: var(--ink); font-weight: 620; }
 
-  /* ---------- Series viewer: matted print, caption, filmstrip ---------- */
+  /* ---------- Album viewer: bordered picture, caption, filmstrip ---------- */
   .viewer { display: grid; grid-template-columns: 17.5rem minmax(0, 1fr); border-bottom: 1px solid var(--ink); }
   .v-side { padding-block: 2rem 2.5rem; padding-right: 2rem; border-right: 1px solid var(--rule); display: grid; gap: 1.25rem; align-content: start; }
   .v-side h1 { font-size: 2rem; }
@@ -356,34 +340,6 @@
   .lb-cap { padding: .9rem 1.25rem 1.1rem; text-align: center; font-size: .875rem; color: var(--night-soft); }
   .lb-cap b { color: var(--night-ink); font-weight: 620; }
 
-  /* ---------- Exhibitions ---------- */
-  .ex-feature {
-    display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(1.5rem, 4vw, 4rem);
-    padding-block: clamp(2rem, 4vw, 3rem); border-bottom: 1px solid var(--rule); align-items: start;
-  }
-  .ex-feature img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; background: var(--stage); }
-  .ex-feature .txt { display: grid; gap: 1.1rem; align-content: start; max-width: 38rem; }
-  .ex-feature .txt > p { font-size: 1.125rem; }
-  .ex-feature .specs { grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 1rem 1.5rem; padding-top: 1rem; border-top: 1px solid var(--rule); }
-  .ex-upcoming { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(1.5rem, 4vw, 4rem); align-items: center; }
-  .ex-upcoming img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; }
-  .ex-upcoming .txt { display: grid; gap: .6rem; }
-  @media (max-width: 760px) { .ex-feature, .ex-upcoming { grid-template-columns: 1fr; } }
-  .ex-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--ink); }
-  .ex-list li {
-    display: grid; grid-template-columns: 4.5rem minmax(0, 2.2fr) minmax(0, 1.6fr) minmax(0, 1fr) 6.5rem;
-    gap: .25rem 1.25rem; padding-block: 1rem; border-bottom: 1px solid var(--rule); align-items: baseline;
-    font-variant-numeric: tabular-nums;
-  }
-  .ex-list li.head { padding-block: .6rem; }
-  .ex-list li.head span { font-size: .75rem; font-weight: 560; font-stretch: 112%; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-soft); }
-  .ex-list .t { font-weight: 640; }
-  @media (max-width: 760px) {
-    .ex-list li { grid-template-columns: 3.5rem minmax(0, 1fr); }
-    .ex-list li > :nth-child(n + 3) { grid-column: 2; color: var(--ink-soft); font-size: .9375rem; }
-    .ex-list li.head { display: none; }
-  }
-
   /* ---------- About & contact ---------- */
   .about { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(1.5rem, 4vw, 4rem); padding-block: clamp(2rem, 4vw, 3rem) 4rem; }
   .about .portrait { position: sticky; top: 9rem; align-self: start; }
@@ -391,9 +347,6 @@
   .prose { display: grid; gap: 1rem; max-width: 38rem; align-content: start; }
   .prose h2 { margin-top: 1.75rem; }
   .prose .big { font-size: clamp(1.25rem, 1.8vw, 1.5rem); line-height: 1.42; font-weight: 420; }
-  .prose ul { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--rule); }
-  .prose li { padding-block: .6rem; border-bottom: 1px solid var(--rule); font-variant-numeric: tabular-nums; }
-  .prose li span { color: var(--ink-soft); }
   @media (max-width: 760px) { .about { grid-template-columns: 1fr; } .about .portrait { position: static; } }
   #contact { scroll-margin-top: 8rem; }
   .contact-lines { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: .35rem 1.25rem; margin: 0; }
@@ -402,7 +355,7 @@
   .form { display: grid; gap: 1rem; margin-top: .5rem; }
   .field { display: grid; gap: .35rem; }
   .field label { font-size: .875rem; font-weight: 600; }
-  .field input, .field select, .field textarea {
+  .field input, .field textarea {
     font: inherit; font-size: 1rem; padding: .7rem .8rem; border: 1px solid var(--ink);
     background: var(--paper); color: var(--ink); border-radius: 0; width: 100%;
   }
@@ -422,13 +375,12 @@
 
 <div class="mockbar">
   <div class="wrap">
-    <p><b>Ontwerp, klikbaar.</b> Er wordt niets opgeslagen of verstuurd. De grijze betonbeelden zijn invullers tot Kristoffers eigen foto's erin staan. Alle titels, teksten en tentoonstellingen zijn verzonnen voorbeelden, geen echte gegevens.</p>
+    <p><b>Ontwerp, klikbaar.</b> Er wordt niets opgeslagen of verstuurd. De beelden zijn invullers tot Kristoffers eigen werk erin staat: grijs voor foto's, gekleurd voor AI-beelden. Titels en teksten zijn voorbeelden.</p>
     <div class="views" role="group" aria-label="Schermen">
       <button type="button" data-go="home">Home</button>
-      <button type="button" data-go="werk">Werk</button>
-      <button type="button" data-go="index">Index</button>
-      <button type="button" data-go="s-sanctuary">Serie</button>
-      <button type="button" data-go="tentoonstellingen">Tentoonstellingen</button>
+      <button type="button" data-go="alles">Alle beelden</button>
+      <button type="button" data-go="albums">Albums</button>
+      <button type="button" data-go="a-sanctuary">Album</button>
       <button type="button" data-go="over">Over &amp; contact</button>
     </div>
   </div>
@@ -436,23 +388,22 @@
 
 <header class="site" id="site">
   <div class="bar wrap">
-    <a class="wordmark" href="#home" data-go="home" aria-label="Kristoffer Zegers Fotografie, home">
+    <a class="wordmark" href="#home" data-go="home" aria-label="Kristoffer Zegers, home">
       <span class="wm-name">KRISTOFFER ZEGERS</span>
-      <span class="wm-sub">FOTOGRAFIE</span>
+      <span class="wm-sub">FOTO &amp; AI</span>
     </a>
     <nav class="util" aria-label="Snelkoppelingen">
-      <a href="#contact" data-go="contact" data-ask="">Prints</a>
-      <a href="#nieuwsbrief" data-jump="nieuwsbrief">Nieuwsbrief</a>
-      <span class="lang"><b>NL</b> / EN</span>
+      <a href="#home" data-go="home">Instagram</a>
+      <a href="#contact" data-go="contact">Contact</a>
     </nav>
     <button class="menu-btn" type="button" id="menu-open" aria-expanded="false" aria-controls="menu"><i></i>Menu</button>
   </div>
   <nav class="primary wrap" aria-label="Hoofdmenu">
-    <a href="#werk" data-go="werk">Werk</a>
-    <a href="#index" data-go="index">Index</a>
-    <a href="#tentoonstellingen" data-go="tentoonstellingen">Tentoonstellingen</a>
+    <a href="#alles" data-go="alles">Alles</a>
+    <a href="#fotos" data-go="fotos">Foto's</a>
+    <a href="#ai" data-go="ai">AI</a>
+    <a href="#albums" data-go="albums">Albums</a>
     <a href="#over" data-go="over">Over</a>
-    <a href="#contact" data-go="contact">Contact</a>
   </nav>
 </header>
 
@@ -462,12 +413,12 @@
     <button class="menu-btn" type="button" id="menu-close" style="display:inline-flex">Sluiten</button>
   </div>
   <a class="big" href="#home" data-go="home">Home</a>
-  <a class="big" href="#werk" data-go="werk">Werk</a>
-  <a class="big" href="#index" data-go="index">Index</a>
-  <a class="big" href="#tentoonstellingen" data-go="tentoonstellingen">Tentoonstellingen</a>
+  <a class="big" href="#alles" data-go="alles">Alles</a>
+  <a class="big" href="#fotos" data-go="fotos">Foto's</a>
+  <a class="big" href="#ai" data-go="ai">AI</a>
+  <a class="big" href="#albums" data-go="albums">Albums</a>
   <a class="big" href="#over" data-go="over">Over</a>
   <a class="big" href="#contact" data-go="contact">Contact</a>
-  <div class="small"><a href="#nieuwsbrief" data-jump="nieuwsbrief">Nieuwsbrief</a><span class="lang"><b>NL</b> / EN</span></div>
 </div>
 
 <main>
@@ -477,225 +428,123 @@
     <div class="hero">
       <div class="wrap hero-grid">
         <div class="hero-text">
-          <span class="label">Nieuwe serie</span>
+          <span class="label">Nieuw album · AI-beelden</span>
           <h1 class="display">Sanctuary of Absurdity</h1>
-          <p>Betonnen hallen die heilig willen voelen, en dat ene ding dat de sfeer bederft. Zes foto's, 2026.</p>
+          <p>AI-beelden van betonnen hallen, en dat ene ding dat er niet hoort. Zes beelden, 2026.</p>
           <div class="links">
-            <a class="more" href="#s-sanctuary" data-go="s-sanctuary">Bekijk de serie →</a>
-            <a class="more" href="#tentoonstellingen" data-go="tentoonstellingen">Te zien in Rotterdam →</a>
+            <a class="more" href="#a-sanctuary" data-go="a-sanctuary">Bekijk het album →</a>
+            <a class="more" href="#alles" data-go="alles">Alle beelden →</a>
           </div>
         </div>
         <figure class="print">
-          <a class="mat" href="#s-sanctuary" data-go="s-sanctuary">
-            <img src="img/stand-in-01.webp" width="900" height="1200" alt="Dwarsbalk, 2026 (invulbeeld): een hoge betonnen ruimte met lichtschachten en een donkere balk">
+          <a class="mat" href="#a-sanctuary" data-go="a-sanctuary" data-photo="2">
+            <img src="img/stand-in-03.webp" width="900" height="1200" alt="Eén licht, 2026, AI-beeld (invulbeeld): een hoge ruimte in paars licht met een lichtschacht">
           </a>
+          <figcaption>Eén licht, 2026 · AI-beeld</figcaption>
         </figure>
-        <div class="wall-label">
-          <b>Kristoffer Zegers</b>
-          <i>Dwarsbalk</i>, 2026<br>
-          Pigmentprint op archiefpapier<br>
-          150 × 120 cm<br>
-          Oplage 5 + 2 AP
-        </div>
       </div>
     </div>
 
-    <section class="band" aria-labelledby="h-series">
+    <section class="band" aria-labelledby="h-albums">
       <div class="wrap">
         <div class="band-head">
-          <h2 id="h-series">Series</h2>
-          <a class="more" href="#werk" data-go="werk">Al het werk →</a>
+          <h2 id="h-albums">Albums</h2>
+          <a class="more" href="#albums" data-go="albums">Alle albums →</a>
         </div>
-        <div class="carousel" id="car-series">
+        <div class="carousel" id="car-albums">
           <div class="car-view"><div class="car-track"></div></div>
           <div class="car-ctrl">
-            <button class="arrow" type="button" data-prev aria-label="Vorige serie">←</button>
+            <button class="arrow" type="button" data-prev aria-label="Vorig album">←</button>
             <span data-count>1 / 3</span>
-            <button class="arrow" type="button" data-next aria-label="Volgende serie">→</button>
+            <button class="arrow" type="button" data-next aria-label="Volgend album">→</button>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="band" aria-labelledby="h-ex">
+    <section class="band" aria-labelledby="h-latest">
       <div class="wrap">
         <div class="band-head">
-          <h2 id="h-ex">Tentoonstellingen</h2>
-          <a class="more" href="#tentoonstellingen" data-go="tentoonstellingen">Alle tentoonstellingen →</a>
+          <h2 id="h-latest">Nieuwste beelden</h2>
+          <a class="more" href="#alles" data-go="alles">Alle beelden →</a>
         </div>
-        <div class="cards">
-          <a class="card linkcard" href="#tentoonstellingen" data-go="tentoonstellingen">
-            <img src="img/stand-in-14.webp" alt="">
-            <span class="label">Nu te zien</span>
-            <h3>Sanctuary of Absurdity</h3>
-            <p class="when">Galerie Betonwerk, Rotterdam · 14 november 2026 – 31 januari 2027</p>
-            <p>De nieuwe serie compleet, met de grote prints voor het eerst aan de muur.</p>
-          </a>
-          <a class="card linkcard" href="#tentoonstellingen" data-go="tentoonstellingen">
-            <img src="img/stand-in-05.webp" alt="">
-            <span class="label">Binnenkort</span>
-            <h3>Ruw materiaal</h3>
-            <p class="when">Fotohuis Delta, Middelburg · 6 maart – 30 mei 2027</p>
-            <p>Groepstentoonstelling over beton in de Nederlandse fotografie.</p>
-          </a>
-          <a class="card linkcard" href="#tentoonstellingen" data-go="tentoonstellingen">
-            <img src="img/stand-in-07.webp" alt="">
-            <span class="label">Eerder</span>
-            <h3>In het werk gestort</h3>
-            <p class="when">Stadsgalerie, Utrecht · 2025</p>
-            <p>Solotentoonstelling van de hele serie.</p>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <section class="band">
-      <div class="wrap feature">
-        <img src="img/stand-in-10.webp" alt="">
-        <div class="txt">
-          <h2>Over het werk</h2>
-          <p>Betonnen gebouwen, gefotografeerd op het moment dat het licht het werk doet: ruwe muren, diepe lichtschachten, één opening aan het eind. En dan wachten op iets dat er niet hoort.</p>
-          <a class="more" href="#over" data-go="over">Lees het statement →</a>
-        </div>
+        <div class="latest" id="latest"></div>
       </div>
     </section>
 
     <section class="band">
       <div class="wrap pair">
-        <div>
-          <h2>Prints</h2>
-          <img src="img/stand-in-12.webp" alt="">
-          <p>Elke foto verschijnt in een oplage van vijf, plus twee artist's proofs, gesigneerd en genummerd. Vraag welke formaten er nog zijn.</p>
-          <a class="more" href="#contact" data-go="contact">Vraag naar een print →</a>
-        </div>
-        <div>
-          <h2>Nieuwsbrief</h2>
-          <img src="img/stand-in-15.webp" alt="">
-          <p>Eén korte mail als er een nieuwe serie of tentoonstelling is. Hooguit een paar keer per jaar.</p>
-          <a class="more" href="#nieuwsbrief" data-jump="nieuwsbrief">Aanmelden →</a>
-        </div>
+        <a href="#fotos" data-go="fotos">
+          <h2>Foto's</h2>
+          <img src="img/stand-in-02.webp" alt="">
+          <p>Gewone foto's, in albums of allemaal bij elkaar.</p>
+          <span class="more">Bekijk de foto's →</span>
+        </a>
+        <a href="#ai" data-go="ai">
+          <h2>AI-beelden</h2>
+          <img src="img/stand-in-08.webp" alt="">
+          <p>Beelden gemaakt met AI. Ze staan ook tussen de foto's, altijd met het label AI.</p>
+          <span class="more">Bekijk de AI-beelden →</span>
+        </a>
       </div>
     </section>
   </section>
 
-  <!-- ================= Werk ================= -->
-  <section data-screen="werk" hidden>
-    <div class="page-head">
-      <div class="wrap">
-        <h1>Werk</h1>
-        <p class="lead">Drie series, de nieuwste eerst. Van elke foto is een print te koop.</p>
-        <nav class="tabs label" aria-label="Weergave">
-          <a href="#werk" data-go="werk" aria-current="page">Series</a>
-          <a href="#index" data-go="index">Index</a>
-        </nav>
-      </div>
-    </div>
-    <div class="wrap" id="work-list"></div>
-  </section>
-
-  <!-- ================= Index ================= -->
+  <!-- ================= All pictures (Alles, Foto's, AI) ================= -->
   <section data-screen="index" hidden>
     <div class="page-head">
       <div class="wrap">
-        <h1>Index</h1>
-        <p class="lead">Alle foto's, de nieuwste eerst.</p>
-        <nav class="tabs label" aria-label="Weergave">
-          <a href="#werk" data-go="werk">Series</a>
-          <a href="#index" data-go="index" aria-current="page">Index</a>
-        </nav>
+        <h1 id="ix-title">Alle beelden</h1>
+        <p class="lead" id="ix-lead">Foto's en AI-beelden, de nieuwste eerst.</p>
       </div>
     </div>
     <div class="wrap">
-      <div class="chips" id="chips" role="group" aria-label="Toon serie"></div>
+      <div class="chips" id="chips" role="group" aria-label="Toon"></div>
       <div class="masonry" id="masonry"></div>
     </div>
   </section>
 
-  <!-- ================= Serie ================= -->
-  <section data-screen="series" hidden>
+  <!-- ================= Albums ================= -->
+  <section data-screen="albums" hidden>
+    <div class="page-head">
+      <div class="wrap">
+        <h1>Albums</h1>
+        <p class="lead">Foto's en AI-beelden per onderwerp, de nieuwste eerst.</p>
+      </div>
+    </div>
+    <div class="wrap" id="album-list"></div>
+  </section>
+
+  <!-- ================= One album ================= -->
+  <section data-screen="album" hidden>
     <div class="wrap viewer">
       <aside class="v-side">
-        <a class="back" href="#werk" data-go="werk">← Alle series</a>
+        <a class="back" href="#albums" data-go="albums">← Alle albums</a>
         <div>
-          <span class="label muted">Serie</span>
+          <span class="label muted">Album</span>
           <h1 id="v-title"></h1>
         </div>
         <div class="essay" id="v-essay"></div>
         <hr>
         <dl class="specs" id="v-specs"></dl>
-        <a class="more" href="#contact" data-go="contact" id="v-ask-side">Vraag naar een print →</a>
       </aside>
       <div class="v-main">
         <div class="stage">
-          <button class="stage-nav prev" type="button" id="v-prev" aria-label="Vorige foto">←</button>
+          <button class="stage-nav prev" type="button" id="v-prev" aria-label="Vorig beeld">←</button>
           <button class="mat" type="button" id="v-open" aria-label="Bekijk op volledig scherm" style="border:0;cursor:zoom-in">
             <img id="v-img" src="img/stand-in-01.webp" alt="">
           </button>
-          <button class="stage-nav next" type="button" id="v-next" aria-label="Volgende foto">→</button>
+          <button class="stage-nav next" type="button" id="v-next" aria-label="Volgend beeld">→</button>
         </div>
         <div class="caption">
           <p class="what" id="v-cap"></p>
           <div class="acts">
             <span id="v-count"></span>
             <button class="linkbtn" type="button" id="v-full">Volledig scherm</button>
-            <a class="more" href="#contact" data-go="contact" id="v-ask">Vraag naar deze print →</a>
           </div>
         </div>
-        <div class="strip" id="v-strip" aria-label="Foto's in deze serie"></div>
+        <div class="strip" id="v-strip" aria-label="Beelden in dit album"></div>
       </div>
-    </div>
-  </section>
-
-  <!-- ================= Tentoonstellingen ================= -->
-  <section data-screen="tentoonstellingen" hidden>
-    <div class="page-head">
-      <div class="wrap">
-        <h1>Tentoonstellingen</h1>
-        <p class="lead">Waar de prints aan de muur hangen.</p>
-      </div>
-    </div>
-    <div class="wrap">
-      <article class="ex-feature">
-        <img src="img/stand-in-11.webp" alt="">
-        <div class="txt">
-          <span class="label muted">Nu te zien</span>
-          <h2>Sanctuary of Absurdity</h2>
-          <p>De nieuwe serie compleet. De grote prints, 150 × 120 cm, hangen er voor het eerst, naast een wand met kleinere werkprints uit dezelfde winter.</p>
-          <dl class="specs">
-            <div><dt>Locatie</dt><dd>Galerie Betonwerk</dd></div>
-            <div><dt>Stad</dt><dd>Rotterdam</dd></div>
-            <div><dt>Data</dt><dd>14 nov 2026 – 31 jan 2027</dd></div>
-            <div><dt>Soort</dt><dd>Solotentoonstelling</dd></div>
-            <div><dt>Status</dt><dd>Nu te zien</dd></div>
-          </dl>
-          <a class="more" href="#s-sanctuary" data-go="s-sanctuary">Bekijk de serie →</a>
-        </div>
-      </article>
-
-      <section class="band" aria-labelledby="h-up">
-        <div class="band-head"><h2 id="h-up">Binnenkort</h2></div>
-        <div class="ex-upcoming">
-          <img src="img/stand-in-05.webp" alt="">
-          <div class="txt">
-            <span class="label muted">Groepstentoonstelling</span>
-            <h3>Ruw materiaal</h3>
-            <p>Fotohuis Delta, Middelburg · 6 maart – 30 mei 2027</p>
-            <p class="muted">Vijf fotografen over beton in de Nederlandse bouw, van de wederopbouw tot nu. Met drie prints uit <i>In het werk gestort</i>.</p>
-          </div>
-        </div>
-      </section>
-
-      <section style="padding-block: clamp(2.5rem, 5vw, 4rem)" aria-labelledby="h-past">
-        <div class="band-head"><h2 id="h-past">Eerder</h2></div>
-        <ul class="ex-list">
-          <li class="head"><span>Jaar</span><span>Tentoonstelling</span><span>Locatie</span><span>Stad</span><span>Soort</span></li>
-          <li><span>2025</span><span class="t">In het werk gestort</span><span>Stadsgalerie</span><span>Utrecht</span><span>Solo</span></li>
-          <li><span>2024</span><span class="t">Betonlicht</span><span>Kunstruimte Oost</span><span>Amsterdam</span><span>Groep</span></li>
-          <li><span>2024</span><span class="t">Fotofestival Noord</span><span>Pakhuis Noord</span><span>Groningen</span><span>Festival</span></li>
-          <li><span>2023</span><span class="t">Trappenhuizen</span><span>Galerie Trap</span><span>Den Haag</span><span>Solo</span></li>
-          <li><span>2022</span><span class="t">Nieuwe Nederlandse fotografie</span><span>Fotohuis Delta</span><span>Middelburg</span><span>Groep</span></li>
-        </ul>
-      </section>
     </div>
   </section>
 
@@ -707,26 +556,15 @@
       </div>
     </div>
     <div class="wrap about">
-      <div class="portrait"><img src="img/stand-in-06.webp" alt=""></div>
+      <div class="portrait"><img src="img/stand-in-10.webp" alt=""></div>
       <div class="prose">
-        <h2 style="margin-top:0">Statement</h2>
-        <p class="big">Ik fotografeer betonnen gebouwen op het moment dat het licht het werk doet: ruwe muren, diepe lichtschachten, één opening aan het eind. Dan wacht ik op iets dat er niet hoort.</p>
-        <p>Een schoonmaker op een ladder. Een opblaasflamingo. Een plastic stoel in een hal die om stilte vraagt. De architectuur wil serieus zijn, en de foto ontstaat op het moment dat dat even niet lukt.</p>
-
-        <h2>Biografie</h2>
-        <p>Kristoffer Zegers fotografeert in series, meestal in zwart-wit, in brutalistische gebouwen en wederopbouwarchitectuur. Zijn prints verschijnen in oplages van vijf, plus twee artist's proofs.</p>
-
-        <h2>Tentoonstellingen (selectie)</h2>
-        <ul>
-          <li>2026 · <b>Sanctuary of Absurdity</b> <span>Galerie Betonwerk, Rotterdam (solo)</span></li>
-          <li>2025 · <b>In het werk gestort</b> <span>Stadsgalerie, Utrecht (solo)</span></li>
-          <li>2024 · <b>Betonlicht</b> <span>Kunstruimte Oost, Amsterdam (groep)</span></li>
-        </ul>
-        <a class="more" href="#tentoonstellingen" data-go="tentoonstellingen">Alle tentoonstellingen →</a>
+        <h2 style="margin-top:0">Kristoffer Zegers</h2>
+        <p class="big">Kristoffer maakt foto's en beelden met AI. Op deze site staan ze allemaal bij elkaar.</p>
+        <p>Bekijk ze per album, of allemaal tegelijk, met een filter voor foto's en AI-beelden. Elk AI-beeld heeft het label AI, zodat altijd duidelijk is wat een foto is en wat niet.</p>
 
         <section id="contact" aria-labelledby="h-contact" style="display:grid;gap:1rem">
           <h2 id="h-contact">Contact</h2>
-          <p>Voor prints, tentoonstellingen en al het andere. Atelierbezoek op afspraak.</p>
+          <p>Een vraag over een beeld, of iets anders? Stuur een bericht.</p>
           <dl class="contact-lines">
             <dt>E-mail</dt><dd><span class="ph">e-mailadres volgt</span></dd>
             <dt>Instagram</dt><dd><span class="ph">@naam volgt</span></dd>
@@ -735,17 +573,6 @@
             <div class="two">
               <div class="field"><label for="f-name">Naam</label><input id="f-name" name="name" autocomplete="name"></div>
               <div class="field"><label for="f-email">E-mail</label><input id="f-email" name="email" type="email" autocomplete="email"></div>
-            </div>
-            <div class="two">
-              <div class="field">
-                <label for="f-topic">Onderwerp</label>
-                <select id="f-topic" name="topic">
-                  <option value="print">Een print</option>
-                  <option value="exhibition">Een tentoonstelling</option>
-                  <option value="other">Iets anders</option>
-                </select>
-              </div>
-              <div class="field"><label for="f-work">Foto (niet verplicht)</label><input id="f-work" name="work"></div>
             </div>
             <div class="field"><label for="f-msg">Bericht</label><textarea id="f-msg" name="message"></textarea></div>
             <button class="btn" type="submit">Verstuur bericht</button>
@@ -760,104 +587,95 @@
 
 <footer class="foot">
   <div class="wrap foot-top">
-    <a class="wordmark" href="#home" data-go="home"><span class="wm-name">KRISTOFFER ZEGERS</span><span class="wm-sub">FOTOGRAFIE</span></a>
+    <a class="wordmark" href="#home" data-go="home"><span class="wm-name">KRISTOFFER ZEGERS</span><span class="wm-sub">FOTO &amp; AI</span></a>
   </div>
   <div class="wrap foot-cols">
     <div>
-      <h4>Atelier</h4>
-      <p>Bezoek op afspraak.</p>
-      <a class="more" href="#contact" data-go="contact">Schrijf het atelier →</a>
+      <h4>Bekijken</h4>
+      <ul>
+        <li><a href="#alles" data-go="alles">Alle beelden</a></li>
+        <li><a href="#fotos" data-go="fotos">Foto's</a></li>
+        <li><a href="#ai" data-go="ai">AI-beelden</a></li>
+        <li><a href="#albums" data-go="albums">Albums</a></li>
+      </ul>
     </div>
     <div>
-      <h4>Prints</h4>
-      <p>Pigmentprints op archiefpapier, oplage 5 + 2 AP, gesigneerd en genummerd.</p>
-      <a class="more" href="#contact" data-go="contact">Vraag naar een print →</a>
-    </div>
-    <div id="nieuwsbrief">
-      <h4>Nieuwsbrief</h4>
-      <p>Eén mail als er een nieuwe serie of tentoonstelling is.</p>
-      <form id="news-form" novalidate>
-        <label for="f-news" class="label" style="position:absolute;left:-9999px">E-mailadres</label>
-        <input id="f-news" type="email" placeholder="E-mailadres" autocomplete="email">
-        <button class="btn-ghost" type="submit">Aanmelden</button>
-      </form>
-      <p class="done" id="news-done" hidden>Ontwerp: er is geen adres opgeslagen.</p>
+      <h4>Contact</h4>
+      <p><span class="ph">e-mailadres volgt</span></p>
+      <a class="more" href="#contact" data-go="contact">Stuur een bericht →</a>
     </div>
     <div>
       <h4>Volgen</h4>
-      <p>Nieuw werk staat eerst op Instagram.</p>
+      <p>Nieuw werk staat ook op Instagram.</p>
       <a class="more" href="#home" data-go="home">Instagram →</a>
     </div>
   </div>
   <div class="wrap foot-bottom">
-    <span>© 2026 Kristoffer Zegers. Alle foto's © de fotograaf.</span>
-    <nav aria-label="Juridisch"><a href="#home" data-go="home">Privacy</a><a href="#home" data-go="home">Colofon</a></nav>
+    <span>© 2026 Kristoffer Zegers. Alle beelden © Kristoffer Zegers.</span>
   </div>
 </footer>
 
-<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Foto op volledig scherm">
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Beeld op volledig scherm">
   <div class="lb-top"><span id="lb-count"></span><button type="button" id="lb-close">Sluiten</button></div>
   <div class="lb-img">
-    <button class="arrow prev" type="button" id="lb-prev" aria-label="Vorige foto">←</button>
+    <button class="arrow prev" type="button" id="lb-prev" aria-label="Vorig beeld">←</button>
     <img id="lb-img" src="img/stand-in-01.webp" alt="">
-    <button class="arrow next" type="button" id="lb-next" aria-label="Volgende foto">→</button>
+    <button class="arrow next" type="button" id="lb-next" aria-label="Volgend beeld">→</button>
   </div>
   <p class="lb-cap" id="lb-cap"></p>
 </div>
 
 <script>
 (() => {
-  const SIZE = { p: '150 × 120 cm', l: '100 × 150 cm', s: '110 × 110 cm' };
-  const MEDIUM = 'Pigmentprint op archiefpapier';
-  const EDITION = 'Oplage 5 + 2 AP';
-  const ph = (file, title, year, fmt) => ({ src: 'img/' + file, title, year, fmt });
+  const KIND = { ai: 'AI-beeld', foto: 'Foto' };
+  const ph = (file, title, year) => ({ src: 'img/' + file, title, year });
 
-  // Every picture is a stand-in; titles, years and texts are examples.
-  const SERIES = [
+  // Every picture is a stand-in; titles, years and texts are examples. An album holds one kind:
+  // photos ('foto') or AI images ('ai'); every picture takes its album's kind.
+  const ALBUMS = [
     {
-      id: 'sanctuary', title: 'Sanctuary of Absurdity', years: '2026',
-      short: 'Betonnen hallen die heilig willen voelen, en dat ene ding dat de sfeer bederft.',
+      id: 'sanctuary', title: 'Sanctuary of Absurdity', years: '2026', kind: 'ai',
+      short: 'AI-beelden van betonnen hallen, en dat ene ding dat er niet hoort.',
       essay: [
-        'Zes foto’s, gemaakt in één betonnen gebouw, in één winter.',
-        'De architectuur vraagt om stilte. Elke foto wacht op het moment dat iets die stilte breekt: een schoonmaker op een ladder, een opblaasflamingo, een deur die openstaat.'
+        'Zes beelden, gemaakt met AI.',
+        'Betonnen hallen die om stilte vragen, met steeds iets dat de stilte breekt.'
       ],
       photos: [
-        ph('stand-in-01.webp', 'Dwarsbalk', '2026', 'p'),
-        ph('stand-in-06.webp', 'De conciërge vertrekt', '2026', 'p'),
-        ph('stand-in-03.webp', 'Eén licht', '2026', 'p'),
-        ph('stand-in-08.webp', 'Wachtkamer', '2026', 's'),
-        ph('stand-in-11.webp', 'Noorddeur', '2026', 'p'),
-        ph('stand-in-14.webp', 'Middag, niveau −2', '2026', 'p')
+        ph('stand-in-01.webp', 'Dwarsbalk', '2026'),
+        ph('stand-in-06.webp', 'De conciërge vertrekt', '2026'),
+        ph('stand-in-03.webp', 'Eén licht', '2026'),
+        ph('stand-in-08.webp', 'Wachtkamer', '2026'),
+        ph('stand-in-11.webp', 'Noorddeur', '2026'),
+        ph('stand-in-14.webp', 'Middag, niveau −2', '2026')
       ]
     },
     {
-      id: 'gestort', title: 'In het werk gestort', years: '2024–2025',
-      short: 'Gangen en dienstruimtes in naoorlogs beton, op het uur dat het daglicht het verst naar binnen valt.',
+      id: 'gestort', title: 'In het werk gestort', years: '2024–2025', kind: 'foto',
+      short: 'Gangen en trappen in naoorlogs beton, als het daglicht ver naar binnen valt.',
       essay: [
-        'Zes foto’s van de delen van openbare gebouwen waar niemand hoort te kijken: dienstgangen, achtertrappen, de ruimte achter een toneel.',
-        'Allemaal gemaakt tussen twee en vier uur ’s middags, als de zon laag genoeg staat om de achterwand te raken.'
+        'Zes foto’s van gangen, achtertrappen en dienstruimtes in betonnen gebouwen.',
+        'Allemaal ’s middags gemaakt, als de zon laag genoeg staat om de achterwand te raken.'
       ],
       photos: [
-        ph('stand-in-02.webp', 'Gang B', '2025', 'l'),
-        ph('stand-in-05.webp', 'Bekisting', '2025', 'l'),
-        ph('stand-in-07.webp', 'Middaglicht', '2025', 'l'),
-        ph('stand-in-10.webp', 'Bezoeker', '2024', 'l'),
-        ph('stand-in-13.webp', 'Diensttrap', '2024', 'l'),
-        ph('stand-in-15.webp', 'Uitgang naar daglicht', '2024', 'l')
+        ph('stand-in-02.webp', 'Gang B', '2025'),
+        ph('stand-in-05.webp', 'Bekisting', '2025'),
+        ph('stand-in-07.webp', 'Middaglicht', '2025'),
+        ph('stand-in-10.webp', 'Bezoeker', '2024'),
+        ph('stand-in-13.webp', 'Diensttrap', '2024'),
+        ph('stand-in-15.webp', 'Uitgang naar daglicht', '2024')
       ]
     },
     {
-      id: 'trappenhuizen', title: 'Trappenhuizen', years: '2023',
-      short: 'Vier trappenhuizen, elk gefotografeerd vanaf het laagste bordes.',
+      id: 'trappenhuizen', title: 'Trappenhuizen', years: '2023', kind: 'foto',
+      short: 'Vier trappenhuizen, elk vanaf het laagste bordes.',
       essay: [
-        'Vier trappenhuizen in vier steden, elk vanaf het laagste bordes gefotografeerd, met dezelfde lens en op dezelfde hoogte.',
-        'Vierkant afgedrukt, zodat de gebouwen naast elkaar te vergelijken zijn.'
+        'Vier trappenhuizen in vier steden, elk vanaf het laagste bordes gefotografeerd.'
       ],
       photos: [
-        ph('stand-in-04.webp', 'Trappenhuis I', '2023', 's'),
-        ph('stand-in-09.webp', 'Trappenhuis II', '2023', 'p'),
-        ph('stand-in-12.webp', 'Bordes', '2023', 's'),
-        ph('stand-in-16.webp', 'Trappenhuis III', '2023', 's')
+        ph('stand-in-04.webp', 'Trappenhuis I', '2023'),
+        ph('stand-in-09.webp', 'Trappenhuis II', '2023'),
+        ph('stand-in-12.webp', 'Bordes', '2023'),
+        ph('stand-in-16.webp', 'Trappenhuis III', '2023')
       ]
     }
   ];
@@ -866,18 +684,24 @@
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const pad = n => String(n).padStart(2, '0');
-  const count = s => `${s.photos.length} foto’s`;
+  const plural = (n, kind) => kind === 'ai' ? `${n} AI-beelden` : `${n} foto’s`;
+  const tag = kind => kind === 'ai' ? '<span class="tag">AI</span>' : '';
+  // Every picture with its album, newest album first.
+  const ALL = ALBUMS.flatMap(a => a.photos.map((p, i) => ({ a, p, i })));
 
-  /* ---------- Home: series carousel ---------- */
-  $('#car-series .car-track').innerHTML = SERIES.map(s => {
-    const c = s.photos[0];
-    return `<a class="car-card linkcard" href="#s-${s.id}" data-go="s-${s.id}">
-      <img src="${c.src}" alt="" loading="lazy">
-      <h3>${esc(s.title)}</h3>
-      <p class="meta">${esc(s.years)} · ${count(s)}</p>
-      <p>${esc(s.short)}</p>
-    </a>`;
-  }).join('');
+  /* ---------- Home ---------- */
+  $('#car-albums .car-track').innerHTML = ALBUMS.map(a => `<a class="car-card linkcard" href="#a-${a.id}" data-go="a-${a.id}">
+      <span class="thumb"><img src="${a.photos[0].src}" alt="" loading="lazy">${tag(a.kind)}</span>
+      <h3>${esc(a.title)}</h3>
+      <p class="meta">${esc(a.years)} · ${plural(a.photos.length, a.kind)}</p>
+      <p>${esc(a.short)}</p>
+    </a>`).join('');
+
+  // The newest pictures: round the albums, so photos and AI images mix.
+  const latest = [];
+  for (let i = 0; latest.length < 8 && i < 10; i++) ALBUMS.forEach(a => { if (a.photos[i] && latest.length < 8) latest.push({ a, p: a.photos[i], i }); });
+  $('#latest').innerHTML = latest.map(({ a, p, i }) =>
+    `<a class="thumb" href="#a-${a.id}" data-go="a-${a.id}" data-photo="${i}" aria-label="${esc(p.title)}, ${KIND[a.kind]}"><img src="${p.src}" alt="" loading="lazy">${tag(a.kind)}</a>`).join('');
 
   function carousel(root) {
     const track = $('.car-track', root);
@@ -905,75 +729,69 @@
     set(0);
     return { refresh: () => set(i) };
   }
-  const seriesCarousel = carousel($('#car-series'));
+  const albumCarousel = carousel($('#car-albums'));
 
-  /* ---------- Werk: series rows ---------- */
-  $('#work-list').innerHTML = SERIES.map(s => {
-    const c = s.photos[0];
-    const minis = s.photos.slice(0, 6).map((p, i) =>
-      `<a href="#s-${s.id}" data-go="s-${s.id}" data-photo="${i}" aria-label="${esc(p.title)}"><img src="${p.src}" alt="" loading="lazy"></a>`).join('');
-    return `<article class="series-row">
-      <a class="cover" href="#s-${s.id}" data-go="s-${s.id}"><img src="${c.src}" alt="" loading="lazy"></a>
+  /* ---------- Albums ---------- */
+  $('#album-list').innerHTML = ALBUMS.map(a => {
+    const minis = a.photos.slice(0, 6).map((p, i) =>
+      `<a href="#a-${a.id}" data-go="a-${a.id}" data-photo="${i}" aria-label="${esc(p.title)}"><img src="${p.src}" alt="" loading="lazy"></a>`).join('');
+    return `<article class="album-row">
+      <a class="thumb" href="#a-${a.id}" data-go="a-${a.id}"><img src="${a.photos[0].src}" alt="" loading="lazy">${tag(a.kind)}</a>
       <div class="txt">
-        <h2>${esc(s.title)}</h2>
-        <p class="meta">${esc(s.years)} · ${count(s)} · pigmentprints</p>
-        <p>${esc(s.short)}</p>
+        <h2>${esc(a.title)}</h2>
+        <p class="meta">${esc(a.years)} · ${plural(a.photos.length, a.kind)}</p>
+        <p>${esc(a.short)}</p>
         <div class="minis">${minis}</div>
-        <a class="more" href="#s-${s.id}" data-go="s-${s.id}">Bekijk de serie →</a>
+        <a class="more" href="#a-${a.id}" data-go="a-${a.id}">Bekijk het album →</a>
       </div>
     </article>`;
   }).join('');
 
-  /* ---------- Index ---------- */
-  let filter = 'all';
+  /* ---------- All pictures, with the photo / AI filter ---------- */
+  const FILTERS = {
+    alles: { title: 'Alle beelden', lead: 'Foto’s en AI-beelden, de nieuwste eerst.', test: () => true },
+    fotos: { title: 'Foto’s', lead: 'Alle foto’s, de nieuwste eerst.', test: x => x.a.kind === 'foto' },
+    ai: { title: 'AI-beelden', lead: 'Alle beelden gemaakt met AI, de nieuwste eerst.', test: x => x.a.kind === 'ai' }
+  };
+  let filter = 'alles';
   function renderIndex() {
-    $('#chips').innerHTML = [['all', 'Alles']].concat(SERIES.map(s => [s.id, s.title]))
-      .map(([id, t]) => `<button class="chip" type="button" data-filter="${id}" aria-pressed="${filter === id}">${esc(t)}</button>`).join('');
-    const items = [];
-    SERIES.forEach(s => s.photos.forEach((p, i) => {
-      if (filter === 'all' || filter === s.id) items.push({ s, p, i });
-    }));
-    $('#masonry').innerHTML = items.map(({ s, p, i }) => `<figure>
-      <a href="#s-${s.id}" data-go="s-${s.id}" data-photo="${i}">
-        <img src="${p.src}" alt="${esc(p.title)}, ${p.year}" loading="lazy">
-        <figcaption><b>${esc(p.title)}</b>, ${p.year}<br>${esc(s.title)}</figcaption>
+    const f = FILTERS[filter];
+    $('#ix-title').textContent = f.title;
+    $('#ix-lead').textContent = f.lead;
+    $('#chips').innerHTML = [['alles', 'Alles'], ['fotos', 'Foto’s'], ['ai', 'AI-beelden']].map(([id, t]) =>
+      `<button class="chip" type="button" data-go="${id}" aria-pressed="${filter === id}">${t} (${ALL.filter(FILTERS[id].test).length})</button>`).join('');
+    $('#masonry').innerHTML = ALL.filter(f.test).map(({ a, p, i }) => `<figure>
+      <a href="#a-${a.id}" data-go="a-${a.id}" data-photo="${i}">
+        <span class="thumb"><img src="${p.src}" alt="${esc(p.title)}, ${p.year}, ${KIND[a.kind]}" loading="lazy">${tag(a.kind)}</span>
+        <figcaption><b>${esc(p.title)}</b>, ${p.year} · ${KIND[a.kind]}<br>${esc(a.title)}</figcaption>
       </a>
     </figure>`).join('');
   }
-  $('#chips').addEventListener('click', e => {
-    const b = e.target.closest('[data-filter]');
-    if (!b) return;
-    filter = b.dataset.filter;
-    renderIndex();
-  });
-  renderIndex();
 
-  /* ---------- Serie: the viewer ---------- */
-  const cur = { s: SERIES[0], i: 0 };
-  function openSeries(id, i) {
-    const s = SERIES.find(x => x.id === id) || SERIES[0];
-    cur.s = s;
-    $('#v-title').textContent = s.title;
-    $('#v-essay').innerHTML = s.essay.map(t => `<p>${esc(t)}</p>`).join('');
+  /* ---------- One album ---------- */
+  const cur = { a: ALBUMS[0], i: 0 };
+  function openAlbum(id, i) {
+    const a = ALBUMS.find(x => x.id === id) || ALBUMS[0];
+    cur.a = a;
+    $('#v-title').textContent = a.title;
+    $('#v-essay').innerHTML = a.essay.map(t => `<p>${esc(t)}</p>`).join('');
     $('#v-specs').innerHTML = [
-      ['Jaren', s.years], ['Foto’s', s.photos.length], ['Techniek', MEDIUM], ['Oplage', '5 + 2 AP per foto']
+      ['Jaar', a.years], ['Beelden', a.photos.length], ['Soort', a.kind === 'ai' ? 'AI-beelden' : 'Foto’s']
     ].map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('');
-    $('#v-strip').innerHTML = s.photos.map((p, n) =>
+    $('#v-strip').innerHTML = a.photos.map((p, n) =>
       `<button type="button" data-thumb="${n}" aria-label="${pad(n + 1)}: ${esc(p.title)}"><img src="${p.src}" alt=""></button>`).join('');
     showPhoto(i || 0);
   }
   function showPhoto(i) {
-    const s = cur.s, n = s.photos.length;
+    const a = cur.a, n = a.photos.length;
     cur.i = ((i % n) + n) % n;
-    const p = s.photos[cur.i];
+    const p = a.photos[cur.i];
     const img = $('#v-img');
     img.src = p.src;
-    img.alt = `${p.title}, ${p.year}`;
-    const line = `<b>${pad(cur.i + 1)} / ${esc(p.title)}, ${p.year}</b> — ${MEDIUM}, ${SIZE[p.fmt]} — ${EDITION}`;
+    img.alt = `${p.title}, ${p.year}, ${KIND[a.kind]}`;
+    const line = `<b>${pad(cur.i + 1)} / ${esc(p.title)}, ${p.year}</b> — ${KIND[a.kind]}`;
     $('#v-cap').innerHTML = line;
     $('#v-count').textContent = `${cur.i + 1} / ${n}`;
-    $('#v-ask').dataset.ask = p.title;
-    $('#v-ask-side').dataset.ask = p.title;
     $$('#v-strip button').forEach((b, k) => b.setAttribute('aria-current', String(k === cur.i)));
     const strip = $('#v-strip'), thumb = strip.children[cur.i];
     if (thumb) strip.scrollTo({ left: thumb.offsetLeft - strip.clientWidth / 2 + thumb.clientWidth / 2, behavior: 'smooth' });
@@ -981,9 +799,9 @@
     $('#lb-img').src = p.src;
     $('#lb-img').alt = img.alt;
     $('#lb-cap').innerHTML = line;
-    $('#lb-count').textContent = `${s.title} · ${cur.i + 1} / ${n}`;
+    $('#lb-count').textContent = `${a.title} · ${cur.i + 1} / ${n}`;
     // warm the neighbours
-    [1, -1].forEach(d => { const q = s.photos[(cur.i + d + n) % n]; if (q) new Image().src = q.src; });
+    [1, -1].forEach(d => { const q = a.photos[(cur.i + d + n) % n]; if (q) new Image().src = q.src; });
   }
   $('#v-prev').addEventListener('click', () => showPhoto(cur.i - 1));
   $('#v-next').addEventListener('click', () => showPhoto(cur.i + 1));
@@ -1011,48 +829,39 @@
   const screens = $$('[data-screen]');
   let current = null;
   function show(name, opts = {}) {
-    let screen = name, sid = null;
-    if (name.startsWith('s-')) { sid = name.slice(2); screen = 'series'; }
+    let screen = name, aid = null;
+    if (name.startsWith('a-')) { aid = name.slice(2); screen = 'album'; }
+    if (name in FILTERS) screen = 'index';
     if (name === 'contact') screen = 'over';
-    if (!screens.some(s => s.dataset.screen === screen) || (sid && !SERIES.some(s => s.id === sid))) {
-      name = 'home'; screen = 'home'; sid = null;
+    if (!screens.some(s => s.dataset.screen === screen) || (aid && !ALBUMS.some(a => a.id === aid))) {
+      name = 'home'; screen = 'home'; aid = null;
     }
     current = name;
     screens.forEach(s => { s.hidden = s.dataset.screen !== screen; });
-    if (screen === 'series') openSeries(sid, opts.photo || 0);
-    if (screen === 'home') seriesCarousel.refresh();
+    if (screen === 'album') openAlbum(aid, opts.photo || 0);
+    if (screen === 'index') { filter = name; renderIndex(); }
+    if (screen === 'home') albumCarousel.refresh();
 
-    const navKey = screen === 'series' ? 'werk' : name;
+    const navKey = screen === 'album' ? 'albums' : name;
     $$('.primary a, .menu a.big').forEach(a => {
       if (a.dataset.go === navKey) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     });
-    const barKey = screen === 'series' ? 's-sanctuary' : (name === 'contact' ? 'over' : name);
+    const barKey = screen === 'album' ? 'a-sanctuary' : screen === 'index' ? 'alles' : (name === 'contact' ? 'over' : name);
     $$('.mockbar [data-go]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.go === barKey)));
 
-    if (typeof opts.ask === 'string') {
-      $('#f-work').value = opts.ask;
-      if (opts.ask) $('#f-topic').value = 'print';
-    }
     closeMenu();
     if (!lb.hidden) lb.hidden = true;
     if (name === 'contact') requestAnimationFrame(() => $('#contact').scrollIntoView());
-    else window.scrollTo(0, 0);
+    else if (!opts.keepScroll) window.scrollTo(0, 0);
     try { if (location.hash.slice(1) !== name) location.hash = name; } catch (e) { /* data: URL or locked frame */ }
   }
 
   document.addEventListener('click', e => {
-    const jump = e.target.closest('[data-jump]');
-    if (jump) {
-      e.preventDefault();
-      closeMenu();
-      const t = document.getElementById(jump.dataset.jump);
-      if (t) { t.scrollIntoView({ behavior: 'smooth' }); setTimeout(() => $('#f-news').focus({ preventScroll: true }), 500); }
-      return;
-    }
     const go = e.target.closest('[data-go]');
     if (!go) return;
     e.preventDefault();
-    show(go.dataset.go, { photo: +go.dataset.photo || 0, ask: go.dataset.ask });
+    // The filter chips switch the list in place, without jumping to the top.
+    show(go.dataset.go, { photo: +go.dataset.photo || 0, keepScroll: go.classList.contains('chip') });
   });
   addEventListener('hashchange', () => {
     const h = location.hash.slice(1);
@@ -1066,8 +875,7 @@
       return;
     }
     if (/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
-    const onViewer = !$('[data-screen="series"]').hidden;
-    if (!onViewer) return;
+    if ($('[data-screen="album"]').hidden) return;
     if (e.key === 'ArrowLeft') showPhoto(cur.i - 1);
     if (e.key === 'ArrowRight') showPhoto(cur.i + 1);
   });
@@ -1080,9 +888,8 @@
     else if (y < 20) site.classList.remove('compact');
   }, { passive: true });
 
-  /* ---------- Forms: mock only ---------- */
+  /* ---------- Contact form: mock only ---------- */
   $('#contact-form').addEventListener('submit', e => { e.preventDefault(); $('#contact-done').hidden = false; });
-  $('#news-form').addEventListener('submit', e => { e.preventDefault(); $('#news-done').hidden = false; });
 
   let start = 'home';
   try { start = location.hash.slice(1) || 'home'; } catch (e) { /* keep home */ }
