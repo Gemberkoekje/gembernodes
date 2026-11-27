@@ -1,7 +1,7 @@
 {
   "uid": "flux-status",
   "title": "Flux Kustomizations, HelmReleases & Sources",
-  "tags": ["flux", "gitops"],
+  "tags": ["flux", "gitops", "kubernetes"],
   "timezone": "browser",
   "schemaVersion": 39,
   "version": 1,
@@ -118,7 +118,7 @@
         }
       ],
       "transformations": [
-        { "id": "filterFieldsByName", "options": { "include": { "names": ["customresource_kind", "exported_namespace", "name", "ready", "suspended", "revision"] } } },
+        { "id": "filterFieldsByName", "options": { "include": { "names": ["customresource_kind", "exported_namespace", "name", "ready", "reason", "message", "suspended", "revision"] } } },
         { "id": "organize", "options": { "renameByName": { "customresource_kind": "kind", "exported_namespace": "namespace" } } }
       ]
     },

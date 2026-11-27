@@ -22,6 +22,7 @@ configMapGenerator:
       - dashboards/error-logs-dashboard.json
       - dashboards/flux-dashboard.json
       - dashboards/home-assistant-dashboard.json
+      - dashboards/kubernetes-status-dashboard.json
       - dashboards/spacetraders-dashboard.json
       - dashboards/spacetraders-markets-dashboard.json
       - dashboards/spacetraders-snapshots-dashboard.json

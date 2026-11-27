@@ -54,6 +54,8 @@ spec:
           - targets: ["homeassistant.home-automation.svc.cluster.local:8123"]
     # Export the Ready state of Flux objects as gotk_resource_info, used by the Flux dashboard
     # and the "Flux resource not ready" alert. Adapted from fluxcd/flux2-monitoring-example.
+    # reason and message are the Ready condition's own, so the dashboards say why an object isn't
+    # ready (the alert groups by kind, namespace and name, so they don't split it).
     # The API versions must be ones the installed Flux serves; bump them with Flux.
     kube-state-metrics:
       rbac:
@@ -91,6 +93,8 @@ spec:
                     labelsFromPath:
                       exported_namespace: [metadata, namespace]
                       ready: [status, conditions, "[type=Ready]", status]
+                      reason: [status, conditions, "[type=Ready]", reason]
+                      message: [status, conditions, "[type=Ready]", message]
                       suspended: [spec, suspend]
                       revision: [status, lastAppliedRevision]
                       source_name: [spec, sourceRef, name]
@@ -110,6 +114,8 @@ spec:
                     labelsFromPath:
                       exported_namespace: [metadata, namespace]
                       ready: [status, conditions, "[type=Ready]", status]
+                      reason: [status, conditions, "[type=Ready]", reason]
+                      message: [status, conditions, "[type=Ready]", message]
                       suspended: [spec, suspend]
                       revision: [status, history, "0", chartVersion]
                       chart_name: [status, history, "0", chartName]
@@ -130,6 +136,8 @@ spec:
                     labelsFromPath:
                       exported_namespace: [metadata, namespace]
                       ready: [status, conditions, "[type=Ready]", status]
+                      reason: [status, conditions, "[type=Ready]", reason]
+                      message: [status, conditions, "[type=Ready]", message]
                       suspended: [spec, suspend]
                       revision: [status, artifact, revision]
                       url: [spec, url]
@@ -149,6 +157,8 @@ spec:
                     labelsFromPath:
                       exported_namespace: [metadata, namespace]
                       ready: [status, conditions, "[type=Ready]", status]
+                      reason: [status, conditions, "[type=Ready]", reason]
+                      message: [status, conditions, "[type=Ready]", message]
                       suspended: [spec, suspend]
                       revision: [status, artifact, revision]
                       url: [spec, url]
@@ -168,6 +178,8 @@ spec:
                     labelsFromPath:
                       exported_namespace: [metadata, namespace]
                       ready: [status, conditions, "[type=Ready]", status]
+                      reason: [status, conditions, "[type=Ready]", reason]
+                      message: [status, conditions, "[type=Ready]", message]
                       suspended: [spec, suspend]
                       revision: [status, artifact, revision]
                       chart_name: [spec, chart]
@@ -188,6 +200,8 @@ spec:
                     labelsFromPath:
                       exported_namespace: [metadata, namespace]
                       ready: [status, conditions, "[type=Ready]", status]
+                      reason: [status, conditions, "[type=Ready]", reason]
+                      message: [status, conditions, "[type=Ready]", message]
                       suspended: [spec, suspend]
                       revision: [status, artifact, revision]
                       url: [spec, url]
