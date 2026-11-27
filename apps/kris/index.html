@@ -1,0 +1,1093 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kristoffer Zegers Fotografie</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="robots" content="noindex, nofollow">
+<!--
+  Clickable mock for Kristoffer Zegers' photography site (see ../README.md). Nothing is saved or sent.
+  Direction: the Guggenheim site's grammar (two-line wordmark, capital nav, hairlines between bands,
+  big pictures, "← 1 / 3 →" counters, dark footer) plus what Kristoffer liked in his own AI draft:
+  the matted print with a gallery caption line, the exhibition specs and the black filmstrip.
+  Every picture is a generated grey stand-in (img/stand-in-*.jpg, made by ../tools/stand_ins.py):
+  his own photos stay out of Git and off the site until he says otherwise. Titles, texts and
+  exhibitions are invented examples. Dutch site text.
+  Screens are switched in script as well as by #hash (the Claude browser pane opens local files as
+  data: URLs, where hash routing does nothing).
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap">
+<style>
+  /* Layout: museum grammar (wordmark, capital nav, full-width hairlines between bands, large
+     pictures, counters) applied to one photographer; the photo page is a matted print on a pale
+     concrete stage with a gallery caption and a black filmstrip. One light theme on purpose:
+     the site looks the same for every visitor. */
+  :root {
+    color-scheme: light;
+    --paper: #fdfdfb;
+    --ink: #131312;
+    --ink-soft: #5d5d58;
+    --rule: #b9b9b3;
+    --stage: #ebebe7;
+    --mat: #fcfcfa;
+    --wall-hi: #3d3d3a;
+    --wall-lo: #161615;
+    --night: #121211;
+    --night-ink: #f0f0ec;
+    --night-soft: #a2a29c;
+    --night-rule: #3a3a37;
+    --focus: #e4007c;
+    --shadow: rgba(0, 0, 0, .22);
+    --shadow-deep: rgba(0, 0, 0, .55);
+    --font: "Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --maxw: 90rem;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: var(--font); font-size: 1.0625rem; line-height: 1.55; font-stretch: 100%;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+    z-index: 30; background: var(--paper);
+  }
+  img { max-width: 100%; display: block; }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+  [hidden] { display: none !important; }
+  p { margin: 0; }
+
+  .wrap {
+    max-width: var(--maxw); margin-inline: auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  @media (min-width: 900px) {
+    .wrap {
+      padding-left: max(48px, env(safe-area-inset-left, 0px));
+      padding-right: max(48px, env(safe-area-inset-right, 0px));
+    }
+  }
+
+  /* ---------- Type ---------- */
+  h1, h2, h3 {
+    margin: 0; font-weight: 660; font-stretch: 106%; letter-spacing: -.012em;
+    line-height: 1.08; text-wrap: balance;
+  }
+  .display { font-size: clamp(2.4rem, 5.4vw, 4.6rem); }
+  h1 { font-size: clamp(2.2rem, 4.6vw, 3.6rem); }
+  h2 { font-size: clamp(1.7rem, 2.8vw, 2.35rem); }
+  h3 { font-size: 1.375rem; line-height: 1.2; }
+  .label {
+    font-size: .8125rem; font-weight: 560; font-stretch: 112%;
+    letter-spacing: .07em; text-transform: uppercase;
+  }
+  .muted { color: var(--ink-soft); }
+  .more { font-size: .9375rem; font-weight: 640; text-decoration: none; white-space: nowrap; }
+  .more:hover { text-decoration: underline; text-underline-offset: .22em; }
+  .ph { font-style: italic; color: var(--ink-soft); }
+
+  /* ---------- Reviewer bar (not part of the site) ---------- */
+  .mockbar { background: var(--night); color: var(--night-ink); font-size: .8125rem; line-height: 1.45; }
+  .mockbar .wrap { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; align-items: center; padding-block: .55rem; }
+  .mockbar p { flex: 1 1 26rem; min-width: 0; color: var(--night-soft); }
+  .mockbar p b { color: var(--night-ink); font-weight: 600; }
+  .mockbar .views { display: flex; flex-wrap: wrap; gap: .35rem; }
+  .mockbar button {
+    font-size: .8125rem; background: transparent; color: var(--night-ink);
+    border: 1px solid var(--night-rule); padding: .2rem .6rem; cursor: pointer;
+  }
+  .mockbar button[aria-pressed="true"] { background: var(--night-ink); color: var(--night); border-color: var(--night-ink); }
+
+  /* ---------- Header ---------- */
+  .site {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+    background: var(--paper); border-bottom: 1px solid var(--ink);
+  }
+  .site .bar {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+    padding-block: 1.5rem .85rem; transition: padding .25s ease;
+  }
+  .wordmark { text-decoration: none; display: grid; line-height: 1.04; font-size: 1.375rem; font-stretch: 125%; letter-spacing: .035em; }
+  .wm-name { font-weight: 760; }
+  .wm-sub { font-weight: 360; }
+  .site.compact .bar { padding-block: .85rem .45rem; }
+  .site.compact .wm-sub { display: none; }
+  .util { display: flex; gap: 1.75rem; font-size: .9375rem; padding-top: .2rem; }
+  .util a { text-decoration: none; }
+  .util a:hover { text-decoration: underline; text-underline-offset: .22em; }
+  .lang b { font-weight: 640; }
+  .primary { display: flex; flex-wrap: wrap; gap: .25rem 2.25rem; padding-bottom: .9rem; }
+  .primary a {
+    font-size: 1.125rem; font-stretch: 108%; letter-spacing: .045em; text-transform: uppercase;
+    text-decoration: none; padding-block: .15rem; border-bottom: 2px solid transparent;
+  }
+  .primary a:hover { border-bottom-color: var(--rule); }
+  .primary a[aria-current="page"] { border-bottom-color: var(--ink); }
+  .menu-btn {
+    display: none; align-items: center; gap: .55rem; background: none; border: 1px solid var(--ink);
+    padding: .45rem .8rem; cursor: pointer; font-size: .9375rem; font-weight: 600;
+  }
+  .menu-btn i { display: block; width: 18px; height: 8px; border-block: 2px solid var(--ink); }
+  @media (max-width: 760px) {
+    .util, .primary { display: none; }
+    .menu-btn { display: inline-flex; }
+    .site .bar, .site.compact .bar { align-items: center; padding-block: .9rem; }
+    .site .wordmark { font-size: 1rem; font-stretch: 104%; letter-spacing: .02em; }
+  }
+  .menu {
+    position: fixed; inset: 0; z-index: 40; background: var(--paper); overflow-y: auto;
+    padding: calc(env(safe-area-inset-top, 0px) + 1rem) max(16px, env(safe-area-inset-right, 0px))
+      calc(env(safe-area-inset-bottom, 0px) + 1.5rem) max(16px, env(safe-area-inset-left, 0px));
+    display: grid; align-content: start; gap: .25rem;
+  }
+  .menu .menu-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+  .menu a.big {
+    font-size: 2rem; font-weight: 660; font-stretch: 110%; text-transform: uppercase;
+    text-decoration: none; padding-block: .4rem; border-bottom: 1px solid var(--rule);
+  }
+  .menu .small { display: flex; gap: 1.5rem; margin-top: 1.25rem; font-size: 1rem; }
+
+  /* ---------- Home: the wall ---------- */
+  .hero {
+    background: radial-gradient(120% 95% at 55% -12%, var(--wall-hi) 0%, var(--wall-lo) 64%);
+    color: var(--night-ink); border-bottom: 1px solid var(--ink);
+  }
+  .hero-grid {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: clamp(1.5rem, 4vw, 4.5rem); align-items: end;
+    padding-block: clamp(2.5rem, 6vw, 5.5rem);
+  }
+  .hero-text { align-self: center; display: grid; gap: 1.1rem; max-width: 27rem; }
+  .hero-text .label { color: var(--night-soft); }
+  .hero-text p { color: var(--night-soft); font-size: 1.125rem; }
+  .hero-text .links { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; margin-top: .4rem; }
+  .print { margin: 0; justify-self: center; max-width: 100%; }
+  .mat {
+    display: inline-block; max-width: 100%; background: var(--mat);
+    padding: clamp(10px, 1.7vw, 26px);
+    box-shadow: 0 1px 2px var(--shadow), 0 34px 60px -32px var(--shadow-deep);
+  }
+  .hero .mat img { max-height: min(66vh, 620px); width: auto; }
+  .wall-label {
+    justify-self: start; width: 15rem; max-width: 100%; background: var(--mat); color: var(--ink);
+    padding: .85rem 1rem; font-size: .8125rem; line-height: 1.5;
+    box-shadow: 0 1px 2px var(--shadow-deep);
+  }
+  .wall-label b { display: block; font-weight: 660; }
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: 1fr; align-items: start; }
+    .print { order: -1; }
+    .hero .mat img { max-height: 70vh; }
+    .wall-label { justify-self: center; }
+    .hero-text { max-width: 36rem; }
+  }
+
+  /* ---------- Bands ---------- */
+  .band { border-bottom: 1px solid var(--rule); padding-block: clamp(2.5rem, 5vw, 4.5rem); }
+  .band-head {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline;
+    gap: .5rem 1rem; margin-bottom: clamp(1.25rem, 2.5vw, 2rem);
+  }
+  .linkcard { display: block; text-decoration: none; }
+  .linkcard:hover h3 { text-decoration: underline; text-underline-offset: .18em; text-decoration-thickness: 2px; }
+
+  /* Carousel, as the museum's "On view" row: the next card peeks in from the right */
+  .car-view { overflow: hidden; }
+  .car-track { position: relative; display: flex; gap: clamp(1rem, 2vw, 1.75rem); transition: transform .55s cubic-bezier(.2, .7, .2, 1); }
+  .car-card { flex: 0 0 min(64%, 54rem); min-width: 0; }
+  .car-card img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; background: var(--stage); }
+  .car-card h3 { margin-top: 1rem; font-size: clamp(1.375rem, 2vw, 1.75rem); }
+  .car-card .meta { margin-top: .3rem; font-weight: 560; font-size: .9375rem; }
+  .car-card p { margin-top: .5rem; color: var(--ink-soft); max-width: 40rem; }
+  @media (max-width: 760px) { .car-card { flex-basis: 86%; } }
+  .car-ctrl {
+    display: flex; justify-content: flex-end; align-items: center; gap: .35rem;
+    margin-top: 1.25rem; font-weight: 640; font-variant-numeric: tabular-nums;
+  }
+  .arrow {
+    appearance: none; border: 0; background: none; cursor: pointer;
+    font-size: 1.35rem; line-height: 1; padding: .35rem .5rem; color: var(--ink);
+  }
+  .arrow:disabled { opacity: .28; cursor: default; }
+
+  /* Cards in a row, as the museum's events */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: clamp(1.5rem, 2.5vw, 2.25rem); }
+  .card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--stage); }
+  .card .label { margin-top: 1rem; display: block; color: var(--ink-soft); }
+  .card h3 { margin-top: .35rem; }
+  .card .when { margin-top: .3rem; font-size: .9375rem; }
+  .card p { margin-top: .6rem; font-size: .9375rem; color: var(--ink-soft); }
+
+  /* Feature rows: picture beside text, and a pair */
+  .feature { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(1.5rem, 4vw, 4rem); align-items: start; }
+  .feature > img { width: 100%; aspect-ratio: 16 / 11; object-fit: cover; }
+  .feature .txt { display: grid; gap: 1rem; max-width: 34rem; align-content: start; }
+  .feature .txt p { font-size: 1.125rem; }
+  .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(1.5rem, 4vw, 4rem); }
+  .pair > div { display: grid; gap: 1rem; align-content: start; }
+  .pair img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+  @media (max-width: 760px) { .feature, .pair { grid-template-columns: 1fr; } }
+
+  /* ---------- Footer ---------- */
+  .foot { background: var(--night); color: var(--night-ink); }
+  .foot-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 1rem; padding-block: 2.5rem 2rem; border-bottom: 1px solid var(--night-rule); }
+  .foot-top .wordmark { font-size: 1.125rem; }
+  .foot-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 2rem; padding-block: 2.25rem; border-bottom: 1px solid var(--night-rule); }
+  .foot h4 { font-size: .9375rem; font-weight: 660; margin: 0 0 .6rem; }
+  .foot p { font-size: .9375rem; color: var(--night-soft); }
+  .foot .more { display: inline-block; margin-top: .6rem; color: var(--night-ink); }
+  .foot form { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .8rem; }
+  .foot input {
+    flex: 1 1 10rem; min-width: 0; font: inherit; font-size: .9375rem; padding: .65rem .75rem;
+    background: transparent; color: var(--night-ink); border: 1px solid var(--night-soft); border-radius: 0;
+  }
+  .foot input::placeholder { color: var(--night-soft); }
+  .btn-ghost {
+    background: transparent; color: var(--night-ink); border: 1px solid var(--night-ink);
+    padding: .65rem 1.1rem; font-weight: 640; font-size: .9375rem; cursor: pointer;
+  }
+  .btn-ghost:hover { background: var(--night-ink); color: var(--night); }
+  .foot .done { margin-top: .6rem; color: var(--night-ink); }
+  .foot-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1.5rem; padding-block: 1.5rem calc(env(safe-area-inset-bottom, 0px) + 1.5rem); font-size: .8125rem; color: var(--night-soft); }
+  .foot-bottom nav { display: flex; gap: 1.5rem; }
+  .foot-bottom a { text-decoration: none; }
+
+  /* ---------- Page heads ---------- */
+  .page-head { padding-block: clamp(2rem, 5vw, 3.5rem) clamp(1.25rem, 3vw, 2rem); border-bottom: 1px solid var(--rule); }
+  .page-head .wrap { display: grid; gap: .8rem; }
+  .page-head .lead { font-size: 1.1875rem; color: var(--ink-soft); max-width: 40rem; }
+  .tabs { display: flex; gap: 1.75rem; margin-top: .6rem; }
+  .tabs a { text-decoration: none; padding-bottom: .3rem; border-bottom: 2px solid transparent; }
+  .tabs a[aria-current="page"] { border-bottom-color: var(--ink); }
+
+  /* ---------- Work: series rows ---------- */
+  .series-row {
+    display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(1.5rem, 4vw, 4rem); padding-block: clamp(2rem, 4vw, 3.5rem); border-bottom: 1px solid var(--rule);
+  }
+  .series-row .cover img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; background: var(--stage); }
+  .series-row .txt { display: grid; gap: 1rem; align-content: start; }
+  .series-row .meta { font-weight: 560; font-size: .9375rem; }
+  .series-row .txt > p { font-size: 1.125rem; color: var(--ink-soft); max-width: 34rem; }
+  .minis { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .minis img { height: 58px; width: auto; }
+  @media (max-width: 760px) { .series-row { grid-template-columns: 1fr; } }
+
+  /* ---------- Index: every photograph ---------- */
+  .chips { display: flex; flex-wrap: wrap; gap: .5rem; padding-block: 1.5rem 1rem; }
+  .chip {
+    font-size: .875rem; border: 1px solid var(--ink); background: transparent;
+    padding: .35rem .85rem; cursor: pointer;
+  }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+  .masonry { columns: 4 14rem; column-gap: 1.25rem; padding-block: .5rem 3.5rem; }
+  .masonry figure { break-inside: avoid; margin: 0 0 1.75rem; }
+  .masonry a { display: block; text-decoration: none; }
+  .masonry img { width: 100%; height: auto; background: var(--stage); transition: opacity .2s; }
+  .masonry a:hover img { opacity: .85; }
+  .masonry figcaption { font-size: .8125rem; margin-top: .5rem; color: var(--ink-soft); }
+  .masonry figcaption b { color: var(--ink); font-weight: 620; }
+
+  /* ---------- Series viewer: matted print, caption, filmstrip ---------- */
+  .viewer { display: grid; grid-template-columns: 17.5rem minmax(0, 1fr); border-bottom: 1px solid var(--ink); }
+  .v-side { padding-block: 2rem 2.5rem; padding-right: 2rem; border-right: 1px solid var(--rule); display: grid; gap: 1.25rem; align-content: start; }
+  .v-side h1 { font-size: 2rem; }
+  .v-side .back { font-size: .9375rem; text-decoration: none; }
+  .v-side .back:hover { text-decoration: underline; }
+  .v-side .essay { display: grid; gap: .8rem; font-size: 1rem; }
+  .v-side hr { border: 0; border-top: 1px solid var(--rule); margin: .25rem 0; width: 100%; }
+  .specs { display: grid; gap: .85rem; margin: 0; }
+  .specs div { display: grid; gap: .05rem; }
+  .specs dt { font-size: .75rem; font-weight: 560; font-stretch: 112%; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-soft); }
+  .specs dd { margin: 0; font-size: .9375rem; font-variant-numeric: tabular-nums; }
+  .v-main { min-width: 0; }
+  .stage { position: relative; background: var(--stage); display: grid; place-items: center; padding: clamp(1rem, 2.5vw, 2.25rem) clamp(2.75rem, 6vw, 5rem); min-height: 26rem; }
+  .stage .mat img { max-height: min(56vh, 660px); width: auto; }
+  .stage-nav {
+    position: absolute; top: 0; bottom: 0; width: clamp(2.75rem, 6vw, 5rem); border: 0;
+    background: transparent; cursor: pointer; font-size: 1.6rem; color: var(--ink);
+  }
+  .stage-nav:hover { background: rgba(0, 0, 0, .04); }
+  .stage-nav.prev { left: 0; }
+  .stage-nav.next { right: 0; }
+  .caption {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .6rem 1.5rem;
+    padding: 1rem 0 1rem clamp(1rem, 3vw, 2rem); font-size: .9375rem; font-variant-numeric: tabular-nums;
+  }
+  .caption .what { min-width: 0; flex: 1 1 24rem; }
+  .caption .what b { font-weight: 660; text-transform: uppercase; letter-spacing: .02em; }
+  .caption .acts { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; align-items: baseline; }
+  .linkbtn { background: none; border: 0; padding: 0; cursor: pointer; font-size: .9375rem; font-weight: 640; }
+  .linkbtn:hover { text-decoration: underline; text-underline-offset: .22em; }
+  .strip { position: relative; background: var(--night); padding: 14px; overflow-x: auto; display: flex; gap: 10px; scrollbar-width: thin; }
+  .strip button { flex: 0 0 auto; padding: 0; border: 2px solid transparent; background: none; cursor: pointer; opacity: .55; transition: opacity .2s; }
+  .strip button:hover { opacity: .85; }
+  .strip button[aria-current="true"] { border-color: var(--night-ink); opacity: 1; }
+  .strip img { height: 76px; width: auto; }
+  @media (max-width: 900px) {
+    .viewer { grid-template-columns: 1fr; }
+    .v-main { order: -1; margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); }
+    .v-side { border-right: 0; padding-right: 0; }
+    .stage { min-height: 0; padding-inline: 2.75rem; }
+    .stage .mat img { max-height: 62vh; }
+    .caption { padding-inline: max(16px, env(safe-area-inset-left, 0px)); }
+  }
+
+  /* Full screen view */
+  .lightbox {
+    position: fixed; inset: 0; z-index: 50; background: var(--night); color: var(--night-ink);
+    display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  }
+  .lb-top { display: flex; justify-content: space-between; align-items: center; padding: .9rem 1.25rem; font-size: .875rem; color: var(--night-soft); font-variant-numeric: tabular-nums; }
+  .lb-top button { background: none; border: 1px solid var(--night-rule); color: var(--night-ink); padding: .35rem .8rem; cursor: pointer; font-size: .875rem; }
+  .lb-img { position: relative; display: grid; place-items: center; min-height: 0; padding: 0 3.5rem; }
+  .lb-img img { max-height: calc(100vh - 9rem); max-width: 100%; width: auto; height: auto; object-fit: contain; }
+  .lb-img .arrow { position: absolute; top: 50%; transform: translateY(-50%); color: var(--night-ink); font-size: 1.8rem; }
+  .lb-img .arrow.prev { left: .5rem; }
+  .lb-img .arrow.next { right: .5rem; }
+  .lb-cap { padding: .9rem 1.25rem 1.1rem; text-align: center; font-size: .875rem; color: var(--night-soft); }
+  .lb-cap b { color: var(--night-ink); font-weight: 620; }
+
+  /* ---------- Exhibitions ---------- */
+  .ex-feature {
+    display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(1.5rem, 4vw, 4rem);
+    padding-block: clamp(2rem, 4vw, 3rem); border-bottom: 1px solid var(--rule); align-items: start;
+  }
+  .ex-feature img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; background: var(--stage); }
+  .ex-feature .txt { display: grid; gap: 1.1rem; align-content: start; max-width: 38rem; }
+  .ex-feature .txt > p { font-size: 1.125rem; }
+  .ex-feature .specs { grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 1rem 1.5rem; padding-top: 1rem; border-top: 1px solid var(--rule); }
+  .ex-upcoming { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(1.5rem, 4vw, 4rem); align-items: center; }
+  .ex-upcoming img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; }
+  .ex-upcoming .txt { display: grid; gap: .6rem; }
+  @media (max-width: 760px) { .ex-feature, .ex-upcoming { grid-template-columns: 1fr; } }
+  .ex-list { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--ink); }
+  .ex-list li {
+    display: grid; grid-template-columns: 4.5rem minmax(0, 2.2fr) minmax(0, 1.6fr) minmax(0, 1fr) 6.5rem;
+    gap: .25rem 1.25rem; padding-block: 1rem; border-bottom: 1px solid var(--rule); align-items: baseline;
+    font-variant-numeric: tabular-nums;
+  }
+  .ex-list li.head { padding-block: .6rem; }
+  .ex-list li.head span { font-size: .75rem; font-weight: 560; font-stretch: 112%; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-soft); }
+  .ex-list .t { font-weight: 640; }
+  @media (max-width: 760px) {
+    .ex-list li { grid-template-columns: 3.5rem minmax(0, 1fr); }
+    .ex-list li > :nth-child(n + 3) { grid-column: 2; color: var(--ink-soft); font-size: .9375rem; }
+    .ex-list li.head { display: none; }
+  }
+
+  /* ---------- About & contact ---------- */
+  .about { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(1.5rem, 4vw, 4rem); padding-block: clamp(2rem, 4vw, 3rem) 4rem; }
+  .about .portrait { position: sticky; top: 9rem; align-self: start; }
+  .about .portrait img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; }
+  .prose { display: grid; gap: 1rem; max-width: 38rem; align-content: start; }
+  .prose h2 { margin-top: 1.75rem; }
+  .prose .big { font-size: clamp(1.25rem, 1.8vw, 1.5rem); line-height: 1.42; font-weight: 420; }
+  .prose ul { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--rule); }
+  .prose li { padding-block: .6rem; border-bottom: 1px solid var(--rule); font-variant-numeric: tabular-nums; }
+  .prose li span { color: var(--ink-soft); }
+  @media (max-width: 760px) { .about { grid-template-columns: 1fr; } .about .portrait { position: static; } }
+  #contact { scroll-margin-top: 8rem; }
+  .contact-lines { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: .35rem 1.25rem; margin: 0; }
+  .contact-lines dt { font-weight: 600; }
+  .contact-lines dd { margin: 0; }
+  .form { display: grid; gap: 1rem; margin-top: .5rem; }
+  .field { display: grid; gap: .35rem; }
+  .field label { font-size: .875rem; font-weight: 600; }
+  .field input, .field select, .field textarea {
+    font: inherit; font-size: 1rem; padding: .7rem .8rem; border: 1px solid var(--ink);
+    background: var(--paper); color: var(--ink); border-radius: 0; width: 100%;
+  }
+  .field textarea { min-height: 8rem; resize: vertical; }
+  .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  @media (max-width: 560px) { .two { grid-template-columns: 1fr; } }
+  .btn { font-weight: 640; background: var(--ink); color: var(--paper); border: 1px solid var(--ink); padding: .8rem 1.4rem; cursor: pointer; justify-self: start; }
+  .btn:hover { background: var(--paper); color: var(--ink); }
+  .note { background: var(--stage); padding: .9rem 1rem; font-size: .9375rem; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="mockbar">
+  <div class="wrap">
+    <p><b>Ontwerp, klikbaar.</b> Er wordt niets opgeslagen of verstuurd. De grijze betonbeelden zijn invullers tot Kristoffers eigen foto's erin staan. Alle titels, teksten en tentoonstellingen zijn verzonnen voorbeelden, geen echte gegevens.</p>
+    <div class="views" role="group" aria-label="Schermen">
+      <button type="button" data-go="home">Home</button>
+      <button type="button" data-go="werk">Werk</button>
+      <button type="button" data-go="index">Index</button>
+      <button type="button" data-go="s-sanctuary">Serie</button>
+      <button type="button" data-go="tentoonstellingen">Tentoonstellingen</button>
+      <button type="button" data-go="over">Over &amp; contact</button>
+    </div>
+  </div>
+</div>
+
+<header class="site" id="site">
+  <div class="bar wrap">
+    <a class="wordmark" href="#home" data-go="home" aria-label="Kristoffer Zegers Fotografie, home">
+      <span class="wm-name">KRISTOFFER ZEGERS</span>
+      <span class="wm-sub">FOTOGRAFIE</span>
+    </a>
+    <nav class="util" aria-label="Snelkoppelingen">
+      <a href="#contact" data-go="contact" data-ask="">Prints</a>
+      <a href="#nieuwsbrief" data-jump="nieuwsbrief">Nieuwsbrief</a>
+      <span class="lang"><b>NL</b> / EN</span>
+    </nav>
+    <button class="menu-btn" type="button" id="menu-open" aria-expanded="false" aria-controls="menu"><i></i>Menu</button>
+  </div>
+  <nav class="primary wrap" aria-label="Hoofdmenu">
+    <a href="#werk" data-go="werk">Werk</a>
+    <a href="#index" data-go="index">Index</a>
+    <a href="#tentoonstellingen" data-go="tentoonstellingen">Tentoonstellingen</a>
+    <a href="#over" data-go="over">Over</a>
+    <a href="#contact" data-go="contact">Contact</a>
+  </nav>
+</header>
+
+<div class="menu" id="menu" hidden>
+  <div class="menu-head">
+    <span class="wordmark"><span class="wm-name">KRISTOFFER ZEGERS</span></span>
+    <button class="menu-btn" type="button" id="menu-close" style="display:inline-flex">Sluiten</button>
+  </div>
+  <a class="big" href="#home" data-go="home">Home</a>
+  <a class="big" href="#werk" data-go="werk">Werk</a>
+  <a class="big" href="#index" data-go="index">Index</a>
+  <a class="big" href="#tentoonstellingen" data-go="tentoonstellingen">Tentoonstellingen</a>
+  <a class="big" href="#over" data-go="over">Over</a>
+  <a class="big" href="#contact" data-go="contact">Contact</a>
+  <div class="small"><a href="#nieuwsbrief" data-jump="nieuwsbrief">Nieuwsbrief</a><span class="lang"><b>NL</b> / EN</span></div>
+</div>
+
+<main>
+
+  <!-- ================= Home ================= -->
+  <section data-screen="home">
+    <div class="hero">
+      <div class="wrap hero-grid">
+        <div class="hero-text">
+          <span class="label">Nieuwe serie</span>
+          <h1 class="display">Sanctuary of Absurdity</h1>
+          <p>Betonnen hallen die heilig willen voelen, en dat ene ding dat de sfeer bederft. Zes foto's, 2026.</p>
+          <div class="links">
+            <a class="more" href="#s-sanctuary" data-go="s-sanctuary">Bekijk de serie →</a>
+            <a class="more" href="#tentoonstellingen" data-go="tentoonstellingen">Te zien in Rotterdam →</a>
+          </div>
+        </div>
+        <figure class="print">
+          <a class="mat" href="#s-sanctuary" data-go="s-sanctuary">
+            <img src="img/stand-in-01.jpg" width="900" height="1200" alt="Dwarsbalk, 2026 (invulbeeld): een hoge betonnen ruimte met lichtschachten en een donkere balk">
+          </a>
+        </figure>
+        <div class="wall-label">
+          <b>Kristoffer Zegers</b>
+          <i>Dwarsbalk</i>, 2026<br>
+          Pigmentprint op archiefpapier<br>
+          150 × 120 cm<br>
+          Oplage 5 + 2 AP
+        </div>
+      </div>
+    </div>
+
+    <section class="band" aria-labelledby="h-series">
+      <div class="wrap">
+        <div class="band-head">
+          <h2 id="h-series">Series</h2>
+          <a class="more" href="#werk" data-go="werk">Al het werk →</a>
+        </div>
+        <div class="carousel" id="car-series">
+          <div class="car-view"><div class="car-track"></div></div>
+          <div class="car-ctrl">
+            <button class="arrow" type="button" data-prev aria-label="Vorige serie">←</button>
+            <span data-count>1 / 3</span>
+            <button class="arrow" type="button" data-next aria-label="Volgende serie">→</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" aria-labelledby="h-ex">
+      <div class="wrap">
+        <div class="band-head">
+          <h2 id="h-ex">Tentoonstellingen</h2>
+          <a class="more" href="#tentoonstellingen" data-go="tentoonstellingen">Alle tentoonstellingen →</a>
+        </div>
+        <div class="cards">
+          <a class="card linkcard" href="#tentoonstellingen" data-go="tentoonstellingen">
+            <img src="img/stand-in-14.jpg" alt="">
+            <span class="label">Nu te zien</span>
+            <h3>Sanctuary of Absurdity</h3>
+            <p class="when">Galerie Betonwerk, Rotterdam · 14 november 2026 – 31 januari 2027</p>
+            <p>De nieuwe serie compleet, met de grote prints voor het eerst aan de muur.</p>
+          </a>
+          <a class="card linkcard" href="#tentoonstellingen" data-go="tentoonstellingen">
+            <img src="img/stand-in-05.jpg" alt="">
+            <span class="label">Binnenkort</span>
+            <h3>Ruw materiaal</h3>
+            <p class="when">Fotohuis Delta, Middelburg · 6 maart – 30 mei 2027</p>
+            <p>Groepstentoonstelling over beton in de Nederlandse fotografie.</p>
+          </a>
+          <a class="card linkcard" href="#tentoonstellingen" data-go="tentoonstellingen">
+            <img src="img/stand-in-07.jpg" alt="">
+            <span class="label">Eerder</span>
+            <h3>In het werk gestort</h3>
+            <p class="when">Stadsgalerie, Utrecht · 2025</p>
+            <p>Solotentoonstelling van de hele serie.</p>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="wrap feature">
+        <img src="img/stand-in-10.jpg" alt="">
+        <div class="txt">
+          <h2>Over het werk</h2>
+          <p>Betonnen gebouwen, gefotografeerd op het moment dat het licht het werk doet: ruwe muren, diepe lichtschachten, één opening aan het eind. En dan wachten op iets dat er niet hoort.</p>
+          <a class="more" href="#over" data-go="over">Lees het statement →</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="wrap pair">
+        <div>
+          <h2>Prints</h2>
+          <img src="img/stand-in-12.jpg" alt="">
+          <p>Elke foto verschijnt in een oplage van vijf, plus twee artist's proofs, gesigneerd en genummerd. Vraag welke formaten er nog zijn.</p>
+          <a class="more" href="#contact" data-go="contact">Vraag naar een print →</a>
+        </div>
+        <div>
+          <h2>Nieuwsbrief</h2>
+          <img src="img/stand-in-15.jpg" alt="">
+          <p>Eén korte mail als er een nieuwe serie of tentoonstelling is. Hooguit een paar keer per jaar.</p>
+          <a class="more" href="#nieuwsbrief" data-jump="nieuwsbrief">Aanmelden →</a>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <!-- ================= Werk ================= -->
+  <section data-screen="werk" hidden>
+    <div class="page-head">
+      <div class="wrap">
+        <h1>Werk</h1>
+        <p class="lead">Drie series, de nieuwste eerst. Van elke foto is een print te koop.</p>
+        <nav class="tabs label" aria-label="Weergave">
+          <a href="#werk" data-go="werk" aria-current="page">Series</a>
+          <a href="#index" data-go="index">Index</a>
+        </nav>
+      </div>
+    </div>
+    <div class="wrap" id="work-list"></div>
+  </section>
+
+  <!-- ================= Index ================= -->
+  <section data-screen="index" hidden>
+    <div class="page-head">
+      <div class="wrap">
+        <h1>Index</h1>
+        <p class="lead">Alle foto's, de nieuwste eerst.</p>
+        <nav class="tabs label" aria-label="Weergave">
+          <a href="#werk" data-go="werk">Series</a>
+          <a href="#index" data-go="index" aria-current="page">Index</a>
+        </nav>
+      </div>
+    </div>
+    <div class="wrap">
+      <div class="chips" id="chips" role="group" aria-label="Toon serie"></div>
+      <div class="masonry" id="masonry"></div>
+    </div>
+  </section>
+
+  <!-- ================= Serie ================= -->
+  <section data-screen="series" hidden>
+    <div class="wrap viewer">
+      <aside class="v-side">
+        <a class="back" href="#werk" data-go="werk">← Alle series</a>
+        <div>
+          <span class="label muted">Serie</span>
+          <h1 id="v-title"></h1>
+        </div>
+        <div class="essay" id="v-essay"></div>
+        <hr>
+        <dl class="specs" id="v-specs"></dl>
+        <a class="more" href="#contact" data-go="contact" id="v-ask-side">Vraag naar een print →</a>
+      </aside>
+      <div class="v-main">
+        <div class="stage">
+          <button class="stage-nav prev" type="button" id="v-prev" aria-label="Vorige foto">←</button>
+          <button class="mat" type="button" id="v-open" aria-label="Bekijk op volledig scherm" style="border:0;cursor:zoom-in">
+            <img id="v-img" src="img/stand-in-01.jpg" alt="">
+          </button>
+          <button class="stage-nav next" type="button" id="v-next" aria-label="Volgende foto">→</button>
+        </div>
+        <div class="caption">
+          <p class="what" id="v-cap"></p>
+          <div class="acts">
+            <span id="v-count"></span>
+            <button class="linkbtn" type="button" id="v-full">Volledig scherm</button>
+            <a class="more" href="#contact" data-go="contact" id="v-ask">Vraag naar deze print →</a>
+          </div>
+        </div>
+        <div class="strip" id="v-strip" aria-label="Foto's in deze serie"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Tentoonstellingen ================= -->
+  <section data-screen="tentoonstellingen" hidden>
+    <div class="page-head">
+      <div class="wrap">
+        <h1>Tentoonstellingen</h1>
+        <p class="lead">Waar de prints aan de muur hangen.</p>
+      </div>
+    </div>
+    <div class="wrap">
+      <article class="ex-feature">
+        <img src="img/stand-in-11.jpg" alt="">
+        <div class="txt">
+          <span class="label muted">Nu te zien</span>
+          <h2>Sanctuary of Absurdity</h2>
+          <p>De nieuwe serie compleet. De grote prints, 150 × 120 cm, hangen er voor het eerst, naast een wand met kleinere werkprints uit dezelfde winter.</p>
+          <dl class="specs">
+            <div><dt>Locatie</dt><dd>Galerie Betonwerk</dd></div>
+            <div><dt>Stad</dt><dd>Rotterdam</dd></div>
+            <div><dt>Data</dt><dd>14 nov 2026 – 31 jan 2027</dd></div>
+            <div><dt>Soort</dt><dd>Solotentoonstelling</dd></div>
+            <div><dt>Status</dt><dd>Nu te zien</dd></div>
+          </dl>
+          <a class="more" href="#s-sanctuary" data-go="s-sanctuary">Bekijk de serie →</a>
+        </div>
+      </article>
+
+      <section class="band" aria-labelledby="h-up">
+        <div class="band-head"><h2 id="h-up">Binnenkort</h2></div>
+        <div class="ex-upcoming">
+          <img src="img/stand-in-05.jpg" alt="">
+          <div class="txt">
+            <span class="label muted">Groepstentoonstelling</span>
+            <h3>Ruw materiaal</h3>
+            <p>Fotohuis Delta, Middelburg · 6 maart – 30 mei 2027</p>
+            <p class="muted">Vijf fotografen over beton in de Nederlandse bouw, van de wederopbouw tot nu. Met drie prints uit <i>In het werk gestort</i>.</p>
+          </div>
+        </div>
+      </section>
+
+      <section style="padding-block: clamp(2.5rem, 5vw, 4rem)" aria-labelledby="h-past">
+        <div class="band-head"><h2 id="h-past">Eerder</h2></div>
+        <ul class="ex-list">
+          <li class="head"><span>Jaar</span><span>Tentoonstelling</span><span>Locatie</span><span>Stad</span><span>Soort</span></li>
+          <li><span>2025</span><span class="t">In het werk gestort</span><span>Stadsgalerie</span><span>Utrecht</span><span>Solo</span></li>
+          <li><span>2024</span><span class="t">Betonlicht</span><span>Kunstruimte Oost</span><span>Amsterdam</span><span>Groep</span></li>
+          <li><span>2024</span><span class="t">Fotofestival Noord</span><span>Pakhuis Noord</span><span>Groningen</span><span>Festival</span></li>
+          <li><span>2023</span><span class="t">Trappenhuizen</span><span>Galerie Trap</span><span>Den Haag</span><span>Solo</span></li>
+          <li><span>2022</span><span class="t">Nieuwe Nederlandse fotografie</span><span>Fotohuis Delta</span><span>Middelburg</span><span>Groep</span></li>
+        </ul>
+      </section>
+    </div>
+  </section>
+
+  <!-- ================= Over & contact ================= -->
+  <section data-screen="over" hidden>
+    <div class="page-head">
+      <div class="wrap">
+        <h1>Over</h1>
+      </div>
+    </div>
+    <div class="wrap about">
+      <div class="portrait"><img src="img/stand-in-06.jpg" alt=""></div>
+      <div class="prose">
+        <h2 style="margin-top:0">Statement</h2>
+        <p class="big">Ik fotografeer betonnen gebouwen op het moment dat het licht het werk doet: ruwe muren, diepe lichtschachten, één opening aan het eind. Dan wacht ik op iets dat er niet hoort.</p>
+        <p>Een schoonmaker op een ladder. Een opblaasflamingo. Een plastic stoel in een hal die om stilte vraagt. De architectuur wil serieus zijn, en de foto ontstaat op het moment dat dat even niet lukt.</p>
+
+        <h2>Biografie</h2>
+        <p>Kristoffer Zegers fotografeert in series, meestal in zwart-wit, in brutalistische gebouwen en wederopbouwarchitectuur. Zijn prints verschijnen in oplages van vijf, plus twee artist's proofs.</p>
+
+        <h2>Tentoonstellingen (selectie)</h2>
+        <ul>
+          <li>2026 · <b>Sanctuary of Absurdity</b> <span>Galerie Betonwerk, Rotterdam (solo)</span></li>
+          <li>2025 · <b>In het werk gestort</b> <span>Stadsgalerie, Utrecht (solo)</span></li>
+          <li>2024 · <b>Betonlicht</b> <span>Kunstruimte Oost, Amsterdam (groep)</span></li>
+        </ul>
+        <a class="more" href="#tentoonstellingen" data-go="tentoonstellingen">Alle tentoonstellingen →</a>
+
+        <section id="contact" aria-labelledby="h-contact" style="display:grid;gap:1rem">
+          <h2 id="h-contact">Contact</h2>
+          <p>Voor prints, tentoonstellingen en al het andere. Atelierbezoek op afspraak.</p>
+          <dl class="contact-lines">
+            <dt>E-mail</dt><dd><span class="ph">e-mailadres volgt</span></dd>
+            <dt>Instagram</dt><dd><span class="ph">@naam volgt</span></dd>
+          </dl>
+          <form class="form" id="contact-form" novalidate>
+            <div class="two">
+              <div class="field"><label for="f-name">Naam</label><input id="f-name" name="name" autocomplete="name"></div>
+              <div class="field"><label for="f-email">E-mail</label><input id="f-email" name="email" type="email" autocomplete="email"></div>
+            </div>
+            <div class="two">
+              <div class="field">
+                <label for="f-topic">Onderwerp</label>
+                <select id="f-topic" name="topic">
+                  <option value="print">Een print</option>
+                  <option value="exhibition">Een tentoonstelling</option>
+                  <option value="other">Iets anders</option>
+                </select>
+              </div>
+              <div class="field"><label for="f-work">Foto (niet verplicht)</label><input id="f-work" name="work"></div>
+            </div>
+            <div class="field"><label for="f-msg">Bericht</label><textarea id="f-msg" name="message"></textarea></div>
+            <button class="btn" type="submit">Verstuur bericht</button>
+            <p class="note" id="contact-done" hidden>Dit is een ontwerp, dus er is niets verstuurd. Op de echte site komt dit bericht direct bij Kristoffer binnen.</p>
+          </form>
+        </section>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-top">
+    <a class="wordmark" href="#home" data-go="home"><span class="wm-name">KRISTOFFER ZEGERS</span><span class="wm-sub">FOTOGRAFIE</span></a>
+  </div>
+  <div class="wrap foot-cols">
+    <div>
+      <h4>Atelier</h4>
+      <p>Bezoek op afspraak.</p>
+      <a class="more" href="#contact" data-go="contact">Schrijf het atelier →</a>
+    </div>
+    <div>
+      <h4>Prints</h4>
+      <p>Pigmentprints op archiefpapier, oplage 5 + 2 AP, gesigneerd en genummerd.</p>
+      <a class="more" href="#contact" data-go="contact">Vraag naar een print →</a>
+    </div>
+    <div id="nieuwsbrief">
+      <h4>Nieuwsbrief</h4>
+      <p>Eén mail als er een nieuwe serie of tentoonstelling is.</p>
+      <form id="news-form" novalidate>
+        <label for="f-news" class="label" style="position:absolute;left:-9999px">E-mailadres</label>
+        <input id="f-news" type="email" placeholder="E-mailadres" autocomplete="email">
+        <button class="btn-ghost" type="submit">Aanmelden</button>
+      </form>
+      <p class="done" id="news-done" hidden>Ontwerp: er is geen adres opgeslagen.</p>
+    </div>
+    <div>
+      <h4>Volgen</h4>
+      <p>Nieuw werk staat eerst op Instagram.</p>
+      <a class="more" href="#home" data-go="home">Instagram →</a>
+    </div>
+  </div>
+  <div class="wrap foot-bottom">
+    <span>© 2026 Kristoffer Zegers. Alle foto's © de fotograaf.</span>
+    <nav aria-label="Juridisch"><a href="#home" data-go="home">Privacy</a><a href="#home" data-go="home">Colofon</a></nav>
+  </div>
+</footer>
+
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Foto op volledig scherm">
+  <div class="lb-top"><span id="lb-count"></span><button type="button" id="lb-close">Sluiten</button></div>
+  <div class="lb-img">
+    <button class="arrow prev" type="button" id="lb-prev" aria-label="Vorige foto">←</button>
+    <img id="lb-img" src="img/stand-in-01.jpg" alt="">
+    <button class="arrow next" type="button" id="lb-next" aria-label="Volgende foto">→</button>
+  </div>
+  <p class="lb-cap" id="lb-cap"></p>
+</div>
+
+<script>
+(() => {
+  const SIZE = { p: '150 × 120 cm', l: '100 × 150 cm', s: '110 × 110 cm' };
+  const MEDIUM = 'Pigmentprint op archiefpapier';
+  const EDITION = 'Oplage 5 + 2 AP';
+  const ph = (file, title, year, fmt) => ({ src: 'img/' + file, title, year, fmt });
+
+  // Every picture is a stand-in; titles, years and texts are examples.
+  const SERIES = [
+    {
+      id: 'sanctuary', title: 'Sanctuary of Absurdity', years: '2026',
+      short: 'Betonnen hallen die heilig willen voelen, en dat ene ding dat de sfeer bederft.',
+      essay: [
+        'Zes foto’s, gemaakt in één betonnen gebouw, in één winter.',
+        'De architectuur vraagt om stilte. Elke foto wacht op het moment dat iets die stilte breekt: een schoonmaker op een ladder, een opblaasflamingo, een deur die openstaat.'
+      ],
+      photos: [
+        ph('stand-in-01.jpg', 'Dwarsbalk', '2026', 'p'),
+        ph('stand-in-06.jpg', 'De conciërge vertrekt', '2026', 'p'),
+        ph('stand-in-03.jpg', 'Eén licht', '2026', 'p'),
+        ph('stand-in-08.jpg', 'Wachtkamer', '2026', 's'),
+        ph('stand-in-11.jpg', 'Noorddeur', '2026', 'p'),
+        ph('stand-in-14.jpg', 'Middag, niveau −2', '2026', 'p')
+      ]
+    },
+    {
+      id: 'gestort', title: 'In het werk gestort', years: '2024–2025',
+      short: 'Gangen en dienstruimtes in naoorlogs beton, op het uur dat het daglicht het verst naar binnen valt.',
+      essay: [
+        'Zes foto’s van de delen van openbare gebouwen waar niemand hoort te kijken: dienstgangen, achtertrappen, de ruimte achter een toneel.',
+        'Allemaal gemaakt tussen twee en vier uur ’s middags, als de zon laag genoeg staat om de achterwand te raken.'
+      ],
+      photos: [
+        ph('stand-in-02.jpg', 'Gang B', '2025', 'l'),
+        ph('stand-in-05.jpg', 'Bekisting', '2025', 'l'),
+        ph('stand-in-07.jpg', 'Middaglicht', '2025', 'l'),
+        ph('stand-in-10.jpg', 'Bezoeker', '2024', 'l'),
+        ph('stand-in-13.jpg', 'Diensttrap', '2024', 'l'),
+        ph('stand-in-15.jpg', 'Uitgang naar daglicht', '2024', 'l')
+      ]
+    },
+    {
+      id: 'trappenhuizen', title: 'Trappenhuizen', years: '2023',
+      short: 'Vier trappenhuizen, elk gefotografeerd vanaf het laagste bordes.',
+      essay: [
+        'Vier trappenhuizen in vier steden, elk vanaf het laagste bordes gefotografeerd, met dezelfde lens en op dezelfde hoogte.',
+        'Vierkant afgedrukt, zodat de gebouwen naast elkaar te vergelijken zijn.'
+      ],
+      photos: [
+        ph('stand-in-04.jpg', 'Trappenhuis I', '2023', 's'),
+        ph('stand-in-09.jpg', 'Trappenhuis II', '2023', 'p'),
+        ph('stand-in-12.jpg', 'Bordes', '2023', 's'),
+        ph('stand-in-16.jpg', 'Trappenhuis III', '2023', 's')
+      ]
+    }
+  ];
+
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const pad = n => String(n).padStart(2, '0');
+  const count = s => `${s.photos.length} foto’s`;
+
+  /* ---------- Home: series carousel ---------- */
+  $('#car-series .car-track').innerHTML = SERIES.map(s => {
+    const c = s.photos[0];
+    return `<a class="car-card linkcard" href="#s-${s.id}" data-go="s-${s.id}">
+      <img src="${c.src}" alt="" loading="lazy">
+      <h3>${esc(s.title)}</h3>
+      <p class="meta">${esc(s.years)} · ${count(s)}</p>
+      <p>${esc(s.short)}</p>
+    </a>`;
+  }).join('');
+
+  function carousel(root) {
+    const track = $('.car-track', root);
+    const cards = [...track.children];
+    const prev = $('[data-prev]', root), next = $('[data-next]', root), out = $('[data-count]', root);
+    let i = 0;
+    const set = n => {
+      i = Math.max(0, Math.min(cards.length - 1, n));
+      track.style.transform = `translateX(${-cards[i].offsetLeft}px)`;
+      out.textContent = `${i + 1} / ${cards.length}`;
+      prev.disabled = i === 0;
+      next.disabled = i === cards.length - 1;
+    };
+    prev.addEventListener('click', () => set(i - 1));
+    next.addEventListener('click', () => set(i + 1));
+    let x0 = null;
+    track.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+    track.addEventListener('touchend', e => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 40) set(i + (dx < 0 ? 1 : -1));
+      x0 = null;
+    });
+    addEventListener('resize', () => set(i));
+    set(0);
+    return { refresh: () => set(i) };
+  }
+  const seriesCarousel = carousel($('#car-series'));
+
+  /* ---------- Werk: series rows ---------- */
+  $('#work-list').innerHTML = SERIES.map(s => {
+    const c = s.photos[0];
+    const minis = s.photos.slice(0, 6).map((p, i) =>
+      `<a href="#s-${s.id}" data-go="s-${s.id}" data-photo="${i}" aria-label="${esc(p.title)}"><img src="${p.src}" alt="" loading="lazy"></a>`).join('');
+    return `<article class="series-row">
+      <a class="cover" href="#s-${s.id}" data-go="s-${s.id}"><img src="${c.src}" alt="" loading="lazy"></a>
+      <div class="txt">
+        <h2>${esc(s.title)}</h2>
+        <p class="meta">${esc(s.years)} · ${count(s)} · pigmentprints</p>
+        <p>${esc(s.short)}</p>
+        <div class="minis">${minis}</div>
+        <a class="more" href="#s-${s.id}" data-go="s-${s.id}">Bekijk de serie →</a>
+      </div>
+    </article>`;
+  }).join('');
+
+  /* ---------- Index ---------- */
+  let filter = 'all';
+  function renderIndex() {
+    $('#chips').innerHTML = [['all', 'Alles']].concat(SERIES.map(s => [s.id, s.title]))
+      .map(([id, t]) => `<button class="chip" type="button" data-filter="${id}" aria-pressed="${filter === id}">${esc(t)}</button>`).join('');
+    const items = [];
+    SERIES.forEach(s => s.photos.forEach((p, i) => {
+      if (filter === 'all' || filter === s.id) items.push({ s, p, i });
+    }));
+    $('#masonry').innerHTML = items.map(({ s, p, i }) => `<figure>
+      <a href="#s-${s.id}" data-go="s-${s.id}" data-photo="${i}">
+        <img src="${p.src}" alt="${esc(p.title)}, ${p.year}" loading="lazy">
+        <figcaption><b>${esc(p.title)}</b>, ${p.year}<br>${esc(s.title)}</figcaption>
+      </a>
+    </figure>`).join('');
+  }
+  $('#chips').addEventListener('click', e => {
+    const b = e.target.closest('[data-filter]');
+    if (!b) return;
+    filter = b.dataset.filter;
+    renderIndex();
+  });
+  renderIndex();
+
+  /* ---------- Serie: the viewer ---------- */
+  const cur = { s: SERIES[0], i: 0 };
+  function openSeries(id, i) {
+    const s = SERIES.find(x => x.id === id) || SERIES[0];
+    cur.s = s;
+    $('#v-title').textContent = s.title;
+    $('#v-essay').innerHTML = s.essay.map(t => `<p>${esc(t)}</p>`).join('');
+    $('#v-specs').innerHTML = [
+      ['Jaren', s.years], ['Foto’s', s.photos.length], ['Techniek', MEDIUM], ['Oplage', '5 + 2 AP per foto']
+    ].map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('');
+    $('#v-strip').innerHTML = s.photos.map((p, n) =>
+      `<button type="button" data-thumb="${n}" aria-label="${pad(n + 1)}: ${esc(p.title)}"><img src="${p.src}" alt=""></button>`).join('');
+    showPhoto(i || 0);
+  }
+  function showPhoto(i) {
+    const s = cur.s, n = s.photos.length;
+    cur.i = ((i % n) + n) % n;
+    const p = s.photos[cur.i];
+    const img = $('#v-img');
+    img.src = p.src;
+    img.alt = `${p.title}, ${p.year}`;
+    const line = `<b>${pad(cur.i + 1)} / ${esc(p.title)}, ${p.year}</b> — ${MEDIUM}, ${SIZE[p.fmt]} — ${EDITION}`;
+    $('#v-cap').innerHTML = line;
+    $('#v-count').textContent = `${cur.i + 1} / ${n}`;
+    $('#v-ask').dataset.ask = p.title;
+    $('#v-ask-side').dataset.ask = p.title;
+    $$('#v-strip button').forEach((b, k) => b.setAttribute('aria-current', String(k === cur.i)));
+    const strip = $('#v-strip'), thumb = strip.children[cur.i];
+    if (thumb) strip.scrollTo({ left: thumb.offsetLeft - strip.clientWidth / 2 + thumb.clientWidth / 2, behavior: 'smooth' });
+    // the full screen view follows along
+    $('#lb-img').src = p.src;
+    $('#lb-img').alt = img.alt;
+    $('#lb-cap').innerHTML = line;
+    $('#lb-count').textContent = `${s.title} · ${cur.i + 1} / ${n}`;
+    // warm the neighbours
+    [1, -1].forEach(d => { const q = s.photos[(cur.i + d + n) % n]; if (q) new Image().src = q.src; });
+  }
+  $('#v-prev').addEventListener('click', () => showPhoto(cur.i - 1));
+  $('#v-next').addEventListener('click', () => showPhoto(cur.i + 1));
+  $('#v-strip').addEventListener('click', e => {
+    const b = e.target.closest('[data-thumb]');
+    if (b) showPhoto(+b.dataset.thumb);
+  });
+
+  const lb = $('#lightbox');
+  const openLb = () => { lb.hidden = false; $('#lb-close').focus(); };
+  const closeLb = () => { lb.hidden = true; $('#v-open').focus(); };
+  $('#v-open').addEventListener('click', openLb);
+  $('#v-full').addEventListener('click', openLb);
+  $('#lb-close').addEventListener('click', closeLb);
+  $('#lb-prev').addEventListener('click', () => showPhoto(cur.i - 1));
+  $('#lb-next').addEventListener('click', () => showPhoto(cur.i + 1));
+
+  /* ---------- Menu (phones) ---------- */
+  const menu = $('#menu');
+  const closeMenu = () => { menu.hidden = true; $('#menu-open').setAttribute('aria-expanded', 'false'); };
+  $('#menu-open').addEventListener('click', () => { menu.hidden = false; $('#menu-open').setAttribute('aria-expanded', 'true'); });
+  $('#menu-close').addEventListener('click', closeMenu);
+
+  /* ---------- Screens ---------- */
+  const screens = $$('[data-screen]');
+  let current = null;
+  function show(name, opts = {}) {
+    let screen = name, sid = null;
+    if (name.startsWith('s-')) { sid = name.slice(2); screen = 'series'; }
+    if (name === 'contact') screen = 'over';
+    if (!screens.some(s => s.dataset.screen === screen) || (sid && !SERIES.some(s => s.id === sid))) {
+      name = 'home'; screen = 'home'; sid = null;
+    }
+    current = name;
+    screens.forEach(s => { s.hidden = s.dataset.screen !== screen; });
+    if (screen === 'series') openSeries(sid, opts.photo || 0);
+    if (screen === 'home') seriesCarousel.refresh();
+
+    const navKey = screen === 'series' ? 'werk' : name;
+    $$('.primary a, .menu a.big').forEach(a => {
+      if (a.dataset.go === navKey) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    });
+    const barKey = screen === 'series' ? 's-sanctuary' : (name === 'contact' ? 'over' : name);
+    $$('.mockbar [data-go]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.go === barKey)));
+
+    if (typeof opts.ask === 'string') {
+      $('#f-work').value = opts.ask;
+      if (opts.ask) $('#f-topic').value = 'print';
+    }
+    closeMenu();
+    if (!lb.hidden) lb.hidden = true;
+    if (name === 'contact') requestAnimationFrame(() => $('#contact').scrollIntoView());
+    else window.scrollTo(0, 0);
+    try { if (location.hash.slice(1) !== name) location.hash = name; } catch (e) { /* data: URL or locked frame */ }
+  }
+
+  document.addEventListener('click', e => {
+    const jump = e.target.closest('[data-jump]');
+    if (jump) {
+      e.preventDefault();
+      closeMenu();
+      const t = document.getElementById(jump.dataset.jump);
+      if (t) { t.scrollIntoView({ behavior: 'smooth' }); setTimeout(() => $('#f-news').focus({ preventScroll: true }), 500); }
+      return;
+    }
+    const go = e.target.closest('[data-go]');
+    if (!go) return;
+    e.preventDefault();
+    show(go.dataset.go, { photo: +go.dataset.photo || 0, ask: go.dataset.ask });
+  });
+  addEventListener('hashchange', () => {
+    const h = location.hash.slice(1);
+    if (h && h !== current) show(h);
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (!lb.hidden) closeLb();
+      else if (!menu.hidden) closeMenu();
+      return;
+    }
+    if (/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+    const onViewer = !$('[data-screen="series"]').hidden;
+    if (!onViewer) return;
+    if (e.key === 'ArrowLeft') showPhoto(cur.i - 1);
+    if (e.key === 'ArrowRight') showPhoto(cur.i + 1);
+  });
+
+  /* ---------- Header shrinks once the page scrolls ---------- */
+  const site = $('#site');
+  addEventListener('scroll', () => {
+    const y = scrollY;
+    if (y > 90) site.classList.add('compact');
+    else if (y < 20) site.classList.remove('compact');
+  }, { passive: true });
+
+  /* ---------- Forms: mock only ---------- */
+  $('#contact-form').addEventListener('submit', e => { e.preventDefault(); $('#contact-done').hidden = false; });
+  $('#news-form').addEventListener('submit', e => { e.preventDefault(); $('#news-done').hidden = false; });
+
+  let start = 'home';
+  try { start = location.hash.slice(1) || 'home'; } catch (e) { /* keep home */ }
+  show(start);
+})();
+</script>
+</body>
+</html>

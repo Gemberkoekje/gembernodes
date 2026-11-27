@@ -71,6 +71,7 @@ spec:
                   - geneaducatie
                   - hackerminigames
                   - klaverjas
+                  - kris
                   - ltr-hud
                   - plotboek-generator
                   - vortexplotboek
@@ -270,6 +271,20 @@ spec:
           selector:
             matchLabels:
               kubernetes.io/metadata.name: klaverjas
+    - name: https-kris
+      protocol: HTTPS
+      port: 8443
+      hostname: kris.gemberkoekje.nl
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: kris-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: kris
     - name: https-ltr-hud
       protocol: HTTPS
       port: 8443
