@@ -3550,3 +3550,16 @@ To understand this, read [dashboards/kubernetes-status-dashboard.json](infrastru
 - **After the merge:** `apps` builds and applies (the kris pod, plus anything else queued behind it), then
   `ingress` applies the kris routes. `https://kris.gemberkoekje.nl` and `https://gemberkoekje.nl/kris` show
   the mock.
+
+## 2026-11-27 — kris: a site for all his pictures, not a gallery
+
+- **Why:** Kristoffer's own request, which the first mock hadn't seen: "een website met al mijn (AI en
+  gewone) fotos". The prints, editions, exhibitions, wall labels and newsletter were too much.
+- **What changes here:** only the copies from `Kris/mock/` in projects: `apps/kris/index.html` (the new mock:
+  menu Alles · Foto's · AI · Albums · Over; every AI image labelled AI) and the sixteen stand-ins (the AI
+  album's are coloured now, 0.46 MB in all). Same files, names and ConfigMaps as before; the hashes change,
+  so the pod rolls.
+- **Checked:** `flux build kustomization apps` on a copy of the branch without Flux's default-excluded files
+  (as source-controller sees it): passes, `kris-img` 16 keys. `scripts/validate.py`: 0 errors, 0 warnings.
+- **After the merge:** `https://kris.gemberkoekje.nl` shows the new mock (Caddy sends `no-cache`, so a reload
+  is enough).
