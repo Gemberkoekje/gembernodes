@@ -20,7 +20,7 @@
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Marcellus&display=swap">
 <style>
   /* Layout: museum grammar (wordmark, capital nav, full-width hairlines between bands, large
      pictures, counters) for one person's pictures; a picture is shown in a white border on a pale
@@ -44,6 +44,9 @@
     --shadow: rgba(0, 0, 0, .22);
     --shadow-deep: rgba(0, 0, 0, .55);
     --font: "Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    /* The names of works (titles of pictures and albums) in serif capitals, as on the Louvre's site. */
+    --serif: "Marcellus", Georgia, "Times New Roman", serif;
+    --on-image: #ffffff;
     --maxw: 90rem;
   }
 
@@ -82,6 +85,7 @@
     line-height: 1.08; text-wrap: balance;
   }
   .display { font-size: clamp(2.4rem, 5.4vw, 4.6rem); }
+  .display.work-title { font-size: clamp(2.2rem, 4.6vw, 4rem); letter-spacing: .05em; line-height: 1.08; }
   h1 { font-size: clamp(2.2rem, 4.6vw, 3.6rem); }
   h2 { font-size: clamp(1.7rem, 2.8vw, 2.35rem); }
   h3 { font-size: 1.375rem; line-height: 1.2; }
@@ -94,13 +98,16 @@
   .more:hover { text-decoration: underline; text-underline-offset: .22em; }
   .ph { font-style: italic; color: var(--ink-soft); }
 
-  /* The AI mark: every AI image carries it, on its thumbnail and in its caption */
+  /* The AI mark: every AI image carries it, on its thumbnail and in its caption. A white pill in the
+     corner, as the Louvre's "EN COURS". */
   .thumb { position: relative; display: block; }
   .tag {
-    position: absolute; top: .5rem; left: .5rem; background: var(--ink); color: var(--paper);
-    font-size: .6875rem; font-weight: 640; font-stretch: 112%; letter-spacing: .08em;
-    padding: .15rem .4rem; line-height: 1.3;
+    position: absolute; top: .75rem; left: .75rem; background: var(--paper); color: var(--ink);
+    font-size: .6875rem; font-weight: 640; font-stretch: 112%; letter-spacing: .1em; text-transform: uppercase;
+    padding: .3rem .7rem; line-height: 1.2; border-radius: 999px; box-shadow: 0 1px 3px var(--shadow);
   }
+  /* The name of a work: serif capitals, as the Louvre's card titles */
+  .work-title { font-family: var(--serif); font-weight: 400; font-stretch: 100%; text-transform: uppercase; letter-spacing: .06em; line-height: 1.15; }
 
   /* ---------- Reviewer bar (not part of the site) ---------- */
   .mockbar { background: var(--night); color: var(--night-ink); font-size: .8125rem; line-height: 1.45; }
@@ -193,9 +200,15 @@
   /* ---------- Bands ---------- */
   .band { border-bottom: 1px solid var(--rule); padding-block: clamp(2.5rem, 5vw, 4.5rem); }
   .band-head {
-    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline;
-    gap: .5rem 1rem; margin-bottom: clamp(1.25rem, 2.5vw, 2rem);
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+    gap: .5rem 1.5rem; margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
   }
+  /* A section heading in spaced capitals, followed by a hairline (the Louvre's section headings) */
+  .band-head h2 {
+    display: flex; align-items: center; gap: 1.25rem; flex: 1 1 18rem; min-width: 0;
+    font-size: .9375rem; font-weight: 640; font-stretch: 112%; letter-spacing: .14em; text-transform: uppercase; line-height: 1.3;
+  }
+  .band-head h2::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
   .linkcard { display: block; text-decoration: none; }
   .linkcard:hover h3 { text-decoration: underline; text-underline-offset: .18em; text-decoration-thickness: 2px; }
 
@@ -203,10 +216,17 @@
   .car-view { overflow: hidden; }
   .car-track { position: relative; display: flex; gap: clamp(1rem, 2vw, 1.75rem); transition: transform .55s cubic-bezier(.2, .7, .2, 1); }
   .car-card { flex: 0 0 min(64%, 54rem); min-width: 0; }
-  .car-card img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; background: var(--stage); }
-  .car-card h3 { margin-top: 1rem; font-size: clamp(1.375rem, 2vw, 1.75rem); }
-  .car-card .meta { margin-top: .3rem; font-weight: 560; font-size: .9375rem; }
-  .car-card p { margin-top: .5rem; color: var(--ink-soft); max-width: 40rem; }
+  .car-card img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: var(--stage); }
+  /* The album's name over its cover, on a dark fade: the Louvre's large card */
+  .car-card .over {
+    position: absolute; inset: auto 0 0 0; padding: clamp(1rem, 3vw, 2.25rem); display: grid; gap: .35rem;
+    color: var(--on-image); background: linear-gradient(to top, rgba(0, 0, 0, .78), rgba(0, 0, 0, .35) 60%, rgba(0, 0, 0, 0));
+  }
+  .car-card h3 { font-size: clamp(1.5rem, 3vw, 2.5rem); }
+  .car-card .meta { font-weight: 560; font-size: .9375rem; }
+  .car-card p { margin-top: .75rem; color: var(--ink-soft); max-width: 40rem; }
+  .linkcard.car-card:hover h3 { text-decoration: none; }
+  .linkcard.car-card:hover img { opacity: .9; }
   @media (max-width: 760px) { .car-card { flex-basis: 86%; } }
   .car-ctrl {
     display: flex; justify-content: flex-end; align-items: center; gap: .35rem;
@@ -218,11 +238,16 @@
   }
   .arrow:disabled { opacity: .28; cursor: default; }
 
-  /* The newest pictures, photos and AI images mixed */
-  .latest { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(.5rem, 1.2vw, 1rem); }
-  .latest img { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--stage); transition: opacity .2s; }
-  .latest a:hover img { opacity: .85; }
-  @media (max-width: 760px) { .latest { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  /* The newest pictures, photos and AI images mixed: cards with the picture, its pill and its name
+     underneath, as the Louvre's exhibition cards */
+  .latest { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1.75rem, 3vw, 2.75rem) clamp(1rem, 2vw, 1.5rem); }
+  .work-card { display: grid; gap: .5rem; align-content: start; text-decoration: none; }
+  .work-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--stage); transition: opacity .2s; }
+  .work-card:hover img { opacity: .88; }
+  .work-card .work-title { font-size: clamp(1.25rem, 1.7vw, 1.5rem); margin-top: .4rem; }
+  .work-card .sub { font-size: .875rem; font-weight: 560; }
+  @media (max-width: 900px) { .latest { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 560px) { .latest { grid-template-columns: minmax(0, 1fr); } }
 
   /* Photos and AI images, side by side */
   .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(1.5rem, 4vw, 4rem); }
@@ -276,13 +301,14 @@
   .masonry a { display: block; text-decoration: none; }
   .masonry img { width: 100%; height: auto; background: var(--stage); transition: opacity .2s; }
   .masonry a:hover img { opacity: .85; }
-  .masonry figcaption { font-size: .8125rem; margin-top: .5rem; color: var(--ink-soft); }
-  .masonry figcaption b { color: var(--ink); font-weight: 620; }
+  .masonry figcaption { font-size: .8125rem; margin-top: .6rem; color: var(--ink-soft); }
+  .masonry figcaption .work-title { display: block; font-size: 1.125rem; color: var(--ink); margin-bottom: .2rem; }
 
   /* ---------- Album viewer: bordered picture, caption, filmstrip ---------- */
   .viewer { display: grid; grid-template-columns: 17.5rem minmax(0, 1fr); border-bottom: 1px solid var(--ink); }
   .v-side { padding-block: 2rem 2.5rem; padding-right: 2rem; border-right: 1px solid var(--rule); display: grid; gap: 1.25rem; align-content: start; }
   .v-side h1 { font-size: 2rem; }
+  .v-side h1.work-title { font-size: 1.75rem; }
   .v-side .back { font-size: .9375rem; text-decoration: none; }
   .v-side .back:hover { text-decoration: underline; }
   .v-side .essay { display: grid; gap: .8rem; font-size: 1rem; }
@@ -429,7 +455,7 @@
       <div class="wrap hero-grid">
         <div class="hero-text">
           <span class="label">Nieuw album · AI-beelden</span>
-          <h1 class="display">Sanctuary of Absurdity</h1>
+          <h1 class="display work-title">Sanctuary of Absurdity</h1>
           <p>AI-beelden van betonnen hallen, en dat ene ding dat er niet hoort. Zes beelden, 2026.</p>
           <div class="links">
             <a class="more" href="#a-sanctuary" data-go="a-sanctuary">Bekijk het album →</a>
@@ -522,7 +548,7 @@
         <a class="back" href="#albums" data-go="albums">← Alle albums</a>
         <div>
           <span class="label muted">Album</span>
-          <h1 id="v-title"></h1>
+          <h1 id="v-title" class="work-title"></h1>
         </div>
         <div class="essay" id="v-essay"></div>
         <hr>
@@ -685,23 +711,27 @@
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const pad = n => String(n).padStart(2, '0');
   const plural = (n, kind) => kind === 'ai' ? `${n} AI-beelden` : `${n} foto’s`;
-  const tag = kind => kind === 'ai' ? '<span class="tag">AI</span>' : '';
+  const tag = kind => kind === 'ai' ? '<span class="tag">AI-beeld</span>' : '';
   // Every picture with its album, newest album first.
   const ALL = ALBUMS.flatMap(a => a.photos.map((p, i) => ({ a, p, i })));
 
   /* ---------- Home ---------- */
   $('#car-albums .car-track').innerHTML = ALBUMS.map(a => `<a class="car-card linkcard" href="#a-${a.id}" data-go="a-${a.id}">
-      <span class="thumb"><img src="${a.photos[0].src}" alt="" loading="lazy">${tag(a.kind)}</span>
-      <h3>${esc(a.title)}</h3>
-      <p class="meta">${esc(a.years)} · ${plural(a.photos.length, a.kind)}</p>
+      <div class="thumb"><img src="${a.photos[0].src}" alt="" loading="lazy"><span class="tag">${a.kind === 'ai' ? 'AI-beelden' : 'Foto\u2019s'}</span>
+        <div class="over"><h3 class="work-title">${esc(a.title)}</h3><span class="meta">${esc(a.years)} · ${plural(a.photos.length, a.kind)}</span></div>
+      </div>
       <p>${esc(a.short)}</p>
     </a>`).join('');
 
   // The newest pictures: round the albums, so photos and AI images mix.
   const latest = [];
-  for (let i = 0; latest.length < 8 && i < 10; i++) ALBUMS.forEach(a => { if (a.photos[i] && latest.length < 8) latest.push({ a, p: a.photos[i], i }); });
+  for (let i = 0; latest.length < 6 && i < 10; i++) ALBUMS.forEach(a => { if (a.photos[i] && latest.length < 6) latest.push({ a, p: a.photos[i], i }); });
   $('#latest').innerHTML = latest.map(({ a, p, i }) =>
-    `<a class="thumb" href="#a-${a.id}" data-go="a-${a.id}" data-photo="${i}" aria-label="${esc(p.title)}, ${KIND[a.kind]}"><img src="${p.src}" alt="" loading="lazy">${tag(a.kind)}</a>`).join('');
+    `<a class="work-card" href="#a-${a.id}" data-go="a-${a.id}" data-photo="${i}">
+      <span class="thumb"><img src="${p.src}" alt="" loading="lazy">${tag(a.kind)}</span>
+      <span class="work-title">${esc(p.title)}</span>
+      <span class="sub">${p.year} · ${KIND[a.kind]} · ${esc(a.title)}</span>
+    </a>`).join('');
 
   function carousel(root) {
     const track = $('.car-track', root);
@@ -738,7 +768,7 @@
     return `<article class="album-row">
       <a class="thumb" href="#a-${a.id}" data-go="a-${a.id}"><img src="${a.photos[0].src}" alt="" loading="lazy">${tag(a.kind)}</a>
       <div class="txt">
-        <h2>${esc(a.title)}</h2>
+        <h2 class="work-title">${esc(a.title)}</h2>
         <p class="meta">${esc(a.years)} · ${plural(a.photos.length, a.kind)}</p>
         <p>${esc(a.short)}</p>
         <div class="minis">${minis}</div>
@@ -763,7 +793,7 @@
     $('#masonry').innerHTML = ALL.filter(f.test).map(({ a, p, i }) => `<figure>
       <a href="#a-${a.id}" data-go="a-${a.id}" data-photo="${i}">
         <span class="thumb"><img src="${p.src}" alt="${esc(p.title)}, ${p.year}, ${KIND[a.kind]}" loading="lazy">${tag(a.kind)}</span>
-        <figcaption><b>${esc(p.title)}</b>, ${p.year} · ${KIND[a.kind]}<br>${esc(a.title)}</figcaption>
+        <figcaption><span class="work-title">${esc(p.title)}</span>${p.year} · ${KIND[a.kind]} · ${esc(a.title)}</figcaption>
       </a>
     </figure>`).join('');
   }
