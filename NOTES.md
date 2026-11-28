@@ -3563,3 +3563,14 @@ To understand this, read [dashboards/kubernetes-status-dashboard.json](infrastru
   (as source-controller sees it): passes, `kris-img` 16 keys. `scripts/validate.py`: 0 errors, 0 warnings.
 - **After the merge:** `https://kris.gemberkoekje.nl` shows the new mock (Caddy sends `no-cache`, so a reload
   is enough).
+
+## 2026-11-28 — kris: elements of the Louvre's exhibition pages in the mock
+
+- **What changes here:** only `apps/kris/index.html`, the copy of `Kris/mock/index.html` in projects (same
+  ConfigMaps; the hash changes, so the pod rolls). Kristoffer sent the Louvre's exhibition page as another
+  layout; the mock mixes in its serif capitals for the names of works (Marcellus, loaded with Archivo from
+  Google Fonts, as in the rest of this preview), the AI label as a white pill, section headings with a
+  hairline, and cards with the name under or over the picture. The real site (PHP, on his own hosting) has
+  the same in `Kris/site/`.
+- **Checked:** `flux build kustomization apps` on a copy without Flux's default-excluded files, and
+  `scripts/validate.py`.
